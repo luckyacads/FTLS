@@ -1,0 +1,132 @@
+﻿@page
+@model FTLSV2.Pages.HomePageModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Teaching Load Scheduler - Chairman Portal</title>
+    <link rel="stylesheet" href="~/css/HomePage.css">
+    
+    <style>
+        /* Including the CSS variables and base styles directly for reliability */
+        :root {
+            --primary: #2c3e50; --secondary: #34495e; --accent: #3498db;
+            --light: #ecf0f1; --success: #27ae60; --warning: #f39c12; --danger: #e74c3c;
+        }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; background-color: #f4f7f6; }
+        nav { width: 250px; background-color: var(--primary); color: white; padding: 20px; display: flex; flex-direction: column; }
+        nav h2 { font-size: 1.1rem; border-bottom: 2px solid var(--accent); padding-bottom: 10px; text-align: center; }
+        nav a { color: white; text-decoration: none; padding: 12px; margin: 5px 0; border-radius: 4px; transition: 0.3s; }
+        nav a:hover { background-color: var(--secondary); padding-left: 20px; }
+        main { flex-grow: 1; padding: 30px; overflow-y: auto; }
+        .card-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; color: var(--secondary); }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .btn-primary { background-color: var(--accent); color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+        th, td { text-align: left; padding: 15px; border-bottom: 1px solid #eee; }
+        .badge { padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+        .badge-success { background: #e8f5e9; color: var(--success); }
+        .badge-warning { background: #fff3e0; color: var(--warning); }
+    </style>    
+</head>
+<body>
+
+    <nav>
+        <h2>CHAIRMAN PORTAL</h2> 
+        <a href="#">Dashboard Overview</a> 
+        <a href="#">Faculty Profiles</a> 
+        <a href="#">Course Catalog</a> 
+        <a href="#">Manage Assignments</a> 
+        <a href="#">Room Utilization</a> 
+        <a href="#">Department Reports</a> 
+    </nav>
+
+    <main>
+        <div class="header-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1>Teaching Load Management</h1> 
+            <button class="btn-print" onclick="window.print()" style="background: white; border: 2px solid var(--primary); padding: 8px 15px; border-radius: 4px; cursor: pointer;">Print Faculty Loads</button> 
+        </div>
+
+        <div class="card-grid">
+            <div class="card">
+                <h3>New Assignment</h3> 
+                <form id="scheduleForm" method="post">
+                    <div style="display: flex; gap: 15px;"> 
+                        <div class="form-group" style="flex: 1;">
+                            <label>Faculty Member</label> 
+                            <select>
+                                <option>Engr. Harley (Current: 12 Units)</option> 
+                                <option>Engr. Lucky (Current: 15 Units)</option> 
+                                <option>Engr. Charle (Current: 6 Units)</option> 
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Course Selection</label> 
+                            <select>
+                                <option>B104 - Intro to Programming (3 Units)</option> 
+                                <option>B105 - Data Structures (3 Units)</option> 
+                                <option>B106 - Software Development (3 Units)</option> 
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 15px;"> 
+                        <div class="form-group" style="flex: 1;">
+                            <label>Time Slot</label> 
+                            <input type="text" placeholder="e.g., TTH 1:00 PM - 2:30 PM"> 
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Assigned Room</label> 
+                            <select>
+                                <option>Room 101 (Available)</option> 
+                                <option>Room 102 (Available)</option> 
+                                <option>Audio Visual Room (Occupied)</option> 
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Finalize Assignment</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3>Load Constraints</h3> 
+                <p><strong>Regular Load:</strong> 15 Units</p> 
+                <p><strong>Max Overload:</strong> 21 Units</p> 
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;"> 
+                <p><small>System checking for overlaps and double-booking in real-time.</small></p> 
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 20px;">
+            <h3>Assigned Teaching Loads (Current Semester)</h3> 
+            <table>
+                <thead>
+                    <tr>
+                        <th>Faculty</th> <th>Course</th> <th>Schedule</th> <th>Room</th> <th>Load Status</th> 
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Engr. Harley</td> <td>B104</td> <td>Mon/Wed 09:00 - 10:30</td> <td>Lab A</td> 
+                        <td><span class="badge badge-success">Regular Load</span></td> 
+                    </tr>
+                    <tr>
+                        <td>Engr. Lucky</td> <td>B105</td> <td>Tue/Thu 13:00 - 14:30</td> <td>Room 101</td> 
+                        <td><span class="badge badge-warning">Near Limit</span></td> 
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+</body>
+</html>
