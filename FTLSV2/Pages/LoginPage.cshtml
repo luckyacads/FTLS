@@ -1,10 +1,166 @@
 ﻿@page
-@model IndexModel
+@model FTLSV2.Pages.LoginPageModel
 @{
-    ViewData["Title"] = "Home page";
+    Layout = null;
+    ViewData["Title"] = "Login";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Faculty Scheduler</title>
+
+    <style>
+        :root {
+            /* Garden Green Theme */
+            --primary: #07362d; /* Background Color */
+            --secondary: #184a40;
+            --accent: #07362d;
+            --accent-hover: #0b5c4d;
+            --light: #ecf0f1;
+            --danger: #e74c3c;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            height: 100vh;
+            background-color: var(--primary); /* Green Background */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            background: white;
+            padding: 50px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        /* Logo styling */
+        .login-logo {
+            width: 260px;
+            height: 260px;
+            object-fit: contain;
+            margin-bottom: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            background-color: transparent;
+        }
+
+        h2 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 2rem;
+            letter-spacing: 1px;
+            font-weight: 800;
+        }
+
+        p {
+            color: var(--secondary);
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            color: var(--secondary);
+            margin-bottom: 8px;
+            /* 👇 MADE FONT BIGGER HERE (Was 1rem) */
+            font-size: 1.2rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1.1rem;
+            background-color: #f9f9f9;
+        }
+
+            input:focus {
+                outline: none;
+                border-color: var(--primary);
+                background-color: #fff;
+                box-shadow: 0 0 0 4px rgba(7, 54, 45, 0.1);
+            }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            font-size: 1.2rem;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 15px;
+        }
+
+            .btn-primary:hover {
+                background-color: var(--accent-hover);
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            }
+
+        .alert-error {
+            background-color: #ffeaea;
+            color: var(--danger);
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            border-left: 6px solid var(--danger);
+            font-size: 1rem;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <img src="~/images/FTLS_logo.png" alt="FTLS Logo" class="login-logo" />
+
+        <h2>CHAIRMAN PORTAL</h2>
+        <p>Faculty Teaching Load Scheduler System</p>
+
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="alert-error">@Model.ErrorMessage</div>
+        }
+
+        <form method="post">
+            <div class="form-group">
+                <label>Faculty ID</label>
+                <input type="text" asp-for="Username" placeholder="Enter your ID" required />
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" asp-for="Password" placeholder="Enter your password" required />
+            </div>
+
+            <button type="submit" class="btn-primary">Sign In</button>
+        </form>
+    </div>
+
+</body>
+</html>

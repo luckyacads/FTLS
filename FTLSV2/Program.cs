@@ -1,7 +1,12 @@
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddRazorPages();
+//REPLACE THE OLD LINE WITH THIS BLOCK
+builder.Services.AddRazorPages(options =>
+{
+    // This tells the app: "When the website starts (root URL), show LoginPage"
+    options.Conventions.AddPageRoute("/LoginPage", "");
+});
 
 var app = builder.Build();
 
