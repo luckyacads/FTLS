@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace FTLSV2.Pages
 {
-    public class HomePageModel : PageModel
+    public class ChairmanPageModel : PageModel
     {
         // This runs when the page first loads
         public void OnGet()
