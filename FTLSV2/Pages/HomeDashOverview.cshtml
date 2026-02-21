@@ -1,0 +1,74 @@
+﻿@page
+@model FTLSV2.Pages.HomeDashOverviewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Teaching Load - Home</title>
+    <!-- Use absolute path so browser always finds the static CSS file -->
+    <link rel="stylesheet" href="/css/HomeDashOverview.css?v=1">
+</head>
+<body>
+
+    <nav>
+        <h2>CHAIRMAN PORTAL</h2>
+        <a asp-page="/HomeDashOverview">Dashboard Overview</a>
+        <a asp-page="/HomeFacultyProfile">Faculty Profiles</a>
+        <a href="#">Course Catalog</a>
+        <a href="#">Manage Assignments</a>
+        <a href="#">Room Utilization</a>
+        <a href="#">Department Reports</a>
+    </nav>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <h1>Dashboard Overview</h1>
+            </header>
+
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <h3>Total Faculty</h3>
+                    <p class="stat-number">24</p>
+                    <span class="stat-detail">18 Full-time | 6 Part-time</span>
+                </div>
+                <div class="stat-card warning">
+                    <h3>Overload Alerts</h3>
+                    <p class="stat-number">3</p>
+                    <span class="stat-detail">Faculty near 21 units</span>
+                </div>           
+                <div class="stat-card">
+                    <h3>Rooms Active</h3>
+                    <p class="stat-number">12/15</p>
+                    <span class="stat-detail">Current Period</span>
+                </div>
+            </div>
+
+            <div class="dashboard-main">
+                <div class="recent-activity">
+                    <h3>Recent Load Assignments</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Faculty</th>
+                                <th>Room</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Engr. Harley</td><td>B104</td><td><span class="badge">Just Now</span></td></tr>
+                            <tr><td>Engr. Lucky</td><td>B105</td><td><span class="badge">15 mins ago</span></td></tr>
+                            <tr><td>Archt. Cruz</td><td>D201</td><td><span class="badge">1 hour ago</span></td></tr>
+                        </tbody>
+                    </table>
+                    <a href="ManageAssignments.html" class="view-all">View All Assignments →</a>
+                </div>
+            </div>
+        </main>
+
+</body>
+</html>

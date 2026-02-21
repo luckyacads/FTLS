@@ -1,0 +1,66 @@
+﻿:root {
+    --primary: #0B3D33; /* Your homepage green */
+    --secondary: #34495e;
+    --accent: #3498db;
+    --light: #ecf0f1;
+}
+
+/* Fix the side-by-side layout */
+.app-container {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* Sidebar Styling matching your Home page */
+nav {
+    width: 250px;
+    background-color: var(--primary);
+    color: white;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+    nav ul {
+        list-style: none; /* Removes the dots */
+        padding: 0;
+        margin: 20px 0;
+    }
+
+    nav a {
+        color: white;
+        text-decoration: none;
+        padding: 12px;
+        display: block;
+        border-radius: 4px;
+        transition: 0.3s;
+    }
+
+        nav a:hover, nav li.active a {
+            background-color: var(--secondary);
+            padding-left: 20px;
+        }
+
+/* Main Content Area Fix */
+main {
+    flex-grow: 1;
+    padding: 30px;
+    background-color: #f4f7f6;
+    overflow-y: auto;
+}
+
+/* Horizontal Grid for Faculty Cards */
+.faculty-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* Fixes stacking */
+    gap: 25px;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}

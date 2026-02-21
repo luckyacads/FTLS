@@ -1,0 +1,75 @@
+﻿@page
+@model FTLSV2.Pages.HomeFacultyProfileModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Faculty Profiles - Chairman Portal</title>
+    <link rel="stylesheet" href="~/css/HomeFacultyProfile.css">
+</head>
+<body>
+    <div class="app-container">
+        <nav class="sidebar">
+            <div class="sidebar-header"><h2>CHAIRMAN PORTAL</h2></div>
+            <ul class="nav-links">
+                <li><a asp-page="/HomeDashOverview">Dashboard Overview</a></li>
+                <li class="active"><a asp-page="/HomeFacultyProfile">Faculty Profiles</a></li>
+                <li><a href="#">Course Catalog</a></li>
+                <li><a asp-page="/HomePage">Manage Assignments</a></li>
+                <li><a href="#">Room Utilization</a></li>
+                <li><a href="#">Department Reports</a></li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <h1>Faculty Profiles</h1>
+                <div class="header-actions">
+                    <input type="text" placeholder="Search faculty..." class="search-input">
+                    <button class="btn-add">+ Add Faculty</button>
+                </div>
+            </header>
+
+            <div class="faculty-grid">
+                <div class="faculty-card">
+                    <div class="profile-header">
+                        <div class="avatar">EH</div>
+                        <div class="name-info">
+                            <h3>Engr. Harley</h3>
+                            <span class="badge full-time">Full-Time</span>
+                        </div>
+                    </div>
+                    <div class="load-info">
+                        <label>Current Load: 12 / 21 Units</label>
+                        <div class="progress-bar"><div class="progress" style="width: 57%;"></div></div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn-view">View Details</button>
+                    </div>
+                </div>
+
+                <div class="faculty-card">
+                    <div class="profile-header">
+                        <div class="avatar">EL</div>
+                        <div class="name-info">
+                            <h3>Engr. Lucky</h3>
+                            <span class="badge warning">Near Limit</span>
+                        </div>
+                    </div>
+                    <div class="load-info">
+                        <label>Current Load: 20 / 21 Units</label>
+                        <div class="progress-bar"><div class="progress danger" style="width: 95%;"></div></div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn-view">View Details</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
