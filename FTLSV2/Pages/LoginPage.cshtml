@@ -14,8 +14,7 @@
 
     <style>
         :root {
-            /* Garden Green Theme */
-            --primary: #07362d; /* Background Color */
+            --primary: #07362d;
             --secondary: #184a40;
             --accent: #07362d;
             --accent-hover: #0b5c4d;
@@ -27,7 +26,7 @@
             font-family: 'Segoe UI', sans-serif;
             margin: 0;
             height: 100vh;
-            background-color: var(--primary); /* Green Background */
+            background-color: var(--primary);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -43,7 +42,6 @@
             text-align: center;
         }
 
-        /* Logo styling */
         .login-logo {
             width: 260px;
             height: 260px;
@@ -79,7 +77,6 @@
             font-weight: bold;
             color: var(--secondary);
             margin-bottom: 8px;
-            /* 👇 MADE FONT BIGGER HERE (Was 1rem) */
             font-size: 1.2rem;
         }
 
@@ -139,7 +136,7 @@
     <div class="login-card">
         <img src="~/images/FTLS_logo.png" alt="FTLS Logo" class="login-logo" />
 
-        <h2>CHAIRMAN PORTAL</h2>
+        <h2>FTLS PORTAL</h2>
         <p>Faculty Teaching Load Scheduler System</p>
 
         @if (!string.IsNullOrEmpty(Model.ErrorMessage))
@@ -150,7 +147,7 @@
         <form method="post">
             <div class="form-group">
                 <label>Faculty ID</label>
-                <input type="text" asp-for="Username" placeholder="Enter your ID" required />
+                <input type="text" asp-for="Username" placeholder="Enter your 8-digit ID" required minlength="8" />
             </div>
 
             <div class="form-group">
