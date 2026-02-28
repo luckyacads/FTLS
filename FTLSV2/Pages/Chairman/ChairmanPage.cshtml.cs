@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace FTLSV2.Pages
+namespace FTLSV2.Pages.Chairman
 {
     public class ChairmanPageModel : PageModel
     {

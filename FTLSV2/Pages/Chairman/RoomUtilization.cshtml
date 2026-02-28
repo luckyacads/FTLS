@@ -1,0 +1,28 @@
+@page "/Chairman/RoomUtilization"
+@model FTLSV2.Pages.Chairman.RoomUtilizationModel
+@{
+    ViewData["Title"] = "Room Utilization";
+    Layout = "_ChairmanLayout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/chairman.css" />
+}
+
+        <h1 class="chairman-title">Room Utilization</h1>
+        <div class="chairman-card">
+            <h4>Room Utilization</h4>
+            <table class="table-light">
+                <thead><tr><th>Room</th><th>Status</th><th>Capacity</th></tr></thead>
+                <tbody>
+                @foreach(var r in Model.Rooms)
+                {
+                    <tr>
+                        <td>@r.Name</td>
+                        <td>@r.Status</td>
+                        <td>@r.Capacity</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>

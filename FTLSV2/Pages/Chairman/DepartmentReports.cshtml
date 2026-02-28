@@ -1,0 +1,29 @@
+@page "/Chairman/DepartmentReports"
+@model FTLSV2.Pages.Chairman.DepartmentReportsModel
+@{
+    ViewData["Title"] = "Department Reports";
+    Layout = "_ChairmanLayout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/chairman.css" />
+}
+
+        <h1 class="chairman-title">Department Reports</h1>
+        <div class="chairman-card">
+            <h4>Exportable Reports</h4>
+            <table class="table-light">
+                <thead><tr><th>Name</th><th>Type</th><th>Generated</th><th></th></tr></thead>
+                <tbody>
+                @foreach(var r in Model.Reports)
+                {
+                    <tr>
+                        <td>@r.Name</td>
+                        <td>@r.Type</td>
+                        <td>@r.GeneratedOn</td>
+                        <td><button class="btn-ghost">Download</button></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>

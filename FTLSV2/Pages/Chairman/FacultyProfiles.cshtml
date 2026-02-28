@@ -1,0 +1,30 @@
+@page "/Chairman/FacultyProfiles"
+@model FTLSV2.Pages.Chairman.FacultyProfilesModel
+@{
+    ViewData["Title"] = "Faculty Profiles";
+    Layout = "_ChairmanLayout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/chairman.css" />
+}
+
+        <h1 class="chairman-title">Faculty Profiles</h1>
+        <div class="chairman-card">
+            <h4>Faculty Directory</h4>
+            <table class="table-light">
+                <thead>
+                    <tr><th>Name</th><th>Email</th><th>Current Load</th></tr>
+                </thead>
+                <tbody>
+                @foreach(var f in Model.FacultyList)
+                {
+                    <tr>
+                        <td>@f.Name</td>
+                        <td>@f.Email</td>
+                        <td>@f.CurrentLoad units</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>

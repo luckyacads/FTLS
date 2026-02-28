@@ -1,0 +1,97 @@
+﻿@page "/ChairmanPage"
+@model FTLSV2.Pages.Chairman.ChairmanPageModel
+@{
+    Layout = "_ChairmanLayout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/chairman.css" />
+}
+
+        <div class="header-bar">
+            <h1 class="chairman-title">Teaching Load Management</h1>
+            <button class="btn-print" onclick="window.print()">Print Faculty Loads</button>
+        </div>
+
+        <div class="card-grid">
+            <div class="chairman-card">
+                <h3>New Assignment</h3>
+                <form id="scheduleForm" method="post">
+                    <div style="display: flex; gap: 15px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label>Faculty Member</label>
+                            <select>
+                                <option>Engr. Harley (Current: 12 Units)</option>
+                                <option>Engr. Lucky (Current: 15 Units)</option>
+                                <option>Engr. Charle (Current: 6 Units)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Course Selection</label>
+                            <select>
+                                <option>B104 - Intro to Programming (3 Units)</option>
+                                <option>B105 - Data Structures (3 Units)</option>
+                                <option>B106 - Software Development (3 Units)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 15px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label>Time Slot</label>
+                            <input type="text" placeholder="e.g., TTH 1:00 PM - 2:30 PM">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Assigned Room</label>
+                            <select>
+                                <option>Room 101 (Available)</option>
+                                <option>Room 102 (Available)</option>
+                                <option>Audio Visual Room (Occupied)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Finalize Assignment</button>
+                </form>
+            </div>
+
+            <div class="chairman-card">
+                <h3>Load Constraints</h3>
+                <p><strong>Regular Load:</strong> 15 Units</p>
+                <p><strong>Max Overload:</strong> 21 Units</p>
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+                <p><small>System checking for overlaps and double-booking in real-time.</small></p>
+            </div>
+        </div>
+
+        <div class="chairman-card" style="margin-top: 20px;">
+            <h3>Assigned Teaching Loads (Current Semester)</h3>
+            <table class="table-light">
+                <thead>
+                    <tr>
+                        <th>Faculty</th>
+                        <th>Course</th>
+                        <th>Schedule</th>
+                        <th>Room</th>
+                        <th>Load Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Engr. Harley</td>
+                        <td>B104</td>
+                        <td>Mon/Wed 09:00 - 10:30</td>
+                        <td>Lab A</td>
+                        <td><span class="badge badge-success">Regular Load</span></td>
+                    </tr>
+                    <tr>
+                        <td>Engr. Lucky</td>
+                        <td>B105</td>
+                        <td>Tue/Thu 13:00 - 14:30</td>
+                        <td>Room 101</td>
+                        <td><span class="badge badge-warning">Near Limit</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+

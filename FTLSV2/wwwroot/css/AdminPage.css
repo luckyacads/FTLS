@@ -6,6 +6,7 @@
     --white: #ffffff;
 }
 
+/* Main Body*/
 body {
     font-family: 'Segoe UI', sans-serif;
     margin: 0;
@@ -43,6 +44,7 @@ body {
         .sidebar nav a.active, .sidebar nav a:hover {
             background-color: var(--accent);
         }
+
 
 .logout {
     margin-top: 50px;
