@@ -42,7 +42,7 @@ namespace FTLSV2.Pages
             // 3. CHAIRMAN LOGIN -> Goes to HomePage
             else if (Username == "11112222" && Password == "chair1234")
             {
-                return RedirectToPage("/ChairmanPage");
+                return RedirectToPage("/Chairman/ChairmanPage");
             }
 
             // 4. INVALID LOGIN

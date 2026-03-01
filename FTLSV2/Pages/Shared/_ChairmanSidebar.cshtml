@@ -3,7 +3,7 @@
     string active(string p) => path.Contains(p.ToLowerInvariant()) ? "active" : string.Empty;
 }
 
-<aside class="chairman-sidebar">
+<aside class="chairman-sidebar" style="position: relative;">
     <div class="sidebar-top">
         <h2>CHAIRMAN PORTAL</h2>
         <div class="divider"></div>
@@ -17,7 +17,7 @@
         </nav>
     </div>
 
-    <div class="logout">
-        <a class="btn-ghost" asp-page="/LoginPage">Log out</a>
+    <div class="logout" style="position: absolute; bottom: 30px; left: 0; width: 100%; display: flex; justify-content: center;">
+        <a class="btn-ghost" asp-page="/LoginPage" style="width: 80%; text-align: center; display: block; padding: 10px 0;">Log out</a>
     </div>
 </aside>
