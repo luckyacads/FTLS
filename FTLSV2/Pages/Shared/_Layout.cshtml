@@ -7,35 +7,70 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/FTLSV2.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/AdminPage.css" />
     @RenderSection("Styles", required: false)
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">FTLSV2</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
-                        </li>
-                    </ul>
+    @* Show top header only on non-admin pages *@
+    @if (!(Context.Request.Path.StartsWithSegments("/AdminPage", System.StringComparison.OrdinalIgnoreCase)
+           || Context.Request.Path.StartsWithSegments("/RoomRegistry", System.StringComparison.OrdinalIgnoreCase)
+           || Context.Request.Path.StartsWithSegments("/SubjectLibrary", System.StringComparison.OrdinalIgnoreCase)
+           || Context.Request.Path.StartsWithSegments("/AuditLogs", System.StringComparison.OrdinalIgnoreCase)))
+    {
+        <header>
+            <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+                <div class="container">
+                    <a class="navbar-brand" asp-area="" asp-page="/Index">FTLSV2</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                        <ul class="navbar-nav flex-grow-1">
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+            </nav>
+        </header>
+    }
+
+    @* Show admin sidebar/layout only on admin pages *@
+    @if (Context.Request.Path.StartsWithSegments("/AdminPage", System.StringComparison.OrdinalIgnoreCase)
+         || Context.Request.Path.StartsWithSegments("/RoomRegistry", System.StringComparison.OrdinalIgnoreCase)
+         || Context.Request.Path.StartsWithSegments("/SubjectLibrary", System.StringComparison.OrdinalIgnoreCase)
+         || Context.Request.Path.StartsWithSegments("/AuditLogs", System.StringComparison.OrdinalIgnoreCase))
+    {
+        <div class="admin-container">
+            <aside class="sidebar">
+                <h2>Admin Control</h2>
+                <nav>
+                    <a asp-page="/AdminPage" class="@(Context.Request.Path.StartsWithSegments("/AdminPage", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">User Management</a>
+                    <a asp-page="/RoomRegistry" class="@(Context.Request.Path.StartsWithSegments("/RoomRegistry", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">Room Registry</a>
+                    <a asp-page="/SubjectLibrary" class="@(Context.Request.Path.StartsWithSegments("/SubjectLibrary", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">Subject Library</a>
+                    <a asp-page="/AuditLogs" class="@(Context.Request.Path.StartsWithSegments("/AuditLogs", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">Audit Logs</a>
+                    <a asp-page="/LoginPage" class="logout">Logout</a>
+                </nav>
+            </aside>
+
+            <main class="main-content">
+                @RenderBody()
+            </main>
+        </div>
+    }
+    else
+    {
+        <div class="container">
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+        </div>
+    }
 
     <footer class="border-top footer text-muted">
         <div class="container">

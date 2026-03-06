@@ -1,0 +1,43 @@
+@page
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Audit Logs";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/AuditLogs.css" />
+}
+
+<div class="page-container">
+    <header class="page-header">
+        <h1>Audit Logs</h1>
+    </header>
+
+    <section class="card">
+        <h3>Recent Activity</h3>
+        <table class="logs-table">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>IP</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2026-03-01 09:12</td>
+                    <td>admin</td>
+                    <td>Created subject CS101</td>
+                    <td>192.168.1.12</td>
+                </tr>
+                <tr>
+                    <td>2026-03-02 14:31</td>
+                    <td>engr.lucky</td>
+                    <td>Updated room B202</td>
+                    <td>192.168.1.56</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+</div>

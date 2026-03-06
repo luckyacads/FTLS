@@ -1,0 +1,47 @@
+@page
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Room Registry";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/RoomRegistry.css" />
+}
+
+<div class="page-container">
+    <header class="page-header">
+        <h1>Room Registry</h1>
+        <button class="btn-primary">+ Add Room</button>
+    </header>
+
+    <section class="card">
+        <h3>Registered Rooms</h3>
+        <table class="room-table">
+            <thead>
+                <tr>
+                    <th>Room Name</th>
+                    <th>Type</th>
+                    <th>Capacity</th>
+                    <th>Availability</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Room A101</td>
+                    <td>Lecture</td>
+                    <td>40</td>
+                    <td><span class="status-available">Available</span></td>
+                    <td><button class="btn-edit">Edit</button> <button class="btn-delete">Delete</button></td>
+                </tr>
+                <tr>
+                    <td>Lab B202</td>
+                    <td>Lab</td>
+                    <td>24</td>
+                    <td><span class="status-unavailable">Booked</span></td>
+                    <td><button class="btn-edit">Edit</button> <button class="btn-delete">Delete</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+</div>

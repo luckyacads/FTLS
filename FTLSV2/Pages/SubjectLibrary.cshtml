@@ -1,0 +1,50 @@
+@page
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Subject Library";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/SubjectLibrary.css" />
+}
+
+<div class="page-container">
+    <header class="page-header">
+        <h1>Subject Library</h1>
+        <button class="btn-primary">+ Add Subject</button>
+    </header>
+
+    <section class="card">
+        <div class="search-row">
+            <input type="text" placeholder="Search subjects..." class="search-input" />
+        </div>
+
+        <table class="subject-table">
+            <thead>
+                <tr>
+                    <th>Subject Code</th>
+                    <th>Title</th>
+                    <th>Units</th>
+                    <th>Department</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>CS101</td>
+                    <td>Introduction to Programming</td>
+                    <td>3</td>
+                    <td>Computer Science</td>
+                    <td><button class="btn-edit">Edit</button></td>
+                </tr>
+                <tr>
+                    <td>MATH201</td>
+                    <td>Calculus II</td>
+                    <td>4</td>
+                    <td>Mathematics</td>
+                    <td><button class="btn-edit">Edit</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+</div>
