@@ -7,8 +7,32 @@
 
 <header>
     <h1>System Administration</h1>
-    <button class="btn-primary">+ Add New User</button>
+    <button class="btn-primary" onclick="toggleAddUserForm()">+ Add New User</button>
 </header>
+
+<div id="addUserSection" class="card full-width" style="display: none; margin-bottom: 20px; border-left: 5px solid #07362d;">
+    <h3>Create New Account</h3>
+    <form method="post" asp-page-handler="AddUser">
+        <div style="display: flex; gap: 15px;">
+            <div class="form-group" style="flex: 1;">
+                <label>Name</label>
+                <input type="text" asp-for="NewUserName" placeholder="e.g., Engr. Charle" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>Role</label>
+                <select asp-for="NewUserRole" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                    <option value="Faculty">Faculty</option>
+                    <option value="Chairman">Chairman</option>
+                    <option value="Admin">Admin</option>
+                </select>
+            </div>
+        </div>
+        <div style="margin-top: 15px;">
+            <button type="submit" class="btn-primary">Save User</button>
+            <button type="button" class="btn-ghost" onclick="toggleAddUserForm()" style="margin-left: 10px; padding: 10px; border: none; background: #eee; cursor: pointer;">Cancel</button>
+        </div>
+    </form>
+</div>
 
 <div class="admin-grid">
     <section class="card full-width">
@@ -23,43 +47,97 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>Engr. Harley</td>
-                    <td>Faculty</td>
-                    <td><span class="status-active">Active</span></td>
-                    <td>
-                        <div class="button-group">
-                            <button class="btn-toggle">Deactivate</button>
-                            <button class="btn-reset">Reset PW</button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Engr. Lucky</td>
-                    <td>Faculty</td>
-                    <td><span class="status-inactive">Inactive</span></td>
-                    <td>
-                        <div class="button-group">
-                            <button class="btn-toggle active">Activate</button>
-                            <button class="btn-reset">Reset PW</button>
-                        </div>
-                    </td>
-                </tr>
+                @foreach (var user in AdminPageModel.Users)
+                {
+                    <tr>
+                        <td>@user.Name</td>
+                        <td>@user.Role</td>
+                        <td>
+                            @if (user.Status == "Active")
+                            {
+                                <span class="status-active">Active</span>
+                            }
+                            else
+                            {
+                                <span class="status-inactive">Inactive</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="button-group" style="display: flex; gap: 5px;">
+
+                                <form method="post" asp-page-handler="ToggleUserStatus" style="margin: 0;">
+                                    <input type="hidden" name="userName" value="@user.Name" />
+
+                                    @if (user.Status == "Active")
+                                    {
+                                        <button type="submit" class="btn-toggle">Deactivate</button>
+                                    }
+                                    else
+                                    {
+                                        <button type="submit" class="btn-toggle active">Activate</button>
+                                    }
+                                </form>
+
+                                <button class="btn-reset">Reset PW</button>
+
+                            </div>
+                        </td>
+                    </tr>
+                }
             </tbody>
         </table>
     </section>
 
     <section class="card full-width">
         <h3>Load Constraint Rules</h3>
-        <div class="form-group">
-            <label>Regular Load Limit (Units)</label>
-            <input type="number" value="15">
-        </div>
-        <div class="form-group">
-            <label>Max Overload Limit (Units)</label>
-            <input type="number" value="21">
-        </div>
-        <button class="btn-primary">Update Rules</button>
-    </section>
 
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div id="success-alert" style="background-color: #d4edda; color: #155724; padding: 12px; margin-bottom: 20px; border-radius: 6px; border-left: 5px solid #28a745; font-weight: 500; transition: opacity 1s ease-out; opacity: 1;">
+                ✓ @TempData["SuccessMessage"]
+            </div>
+        }
+        <form method="post" asp-page-handler="UpdateRules">
+            <div class="form-group">
+                <label>Regular Load Limit (Units)</label>
+                <input type="number" asp-for="InputRegularLoad" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div class="form-group">
+                <label>Max Overload Limit (Units)</label>
+                <input type="number" asp-for="InputMaxOverload" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <button type="submit" class="btn-primary">Update Rules</button>
+        </form>
+    </section>
 </div>
+
+<script>
+    // 1. Function to show/hide the Add User form
+    function toggleAddUserForm() {
+        var form = document.getElementById("addUserSection");
+        if (form.style.display === "none" || form.style.display === "") {
+            form.style.display = "block";
+        } else {
+            form.style.display = "none";
+        }
+    }
+
+    // 2. Function to fade out the success message
+    window.onload = function() {
+        var alertBox = document.getElementById("success-alert");
+
+        // Check if the alert box actually exists on the page right now
+        if (alertBox) {
+            // Wait 3 seconds (3000 milliseconds) before starting the fade
+            setTimeout(function() {
+                alertBox.style.opacity = "0"; // Triggers the CSS transition to fade out
+
+                // Wait 1 more second for the fade animation to finish, then completely remove the box so it doesn't leave an empty gap
+                setTimeout(function() {
+                    alertBox.style.display = "none";
+                }, 1000);
+
+            }, 3000);
+        }
+    };
+</script>
