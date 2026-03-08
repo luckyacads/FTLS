@@ -1,4 +1,5 @@
-@page
+﻿@page
+@model FTLSV2.Pages.RoomRegistryModel
 @{
     Layout = "_Layout";
     ViewData["Title"] = "Room Registry";
@@ -11,8 +12,74 @@
 <div class="page-container">
     <header class="page-header">
         <h1>Room Registry</h1>
-        <button class="btn-primary">+ Add Room</button>
+        <button class="btn-primary" onclick="toggleAddRoomForm()">+ Add Room</button>
     </header>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div id="success-alert" style="background-color: #d4edda; color: #155724; padding: 12px; margin-bottom: 20px; border-radius: 6px; border-left: 5px solid #28a745; font-weight: 500; transition: opacity 1s ease-out; opacity: 1;">
+            ✓ @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div id="addRoomSection" class="card" style="display: none; margin-bottom: 20px; border-left: 5px solid #07362d;">
+        <h3>Add New Room</h3>
+        <form method="post" asp-page-handler="AddRoom">
+            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <label>Room Name</label>
+                    <input type="text" asp-for="NewRoomName" required style="width: 100%; padding: 8px;" placeholder="e.g. Room 101">
+                </div>
+                <div style="flex: 1;">
+                    <label>Type</label>
+                    <select asp-for="NewRoomType" style="width: 100%; padding: 8px;">
+                        <option value="Lecture">Lecture</option>
+                        <option value="Lab">Lab</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label>Capacity</label>
+                    <input type="number" asp-for="NewRoomCapacity" required style="width: 100%; padding: 8px;" value="30">
+                </div>
+            </div>
+            <button type="submit" class="btn-primary">Save Room</button>
+            <button type="button" class="btn-ghost" onclick="toggleAddRoomForm()" style="margin-left: 10px; padding: 10px; border: none; background: #eee; cursor: pointer;">Cancel</button>
+        </form>
+    </div>
+
+    <div id="editRoomSection" class="card" style="display: none; margin-bottom: 20px; border-left: 5px solid #17a2b8;">
+        <h3>Edit Room</h3>
+        <form method="post" asp-page-handler="EditRoom">
+            <input type="hidden" asp-for="EditRoomId" id="editRoomId" />
+
+            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <label>Room Name</label>
+                    <input type="text" asp-for="EditRoomName" id="editRoomName" required style="width: 100%; padding: 8px;">
+                </div>
+                <div style="flex: 1;">
+                    <label>Type</label>
+                    <select asp-for="EditRoomType" id="editRoomType" style="width: 100%; padding: 8px;">
+                        <option value="Lecture">Lecture</option>
+                        <option value="Lab">Lab</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label>Capacity</label>
+                    <input type="number" asp-for="EditRoomCapacity" id="editRoomCapacity" required style="width: 100%; padding: 8px;">
+                </div>
+                <div style="flex: 1;">
+                    <label>Availability</label>
+                    <select asp-for="EditRoomAvailability" id="editRoomAvailability" style="width: 100%; padding: 8px;">
+                        <option value="Available">Available</option>
+                        <option value="Booked">Booked</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn-primary" style="background-color: #17a2b8;">Update Room</button>
+            <button type="button" class="btn-ghost" onclick="hideEditForm()" style="margin-left: 10px; padding: 10px; border: none; background: #eee; cursor: pointer;">Cancel</button>
+        </form>
+    </div>
 
     <section class="card">
         <h3>Registered Rooms</h3>
@@ -27,21 +94,82 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>Room A101</td>
-                    <td>Lecture</td>
-                    <td>40</td>
-                    <td><span class="status-available">Available</span></td>
-                    <td><button class="btn-edit">Edit</button> <button class="btn-delete">Delete</button></td>
-                </tr>
-                <tr>
-                    <td>Lab B202</td>
-                    <td>Lab</td>
-                    <td>24</td>
-                    <td><span class="status-unavailable">Booked</span></td>
-                    <td><button class="btn-edit">Edit</button> <button class="btn-delete">Delete</button></td>
-                </tr>
+                @foreach (var room in RoomRegistryModel.Rooms)
+                {
+                    <tr>
+                        <td>@room.Name</td>
+                        <td>@room.Type</td>
+                        <td>@room.Capacity</td>
+                        <td>
+                            @if (room.Availability == "Available")
+                            {
+                                <span class="status-available" style="color: green; font-weight: bold;">Available</span>
+                            }
+                            else
+                            {
+                                <span class="status-unavailable" style="color: red; font-weight: bold;">@room.Availability</span>
+                            }
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 5px;">
+                                <button class="btn-edit" onclick="showEditForm('@room.Id', '@room.Name', '@room.Type', @room.Capacity, '@room.Availability')">Edit</button>
+
+                                <form method="post" asp-page-handler="DeleteRoom" style="margin: 0;" onsubmit="return confirm('Are you sure you want to delete @room.Name?');">
+                                    <input type="hidden" name="roomId" value="@room.Id" />
+                                    <button type="submit" class="btn-delete" style="color: red; border-color: red;">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
             </tbody>
         </table>
     </section>
 </div>
+
+<script>
+    // Show/Hide Add Form
+    function toggleAddRoomForm() {
+        var form = document.getElementById("addRoomSection");
+        document.getElementById("editRoomSection").style.display = "none"; // Hide edit if open
+
+        if (form.style.display === "none" || form.style.display === "") {
+            form.style.display = "block";
+        } else {
+            form.style.display = "none";
+        }
+    }
+
+    // Populate and Show Edit Form
+    function showEditForm(id, name, type, capacity, availability) {
+        document.getElementById("addRoomSection").style.display = "none"; // Hide add form
+
+        // Fill the textboxes with the room's current data
+        document.getElementById("editRoomId").value = id;
+        document.getElementById("editRoomName").value = name;
+        document.getElementById("editRoomType").value = type;
+        document.getElementById("editRoomCapacity").value = capacity;
+        document.getElementById("editRoomAvailability").value = availability;
+
+        // Show the edit form
+        document.getElementById("editRoomSection").style.display = "block";
+    }
+
+    // Hide Edit Form
+    function hideEditForm() {
+        document.getElementById("editRoomSection").style.display = "none";
+    }
+
+    // Fade out the success message
+    window.onload = function() {
+        var alertBox = document.getElementById("success-alert");
+        if (alertBox) {
+            setTimeout(function() {
+                alertBox.style.opacity = "0";
+                setTimeout(function() {
+                    alertBox.style.display = "none";
+                }, 1000);
+            }, 3000);
+        }
+    };
+</script>

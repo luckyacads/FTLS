@@ -1,4 +1,5 @@
 @page
+@model FTLSV2.Pages.AuditLogsModel
 @{
     Layout = "_Layout";
     ViewData["Title"] = "Audit Logs";
@@ -25,18 +26,15 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>2026-03-01 09:12</td>
-                    <td>admin</td>
-                    <td>Created subject CS101</td>
-                    <td>192.168.1.12</td>
-                </tr>
-                <tr>
-                    <td>2026-03-02 14:31</td>
-                    <td>engr.lucky</td>
-                    <td>Updated room B202</td>
-                    <td>192.168.1.56</td>
-                </tr>
+                @foreach (var log in AuditLogsModel.Logs)
+                {
+                    <tr>
+                        <td>@log.Timestamp</td>
+                        <td>@log.Username</td>
+                        <td>@log.Action</td>
+                        <td>@log.IPAddress</td>
+                    </tr>
+                }
             </tbody>
         </table>
     </section>

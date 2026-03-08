@@ -1,4 +1,5 @@
-@page
+﻿@page
+@model FTLSV2.Pages.SubjectLibraryModel
 @{
     Layout = "_Layout";
     ViewData["Title"] = "Subject Library";
@@ -11,12 +12,73 @@
 <div class="page-container">
     <header class="page-header">
         <h1>Subject Library</h1>
-        <button class="btn-primary">+ Add Subject</button>
+        <button class="btn-primary" onclick="toggleAddSubjectForm()">+ Add Subject</button>
     </header>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div id="success-alert" style="background-color: #d4edda; color: #155724; padding: 12px; margin-bottom: 20px; border-radius: 6px; border-left: 5px solid #28a745; font-weight: 500; transition: opacity 1s ease-out; opacity: 1;">
+            ✓ @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div id="addSubjectSection" class="card" style="display: none; margin-bottom: 20px; border-left: 5px solid #07362d;">
+        <h3>Add New Subject</h3>
+        <form method="post" asp-page-handler="AddSubject">
+            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <label>Subject Code</label>
+                    <input type="text" asp-for="NewSubjectCode" required style="width: 100%; padding: 8px;" placeholder="e.g. IT101">
+                </div>
+                <div style="flex: 2;">
+                    <label>Title</label>
+                    <input type="text" asp-for="NewSubjectTitle" required style="width: 100%; padding: 8px;" placeholder="e.g. Network Admin">
+                </div>
+                <div style="flex: 1;">
+                    <label>Units</label>
+                    <input type="number" asp-for="NewSubjectUnits" required style="width: 100%; padding: 8px;" value="3">
+                </div>
+                <div style="flex: 1.5;">
+                    <label>Department</label>
+                    <input type="text" asp-for="NewSubjectDepartment" required style="width: 100%; padding: 8px;" placeholder="e.g. Computer Science">
+                </div>
+            </div>
+            <button type="submit" class="btn-primary">Save Subject</button>
+            <button type="button" class="btn-ghost" onclick="toggleAddSubjectForm()" style="margin-left: 10px; padding: 10px; border: none; background: #eee; cursor: pointer;">Cancel</button>
+        </form>
+    </div>
+
+    <div id="editSubjectSection" class="card" style="display: none; margin-bottom: 20px; border-left: 5px solid #17a2b8;">
+        <h3>Edit Subject</h3>
+        <form method="post" asp-page-handler="EditSubject">
+            <input type="hidden" asp-for="EditSubjectId" id="editSubjectId" />
+
+            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <label>Subject Code</label>
+                    <input type="text" asp-for="EditSubjectCode" id="editSubjectCode" required style="width: 100%; padding: 8px;">
+                </div>
+                <div style="flex: 2;">
+                    <label>Title</label>
+                    <input type="text" asp-for="EditSubjectTitle" id="editSubjectTitle" required style="width: 100%; padding: 8px;">
+                </div>
+                <div style="flex: 1;">
+                    <label>Units</label>
+                    <input type="number" asp-for="EditSubjectUnits" id="editSubjectUnits" required style="width: 100%; padding: 8px;">
+                </div>
+                <div style="flex: 1.5;">
+                    <label>Department</label>
+                    <input type="text" asp-for="EditSubjectDepartment" id="editSubjectDepartment" required style="width: 100%; padding: 8px;">
+                </div>
+            </div>
+            <button type="submit" class="btn-primary" style="background-color: #17a2b8;">Update Subject</button>
+            <button type="button" class="btn-ghost" onclick="hideEditForm()" style="margin-left: 10px; padding: 10px; border: none; background: #eee; cursor: pointer;">Cancel</button>
+        </form>
+    </div>
 
     <section class="card">
         <div class="search-row">
-            <input type="text" placeholder="Search subjects..." class="search-input" />
+            <input type="text" id="subjectSearchInput" onkeyup="filterSubjects()" placeholder="Search subjects..." class="search-input" />
         </div>
 
         <table class="subject-table">
@@ -30,21 +92,91 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>CS101</td>
-                    <td>Introduction to Programming</td>
-                    <td>3</td>
-                    <td>Computer Science</td>
-                    <td><button class="btn-edit">Edit</button></td>
-                </tr>
-                <tr>
-                    <td>MATH201</td>
-                    <td>Calculus II</td>
-                    <td>4</td>
-                    <td>Mathematics</td>
-                    <td><button class="btn-edit">Edit</button></td>
-                </tr>
+                @foreach (var subject in SubjectLibraryModel.Subjects)
+                {
+                    <tr>
+                        <td>@subject.Code</td>
+                        <td>@subject.Title</td>
+                        <td>@subject.Units</td>
+                        <td>@subject.Department</td>
+                        <td>
+                            <button class="btn-edit" onclick="showEditForm('@subject.Id', '@subject.Code', '@subject.Title', @subject.Units, '@subject.Department')">Edit</button>
+                        </td>
+                    </tr>
+                }
             </tbody>
         </table>
     </section>
 </div>
+
+<script>
+    // Show/Hide Add Form
+    function toggleAddSubjectForm() {
+        var form = document.getElementById("addSubjectSection");
+        document.getElementById("editSubjectSection").style.display = "none";
+
+        if (form.style.display === "none" || form.style.display === "") {
+            form.style.display = "block";
+        } else {
+            form.style.display = "none";
+        }
+    }
+
+    // Populate and Show Edit Form
+    function showEditForm(id, code, title, units, department) {
+        document.getElementById("addSubjectSection").style.display = "none";
+
+        // Fill the textboxes with current data
+        document.getElementById("editSubjectId").value = id;
+        document.getElementById("editSubjectCode").value = code;
+        document.getElementById("editSubjectTitle").value = title;
+        document.getElementById("editSubjectUnits").value = units;
+        document.getElementById("editSubjectDepartment").value = department;
+
+        // Show the edit form
+        document.getElementById("editSubjectSection").style.display = "block";
+    }
+
+    // Hide Edit Form
+    function hideEditForm() {
+        document.getElementById("editSubjectSection").style.display = "none";
+    }
+    // Real-time Search Filter
+    function filterSubjects() {
+        // 1. Get the text the user typed and convert it to lowercase
+        var input = document.getElementById("subjectSearchInput");
+        var filter = input.value.toLowerCase();
+
+        // 2. Get the table and all of its rows (<tr>) inside the tbody
+        var table = document.querySelector(".subject-table tbody");
+        var rows = table.getElementsByTagName("tr");
+
+        // 3. Loop through all the rows
+        for (var i = 0; i < rows.length; i++) {
+            // Get all the text inside the current row
+            var rowText = rows[i].textContent || rows[i].innerText;
+
+            // 4. Check if the row's text contains the search filter
+            if (rowText.toLowerCase().indexOf(filter) > -1) {
+                // If it's a match, show the row
+                rows[i].style.display = "";
+            } else {
+                // If it doesn't match, hide the row
+                rows[i].style.display = "none";
+            }
+        }
+    }
+
+    // Fade out success message
+    window.onload = function() {
+        var alertBox = document.getElementById("success-alert");
+        if (alertBox) {
+            setTimeout(function() {
+                alertBox.style.opacity = "0";
+                setTimeout(function() {
+                    alertBox.style.display = "none";
+                }, 1000);
+            }, 3000);
+        }
+    };
+</script>
