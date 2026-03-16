@@ -1,10 +1,10 @@
-:root{
-    --sidebar:#2f4856;
-    --sidebar-accent:#3498db;
-    --sidebar-accent-2:#3b5a6a;
-    --text:#eef6fb;
-    --muted:#cfe6f5
-
+:root {
+    /* UPDATED TO THE ADMIN GREEN THEME */
+    --sidebar: #07362d; /* Dark Forest Green */
+    --sidebar-accent: #2ecc71; /* Bright Green Accent */
+    --sidebar-accent-2: #27ae60; /* Slightly darker green for hover states */
+    --text: #ffffff; /* White text */
+    --muted: #e0f2f1; /* Muted light green */
 }
 
 /* Fallback: if flex-based bottom placement is unreliable in some browsers/layouts,
@@ -21,79 +21,285 @@
         padding-right: 20px;
         background: transparent; /* keep sidebar background visible behind */
     }
-    .chairman-sidebar .logout .btn-ghost {
-        width: calc(100% - 28px);
-        margin-left: 0;
+
+        .chairman-sidebar .logout .btn-ghost {
+            width: calc(100% - 28px);
+            margin-left: 0;
+        }
+}
+
+.chairman-wrap {
+    display: flex;
+    min-height: 100vh;
+    background: #f4f7f6;
+    font-family: Segoe UI, Roboto, Arial, sans-serif;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    background: #f4f7f6;
+}
+
+/* Sidebar is a column flex container: header + nav (grows) + logout (bottom) */
+.chairman-sidebar {
+    width: 260px;
+    background: var(--sidebar); /* This now correctly pulls the dark green! */
+    color: var(--text);
+    padding: 28px 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    /* ensure the sidebar fills viewport and stays visible while scrolling */
+    position: relative;
+    height: 100vh;
+    overflow-y: auto;
+    /* keep top block at top and logout at bottom */
+    justify-content: space-between;
+}
+
+    .chairman-sidebar h2 {
+        font-size: 18px;
+        margin: 0 0 18px;
+        text-align: center;
+        font-weight: 700;
+        letter-spacing: 1px
+    }
+
+    .chairman-sidebar .divider {
+        height: 3px;
+        background: var(--sidebar-accent);
+        margin: 10px 0 22px;
+        border-radius: 2px
+    }
+
+.chairman-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 14px
+}
+
+    .chairman-nav a:last-child {
+        margin-bottom: 48px
+    }
+
+/* spacer used to push logout to bottom when flex on nav doesn't work reliably */
+.chairman-sidebar .spacer {
+    flex: 1
+}
+
+.chairman-nav a {
+    color: var(--text);
+    text-decoration: none;
+    padding: 12px 14px;
+    border-radius: 6px;
+    transition: all .18s ease;
+    font-size: 16px
+}
+
+    .chairman-nav a:hover {
+        background: var(--sidebar-accent-2);
+        transform: translateX(6px)
+    }
+
+    .chairman-nav a.active {
+        background: var(--sidebar-accent);
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+        font-weight: bold;
+    }
+
+.chairman-main {
+    flex: 1;
+    padding: 30px
+}
+
+.chairman-title {
+    font-size: 24px;
+    margin: 0 0 18px;
+    color: #243b45
+}
+
+.chairman-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 18px;
+    box-shadow: 0 6px 18px rgba(21,32,39,0.06);
+    margin-bottom: 18px
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px
+}
+
+.header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px
+}
+
+/* UPDATED BUTTONS to match the green theme */
+.btn-print {
+    background: var(--sidebar-accent);
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+    .btn-print:hover {
+        background: var(--sidebar-accent-2);
+    }
+
+.btn-primary {
+    background: var(--sidebar-accent);
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+    .btn-primary:hover {
+        background: var(--sidebar-accent-2);
+    }
+
+.form-group {
+    margin-bottom: 15px
+}
+
+label {
+    display: block;
+    font-weight: 600;
+    color: #243b45;
+    margin-bottom: 6px
+}
+
+input[type="text"], select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px
+}
+
+.btn-ghost {
+    background: #fff;
+    border: 2px solid var(--sidebar);
+    padding: 8px 12px;
+    border-radius: 6px;
+    color: var(--sidebar);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.table-light {
+    width: 100%;
+    border-collapse: collapse
+}
+
+    .table-light th, .table-light td {
+        padding: 12px;
+        border-bottom: 1px solid #f1f3f4;
+        text-align: left
+    }
+
+@media (max-width:900px) {
+    .chairman-wrap {
+        flex-direction: column
+    }
+
+    .chairman-sidebar {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        overflow-x: auto
+    }
+
+    .chairman-nav {
+        flex-direction: row;
+        gap: 8px
     }
 }
 
-.chairman-wrap{
-    display:flex;
-    min-height:100vh;
-    background:#f4f7f6;
-    font-family:Segoe UI, Roboto, Arial, sans-serif;
-}
-
-html, body { height: 100%; margin: 0; background: #f4f7f6; }
-
-/* Sidebar is a column flex container: header + nav (grows) + logout (bottom) */
-.chairman-sidebar{
-    width:260px;
-    background:var(--sidebar);
-    color:var(--text);
-    padding:28px 20px;
-    box-sizing:border-box;
-    display:flex;
-    flex-direction:column;
-    /* ensure the sidebar fills viewport and stays visible while scrolling */
-    position:relative;
-    height:100vh;
-    overflow-y:auto;
-    /* keep top block at top and logout at bottom */
-    justify-content:space-between;
-}
-.chairman-sidebar h2{font-size:18px;margin:0 0 18px;text-align:center;font-weight:700;letter-spacing:1px}
-.chairman-sidebar .divider{height:3px;background:var(--sidebar-accent);margin:10px 0 22px;border-radius:2px}
-.chairman-nav{display:flex;flex-direction:column;gap:14px}
-.chairman-nav a:last-child{margin-bottom:48px}
-/* spacer used to push logout to bottom when flex on nav doesn't work reliably */
-.chairman-sidebar .spacer{flex:1}
-.chairman-nav a{color:var(--text);text-decoration:none;padding:12px 14px;border-radius:6px;transition:all .18s ease;font-size:16px}
-.chairman-nav a:hover{background:var(--sidebar-accent-2);transform:translateX(6px)}
-.chairman-nav a.active{background:rgba(255,255,255,0.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,0.02);}
-.chairman-main{flex:1;padding:30px}
-.chairman-title{font-size:24px;margin:0 0 18px;color:#243b45}
-.chairman-card{background:#fff;border-radius:8px;padding:18px;box-shadow:0 6px 18px rgba(21,32,39,0.06);margin-bottom:18px}
-
-.card-grid{display:grid;grid-template-columns:2fr 1fr;gap:20px}
-.header-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px}
-.btn-print{background:#fff;border:2px solid var(--sidebar);padding:8px 12px;border-radius:6px;color:var(--sidebar);cursor:pointer}
-.form-group{margin-bottom:15px}
-label{display:block;font-weight:600;color:#243b45;margin-bottom:6px}
-input[type="text"],select{padding:8px;border:1px solid #ddd;border-radius:4px}
-
-.btn-ghost{background:#fff;border:2px solid var(--sidebar);padding:8px 12px;border-radius:6px;color:var(--sidebar);cursor:pointer}
-.table-light{width:100%;border-collapse:collapse}
-.table-light th,.table-light td{padding:12px;border-bottom:1px solid #f1f3f4;text-align:left}
-
-@media (max-width:900px){.chairman-wrap{flex-direction:column}.chairman-sidebar{width:100%;display:flex;flex-direction:row;align-items:center;gap:12px;overflow-x:auto}.chairman-nav{flex-direction:row;gap:8px}}
-
-
 /* Use flex layout to push the logout area to the bottom reliably */
-.chairman-sidebar .logout{position:absolute;left:20px;right:20px;bottom:24px;border-top:1px solid rgba(255,255,255,0.06);padding-top:12px;padding-bottom:0}
-.chairman-sidebar .logout .btn-ghost{display:block;width:100%;padding:10px 12px;border-radius:8px;background:#fff;color:var(--sidebar);border:1px solid rgba(0,0,0,0.06);text-decoration:none;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,0.04)}
+.chairman-sidebar .logout {
+    position: absolute;
+    left: 20px;
+    right: 20px;
+    bottom: 24px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding-top: 12px;
+    padding-bottom: 0
+}
+
+    .chairman-sidebar .logout .btn-ghost {
+        display: block;
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: #fff;
+        color: var(--sidebar);
+        border: 1px solid rgba(0,0,0,0.06);
+        text-decoration: none;
+        text-align: center;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.04)
+    }
 
 /* On small screens the sidebar becomes horizontal; make logout flow normally */
-@media (max-width:900px){
-    /* On small screens the sidebar becomes horizontal; logout should flow normally */
-    .chairman-sidebar{min-height:auto;position:static;height:auto;overflow:visible}
-    .chairman-nav{flex:0}
-    .chairman-sidebar .logout{position:static;margin-top:8px;padding-top:8px;padding-bottom:8px}
-    .chairman-sidebar .logout .btn-ghost{width:auto}
+@media (max-width:900px) {
+    .chairman-sidebar {
+        min-height: auto;
+        position: static;
+        height: auto;
+        overflow: visible
+    }
+
+    .chairman-nav {
+        flex: 0
+    }
+
+    .chairman-sidebar .logout {
+        position: static;
+        margin-top: 8px;
+        padding-top: 8px;
+        padding-bottom: 8px
+    }
+
+        .chairman-sidebar .logout .btn-ghost {
+            width: auto
+        }
 }
 
-/* Strong override: prefer flex-flow bottom placement and extra padding so logout has space.
-   This will override previous absolute/fixed fallbacks. */
-.chairman-sidebar{padding-bottom:120px}
-.chairman-sidebar .logout{position:static !important;margin-top:auto !important;border-top:1px solid rgba(255,255,255,0.06);padding-top:12px;padding-bottom:12px}
-.chairman-sidebar .logout .btn-ghost{width:100%}
+/* Strong override: prefer flex-flow bottom placement and extra padding so logout has space. */
+.chairman-sidebar {
+    padding-bottom: 120px
+}
+
+    .chairman-sidebar .logout {
+        position: static !important;
+        margin-top: auto !important;
+        border-top: 1px solid rgba(255,255,255,0.06);
+        padding-top: 12px;
+        padding-bottom: 12px
+    }
+
+        .chairman-sidebar .logout .btn-ghost {
+            width: 100%
+        }
+/* Styling for the Dashboard Summary Boxes */
+.summary-widget {
+    background: #fff;
+    border: 1px solid #d1d5db; /* This adds a visible gray line around the whole box */
+    border-left: 5px solid var(--sidebar-accent); /* This adds a nice thick green line on the left side! */
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.08); /* Makes the shadow slightly darker */
+}
