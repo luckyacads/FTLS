@@ -1,0 +1,32 @@
+:root{
+    --bg: #fbfbfb;
+    --card: #ffffff;
+    --accent: #095b4a;
+}
+
+body{
+    font-family:'Segoe UI', 
+    sans-serif; 
+    margin:0; 
+    background:var(--bg)}
+
+.teacher-container{display:flex; height:100vh}
+
+.sidebar{width:260px; background:#0b3d33; color:white; padding:25px}
+.sidebar h2{margin-bottom:40px}
+.sidebar nav a{display:block; color:rgba(255,255,255,0.9); text-decoration:none; padding:12px; margin-bottom:10px; border-radius:5px}
+.sidebar nav a.active, .sidebar nav a:hover{background: #36c983}
+
+.main-content{flex:1; padding:40px; overflow-y:auto}
+
+.card{background:var(--card); padding:20px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.05)}
+
+.profile-row{display:flex; align-items:center; gap:15px}
+.avatar{width:64px; height:64px; border-radius:50%; background:#36c983; color:white; display:flex; align-items:center; justify-content:center; font-weight:bold}
+.name{font-weight:bold; margin:0}
+.role{color:#666; margin:0}
+
+.form-group{display:flex; flex-direction:column; gap:6px}
+.form-group input{padding:8px; border-radius:6px; border:1px solid #ddd}
+
+.btn-primary{background:#36c983; color:white; padding:8px 12px; border-radius:6px; border:none}
