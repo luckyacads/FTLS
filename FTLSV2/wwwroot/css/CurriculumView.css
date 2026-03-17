@@ -1,0 +1,25 @@
+:root{
+    --bg: #f8faf8;
+    --card: #ffffff;
+    --accent: #1f7a5a;
+    --muted: #6b6b6b;
+}
+
+body{font-family: 'Segoe UI', sans-serif; margin:0; background:var(--bg);} 
+
+.teacher-container{display:flex; height:100vh}
+
+.sidebar{width:260px; background:#0b3d33; color:white; padding:25px}
+.sidebar h2{margin-bottom:40px}
+.sidebar nav a{display:block; color:rgba(255,255,255,0.9); text-decoration:none; padding:12px; margin-bottom:10px; border-radius:5px}
+.sidebar nav a.active, .sidebar nav a:hover{background: #36c983}
+
+.main-content{flex:1; padding:40px; overflow-y:auto}
+
+.card{background:var(--card); padding:20px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.05)}
+
+.curriculum-table{width:100%; border-collapse:collapse; margin-top:15px}
+.curriculum-table th, .curriculum-table td{padding:12px; text-align:left; border-bottom:1px solid #eee}
+
+.filter-group{display:flex; flex-direction:column; gap:10px}
+.filter-group select{padding:8px; border-radius:6px; border:1px solid #ddd}

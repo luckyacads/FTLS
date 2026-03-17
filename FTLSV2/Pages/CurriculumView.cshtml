@@ -1,0 +1,84 @@
+@page
+@model FTLSV2.Pages.CurriculumViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curriculum View - FTLS</title>
+    <link rel="stylesheet" href="../CSS/CurriculumView.css">
+</head>
+<body>
+
+    <div class="teacher-container">
+        <aside class="sidebar">
+            <h2>Teacher Portal</h2>
+            <nav>
+                <a href="/TeacherPage">My Schedule</a>
+                <a href="/CurriculumView" class="active">Curriculum View</a>
+                <a href="/AccountSettings">Account Settings</a>
+                <a href="/LoginPage" class="logout">Logout</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <h1>Curriculum Overview</h1>
+            </header>
+
+            <div class="teacher-grid">
+                <section class="card full-width">
+                    <h3>Curriculum Subjects</h3>
+                    <table class="curriculum-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Subject</th>
+                                <th>Units</th>
+                                <th>Prerequisite</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>B104</td>
+                                <td>Intro to Programming</td>
+                                <td>3</td>
+                                <td>None</td>
+                            </tr>
+                            <tr>
+                                <td>M101</td>
+                                <td>Calculus I</td>
+                                <td>4</td>
+                                <td>None</td>
+                            </tr>
+                            <tr>
+                                <td>CS210</td>
+                                <td>Data Structures</td>
+                                <td>3</td>
+                                <td>B104</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section class="card">
+                    <h3>Filter</h3>
+                    <div class="filter-group">
+                        <label>Year / Semester</label>
+                        <select>
+                            <option>1st Year - 1st Sem</option>
+                            <option>1st Year - 2nd Sem</option>
+                            <option>2nd Year - 1st Sem</option>
+                        </select>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+</body>
+</html>
