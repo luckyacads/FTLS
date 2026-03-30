@@ -1,10 +1,21 @@
+using FTLSV2.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 
 namespace FTLSV2.Pages
 {
     public class LoginPageModel : PageModel
     {
+        // --- ADD THESE LINES HERE ---
+        private readonly FtlsDbContext _context;
+
+        public LoginPageModel(FtlsDbContext context)
+        {
+            _context = context;
+        }
+        // ----------------------------
+
         [BindProperty]
         public string Username { get; set; }
 
@@ -19,35 +30,41 @@ namespace FTLSV2.Pages
 
         public IActionResult OnPost()
         {
-            // 1. Check if the ID is at least 8 characters long
             if (string.IsNullOrEmpty(Username) || Username.Length < 8)
             {
                 ErrorMessage = "Faculty ID must be at least 8 characters long.";
                 return Page();
             }
-        
-            // 1. ADMIN LOGIN -> Goes to AdminPage
-            if (Username == "12345678" && Password == "admin1234")
-            {
-                return RedirectToPage("/AdminPage");
-            }
 
-            // 2. TEACHER LOGIN -> Goes to TeacherPage
-            // (I made up this ID for Engr. Harley, you can change it)
-            else if (Username == "87654321" && Password == "teacher123")
-            {
-                return RedirectToPage("/TeacherPage");
-            }
+            // 1. Ask NeonDB: "Is there a user with this exact ID and Password?"
+            var dbUser = _context.Users.FirstOrDefault(u =>
+                u.FacultyId == Username &&
+                u.Password == Password);
 
-            // 3. CHAIRMAN LOGIN -> Goes to HomePage
-            else if (Username == "11112222" && Password == "chair1234")
+            // 2. If we found a match, check their role and send them to the right page!
+            if (dbUser != null)
             {
-                return RedirectToPage("/Chairman/ChairmanPage");
+                if (dbUser.Role == "Admin")
+                {
+                    return RedirectToPage("/AdminPage");
+                }
+                else if (dbUser.Role == "Teacher")
+                {
+                    return RedirectToPage("/TeacherPage");
+                }
+                else if (dbUser.Role == "Chairman")
+                {
+                    return RedirectToPage("/Chairman/ChairmanPage");
+                }
+                else
+                {
+                    // Fallback just in case they don't have a role assigned
+                    return RedirectToPage("/Index");
+                }
             }
-
-            // 4. INVALID LOGIN
             else
             {
+                // If NeonDB returns null, they typed the wrong ID or password
                 ErrorMessage = "Invalid Faculty ID or Password.";
                 return Page();
             }
