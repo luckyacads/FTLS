@@ -34,24 +34,34 @@
                 <section class="card full-width">
                     <h3>Profile</h3>
                     <div class="profile-row">
-                        <div class="avatar">E</div>
+                        <div class="avatar">@(Model.LoggedInUser.FirstName.Substring(0, 1))</div>
                         <div>
-                            <p class="name">Engr. Harley</p>
-                            <p class="role">Faculty</p>
+                            <p class="name">@Model.LoggedInUser.FirstName @Model.LoggedInUser.LastName</p>
+                            <p class="role">@Model.LoggedInUser.Role</p>
                         </div>
                     </div>
                 </section>
 
                 <section class="card">
                     <h3>Change Password</h3>
+
+                    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                    {
+                        <div style="background: #f8d7da; color: #721c24; padding: 10px; margin-bottom: 15px; border-radius: 4px;">@Model.ErrorMessage</div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+                    {
+                        <div style="background: #d4edda; color: #155724; padding: 10px; margin-bottom: 15px; border-radius: 4px;">@Model.SuccessMessage</div>
+                    }
+
                     <form method="post" asp-page-handler="ChangePassword">
                         <div class="form-group">
                             <label>Current Password</label>
-                            <input type="password" name="currentPassword" required />
+                            <input type="password" asp-for="CurrentPassword" required />
                         </div>
                         <div class="form-group">
                             <label>New Password</label>
-                            <input type="password" name="newPassword" required />
+                            <input type="password" asp-for="NewPassword" required />
                         </div>
                         <div style="margin-top:10px;">
                             <button type="submit" class="btn-primary">Update Password</button>

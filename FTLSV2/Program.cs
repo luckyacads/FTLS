@@ -13,6 +13,7 @@ builder.Services.AddRazorPages(options =>
     // This tells the app: "When the website starts (root URL), show LoginPage"
     options.Conventions.AddPageRoute("/LoginPage", "");
 });
+builder.Services.AddSession();
 
 var app = builder.Build();
 
@@ -55,7 +56,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
+app.UseSession();
 app.UseAuthorization();
 
 app.MapRazorPages();

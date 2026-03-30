@@ -13,20 +13,44 @@
 <div id="addUserSection" class="card full-width" style="display: none; margin-bottom: 20px; border-left: 5px solid #07362d;">
     <h3>Create New Account</h3>
     <form method="post" asp-page-handler="AddUser">
-        <div style="display: flex; gap: 15px;">
+
+        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
             <div class="form-group" style="flex: 1;">
-                <label>Name</label>
-                <input type="text" asp-for="NewUserName" placeholder="e.g., Engr. Charle" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                <label>First Name</label>
+                <input type="text" asp-for="InputFirstName" placeholder="e.g., Charle" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>Last Name</label>
+                <input type="text" asp-for="InputLastName" placeholder="e.g., Darwin" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+            <div class="form-group" style="flex: 1;">
+                <label>Faculty ID (8 Digits)</label>
+                <input type="text" asp-for="InputFacultyId" placeholder="e.g., 87654321" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>Email Address</label>
+                <input type="email" asp-for="InputEmail" placeholder="e.g., cdarwin@usjr.edu.ph" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+            <div class="form-group" style="flex: 1;">
+                <label>Temporary Password</label>
+                <input type="text" asp-for="InputPassword" placeholder="Assign a password" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
             </div>
             <div class="form-group" style="flex: 1;">
                 <label>Role</label>
-                <select asp-for="NewUserRole" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
-                    <option value="Faculty">Faculty</option>
+                <select asp-for="InputRole" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                    <option value="Teacher">Teacher</option>
                     <option value="Chairman">Chairman</option>
                     <option value="Admin">Admin</option>
                 </select>
             </div>
         </div>
+
         <div style="margin-top: 15px;">
             <button type="submit" class="btn-primary">Save User</button>
             <button type="button" class="btn-ghost" onclick="toggleAddUserForm()" style="margin-left: 10px; padding: 10px; border: none; background: #eee; cursor: pointer;">Cancel</button>
@@ -40,48 +64,61 @@
         <table class="admin-table">
             <thead>
                 <tr>
+                    <th>Faculty ID</th>
                     <th>Name</th>
+                    <th>Email</th>
                     <th>Role</th>
-                    <th>Status</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var user in AdminPageModel.Users)
+                @foreach (var user in Model.DbUsers)
                 {
                     <tr>
-                        <td>@user.Name</td>
+                        <td>@user.FacultyId</td>
+                        <td>@user.FirstName @user.LastName</td>
+                        <td>@user.Email</td>
                         <td>@user.Role</td>
+
                         <td>
-                            @if (user.Status == "Active")
+                            @if (user.Status == "Active" || string.IsNullOrEmpty(user.Status))
                             {
-                                <span class="status-active">Active</span>
+                                <span style="color: #2ecc71; font-weight: bold;">Active</span>
                             }
                             else
                             {
-                                <span class="status-inactive">Inactive</span>
+                                <span style="color: #e74c3c; font-weight: bold;">Inactive</span>
                             }
                         </td>
+
                         <td>
                             <div class="button-group" style="display: flex; gap: 5px;">
 
                                 <form method="post" asp-page-handler="ToggleUserStatus" style="margin: 0;">
-                                    <input type="hidden" name="userName" value="@user.Name" />
-
-                                    @if (user.Status == "Active")
+                                    <input type="hidden" name="facultyId" value="@user.FacultyId" />
+                                    @if (user.Status == "Active" || string.IsNullOrEmpty(user.Status))
                                     {
-                                        <button type="submit" class="btn-toggle">Deactivate</button>
+                                        <button type="submit" style="background-color: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Deactivate</button>
                                     }
                                     else
                                     {
-                                        <button type="submit" class="btn-toggle active">Activate</button>
+                                        <button type="submit" style="background-color: #2ecc71; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Activate</button>
                                     }
                                 </form>
 
-                                <button class="btn-reset">Reset PW</button>
+                                <form method="post" asp-page-handler="ResetPassword" style="margin: 0;" onsubmit="return confirm('Are you sure you want to reset this password to usjr1234?');">
+                                    <input type="hidden" name="facultyId" value="@user.FacultyId" />
+                                    <button type="submit" style="background-color: #f39c12; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Reset PW</button>
+                                </form>
+
+                                <form method="post" asp-page-handler="DeleteUser" style="margin: 0;" onsubmit="return confirm('WARNING: Are you sure you want to PERMANENTLY delete this account? This cannot be undone.');">
+                                    <input type="hidden" name="facultyId" value="@user.FacultyId" />
+                                    <button type="submit" style="background-color: #34495e; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Delete</button>
+                                </form>
 
                             </div>
                         </td>
+                     
                     </tr>
                 }
             </tbody>
