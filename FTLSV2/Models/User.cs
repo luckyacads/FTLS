@@ -29,6 +29,9 @@ namespace FTLSV2.Models
         [Column("last_name")]
         public string LastName { get; set; }
 
+        [Column("status")]
+        public string Status { get; set; }
+
         [Column("created_at")]
         public DateTime CreatedAt { get; set; }
     }

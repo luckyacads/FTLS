@@ -1,102 +1,159 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using FTLSV2.Data;
+using FTLSV2.Models;
 using System.Collections.Generic;
+using System.Linq;
+using System;
 
 namespace FTLSV2.Pages
 {
     public class AdminPageModel : PageModel
     {
-        // --- USER MANAGEMENT DATA ---
-        public static List<UserModel> Users { get; set; } = new List<UserModel>
+        // 1. Database Connection
+        private readonly FtlsDbContext _context;
+
+        public AdminPageModel(FtlsDbContext context)
         {
-            new UserModel { Name = "Engr. Harley", Role = "Faculty", Status = "Active" },
-            new UserModel { Name = "Engr. Lucky", Role = "Faculty", Status = "Inactive" }
-        };
+            _context = context;
+        }
+
+        // 2. List to hold real users from the database
+        public IList<User> DbUsers { get; set; }
+
+        // --- BIND PROPERTIES FOR NEW USER FORM ---
+        [BindProperty]
+        public string InputFirstName { get; set; }
 
         [BindProperty]
-        public string NewUserName { get; set; }
+        public string InputLastName { get; set; }
 
         [BindProperty]
-        public string NewUserRole { get; set; }
+        public string InputFacultyId { get; set; }
 
-        // --- LOAD CONSTRAINT DATA ---
-        // 1. Static variables to store the actual rules
+        [BindProperty]
+        public string InputEmail { get; set; }
+
+        [BindProperty]
+        public string InputPassword { get; set; }
+
+        [BindProperty]
+        public string InputRole { get; set; }
+
+        // --- LOAD CONSTRAINT DATA (Keeping your existing logic) ---
         public static int CurrentRegularLoad { get; set; } = 15;
         public static int CurrentMaxOverload { get; set; } = 21;
 
-        // 2. Bindable properties to catch the numbers typed into the form
         [BindProperty]
         public int InputRegularLoad { get; set; }
 
         [BindProperty]
         public int InputMaxOverload { get; set; }
 
+        // --- GET METHOD ---
         public void OnGet()
         {
-            // When the page loads, fill the input boxes with the current saved rules
+            // Fetch all users from the real database to display in the table
+            DbUsers = _context.Users.ToList();
+
             InputRegularLoad = CurrentRegularLoad;
             InputMaxOverload = CurrentMaxOverload;
         }
 
         // --- POST METHODS ---
-
         public IActionResult OnPostAddUser()
         {
-            if (!string.IsNullOrEmpty(NewUserName) && !string.IsNullOrEmpty(NewUserRole))
+            // 1. Create a new User object matching your NeonDB table
+            var newUser = new User
             {
-                Users.Add(new UserModel
-                {
-                    Name = NewUserName,
-                    Role = NewUserRole,
-                    Status = "Active"
-                });
-            }
+                FacultyId = InputFacultyId,
+                FirstName = InputFirstName,
+                LastName = InputLastName,
+                Email = InputEmail,
+                Password = InputPassword,
+                Role = InputRole,
+                Status = "Active",  
+                CreatedAt = DateTime.UtcNow
+            };
+
+            // 2. Save to the real database!
+            _context.Users.Add(newUser);
+            _context.SaveChanges();
+
+            TempData["SuccessMessage"] = $"Account for {InputFirstName} {InputLastName} created successfully!";
             return RedirectToPage();
         }
 
-        // 3. This method runs when the "Update Rules" button is clicked
         public IActionResult OnPostUpdateRules()
         {
-            // Save the new numbers typed by the user into our "database" variables
             CurrentRegularLoad = InputRegularLoad;
             CurrentMaxOverload = InputMaxOverload;
-
-            // Send a success message to the frontend using TempData
             TempData["SuccessMessage"] = "Load constraint rules successfully updated!";
-
             return RedirectToPage();
         }
 
-        // 4. This method runs when the "Activate" or "Deactivate" button is clicked
-        public IActionResult OnPostToggleUserStatus(string userName)
+        // Note: I temporarily disabled the toggle status logic because your NeonDB 
+        // doesn't have a 'Status' column yet! We can add that next.
+        // 1. Method to Activate/Deactivate a user
+        public IActionResult OnPostToggleUserStatus(string facultyId)
         {
-            // Find the specific user in our list based on the name passed from HTML
-            var userToUpdate = Users.Find(u => u.Name == userName);
+            // Find the exact user in the database
+            var dbUser = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
 
-            if (userToUpdate != null)
+            if (dbUser != null)
             {
-                // Flip the status
-                if (userToUpdate.Status == "Active")
+                // Flip their status
+                if (dbUser.Status == "Active" || string.IsNullOrEmpty(dbUser.Status))
                 {
-                    userToUpdate.Status = "Inactive";
+                    dbUser.Status = "Inactive";
                 }
                 else
                 {
-                    userToUpdate.Status = "Active";
+                    dbUser.Status = "Active";
                 }
 
-                // Show a quick success message
-                TempData["SuccessMessage"] = $"{userToUpdate.Name} is now {userToUpdate.Status}.";
+                // Save the change to NeonDB
+                _context.SaveChanges();
+                TempData["SuccessMessage"] = $"{dbUser.FirstName}'s account is now {dbUser.Status}!";
             }
 
             return RedirectToPage();
         }
-    }
 
-    public class UserModel
-    {
-        public string Name { get; set; }
-        public string Role { get; set; }
-        public string Status { get; set; }
+        // 2. Method to Reset a user's password to a default
+        public IActionResult OnPostResetPassword(string facultyId)
+        {
+            var dbUser = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
+
+            if (dbUser != null)
+            {
+                // Set a default temporary password
+                dbUser.Password = "usjr1234";
+
+                _context.SaveChanges();
+                TempData["SuccessMessage"] = $"Password for {dbUser.FirstName} has been reset to 'usjr1234'.";
+            }
+
+            return RedirectToPage();
+        }
+        // 3. Method to PERMANENTLY Delete a user
+        public IActionResult OnPostDeleteUser(string facultyId)
+        {
+            // Find the exact user in the database
+            var dbUser = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
+
+            if (dbUser != null)
+            {
+                // Remove them entirely from the database
+                _context.Users.Remove(dbUser);
+
+                // Save the changes to NeonDB
+                _context.SaveChanges();
+
+                TempData["SuccessMessage"] = $"Account for {dbUser.FirstName} {dbUser.LastName} has been permanently deleted.";
+            }
+
+            return RedirectToPage();
+        }
     }
 }

@@ -41,33 +41,40 @@ namespace FTLSV2.Pages
                 u.FacultyId == Username &&
                 u.Password == Password);
 
-            // 2. If we found a match, check their role and send them to the right page!
+            // 2. If we found a match, check their status!
             if (dbUser != null)
             {
+                // --- THIS IS THE NEW SECURITY BLOCK ---
+                if (dbUser.Status == "Inactive")
+                {
+                    ErrorMessage = "This account has been deactivated. Please contact the Administrator.";
+                    return Page();
+                }
+                // --------------------------------------
+                HttpContext.Session.SetString("ActiveUser", dbUser.FacultyId);
+
+                // 3. If they are Active, route them normally
                 if (dbUser.Role == "Admin")
                 {
                     return RedirectToPage("/AdminPage");
-                }
-                else if (dbUser.Role == "Teacher")
-                {
-                    return RedirectToPage("/TeacherPage");
                 }
                 else if (dbUser.Role == "Chairman")
                 {
                     return RedirectToPage("/Chairman/ChairmanPage");
                 }
-                else
+                else if (dbUser.Role == "Teacher" || dbUser.Role == "Faculty")
                 {
-                    // Fallback just in case they don't have a role assigned
-                    return RedirectToPage("/Index");
+                    return RedirectToPage("/TeacherPage");
                 }
             }
             else
             {
-                // If NeonDB returns null, they typed the wrong ID or password
+                // If dbUser is null, they typed the wrong ID or Password
                 ErrorMessage = "Invalid Faculty ID or Password.";
                 return Page();
             }
+
+            return Page();
         }
     }
 }
