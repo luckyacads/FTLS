@@ -76,5 +76,14 @@ namespace FTLSV2.Pages
 
             return Page();
         }
+        // This runs when someone clicks the Logout button
+        public IActionResult OnGetLogout()
+        {
+            // 1. Wipe the memory!
+            HttpContext.Session.Clear();
+
+            // 2. Send them back to a fresh login screen
+            return RedirectToPage("/LoginPage");
+        }
     }
 }
