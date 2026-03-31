@@ -1,27 +1,40 @@
-@inherits Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - FTLSV2 (Chairman)</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    @RenderSection("Styles", required: false)
+    <title>@ViewData["Title"] - Chairman Portal</title>
+
+    <link rel="stylesheet" href="~/CSS/TeacherPage.css" />
+    <link rel="stylesheet" href="~/css/chairman.css" />
+
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
-    @* Chairman layout renders a shared sidebar and places page content into the main area *@
-    <div class="chairman-wrap">
-        @await Html.PartialAsync("_ChairmanSidebar")
 
-        <main class="chairman-main">
+    <div class="teacher-container">
+
+        <aside class="sidebar">
+            <h2>CHAIRMAN PORTAL</h2>
+            <nav>
+                <a href="/ChairmanPage">Dashboard Overview</a>
+                <a href="/Chairman/FacultyProfiles">Faculty Profiles</a>
+                <a href="/Chairman/CourseCatalog">Course Catalog</a>
+                <a href="/Chairman/ManageAssignments">Manage Assignments</a>
+                <a href="/Chairman/RoomUtilization">Room Utilization</a>
+                <a href="/Chairman/DepartmentReports">Department Reports</a>
+
+                <a href="/LoginPage?handler=Logout" class="logout" style="margin-top: auto;">Logout</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+
             @RenderBody()
+
         </main>
     </div>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @RenderSection("Scripts", required: false)
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
