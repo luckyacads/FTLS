@@ -52,8 +52,19 @@ namespace FTLSV2.Pages
                 // If you need to set a specific RoomId, ensure it does not conflict with the DB sequence
                 _db.Rooms.Add(room);
                 _db.SaveChanges();
-
                 TempData["SuccessMessage"] = "Room successfully added!";
+                try
+                {
+                    AuditLogsModel.Logs.Insert(0, new LogEntry
+                    {
+                        Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm"),
+                        Username = "Admin",
+                        Action = $"Created room: {NewRoomName}"
+                    });
+                }
+                catch
+                {
+                }
             }
             return RedirectToPage();
         }
@@ -67,6 +78,16 @@ namespace FTLSV2.Pages
                     _db.Rooms.Remove(room);
                     _db.SaveChanges();
                     TempData["SuccessMessage"] = "Room successfully deleted!";
+                    try
+                    {
+                        AuditLogsModel.Logs.Insert(0, new LogEntry
+                        {
+                            Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm"),
+                            Username = "Admin",
+                            Action = $"Deleted room: {room.Name}"
+                        });
+                    }
+                    catch { }
                 }
             return RedirectToPage();
         }
@@ -83,6 +104,20 @@ namespace FTLSV2.Pages
                     room.Availability = EditRoomAvailability;
                     _db.SaveChanges();
                     TempData["SuccessMessage"] = "Room successfully updated!";
+                // Log the update
+                try
+                {
+                    AuditLogsModel.Logs.Insert(0, new LogEntry
+                    {
+                        Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm"),
+                        Username = "Admin",
+                        Action = $"Updated room: {room.Name}"
+                    });
+                }
+                catch
+                {
+                    // ignore if audit log model is not present
+                }
                 }
 
             return RedirectToPage();

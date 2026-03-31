@@ -59,8 +59,7 @@ namespace FTLSV2.Pages
                     {
                         Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm"),
                         Username = "Admin",
-                        Action = $"Created subject: {NewSubjectCode}",
-                        IPAddress = "127.0.0.1"
+                        Action = $"Created subject: {NewSubjectCode}"
                     });
                 }
                 catch
@@ -86,6 +85,20 @@ namespace FTLSV2.Pages
 
                 _db.SaveChanges();
                 TempData["SuccessMessage"] = "Subject successfully updated!";
+                // Log the update
+                try
+                {
+                    AuditLogsModel.Logs.Insert(0, new LogEntry
+                    {
+                        Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm"),
+                        Username = "Admin",
+                        Action = $"Updated subject: {EditSubjectCode}"
+                    });
+                }
+                catch
+                {
+                    // ignore if audit log model is not present
+                }
             }
             return RedirectToPage();
         }
@@ -99,6 +112,20 @@ namespace FTLSV2.Pages
                 _db.Subjects.Remove(subject);
                 _db.SaveChanges();
                 TempData["SuccessMessage"] = "Subject successfully deleted!";
+                // Log the deletion
+                try
+                {
+                    AuditLogsModel.Logs.Insert(0, new LogEntry
+                    {
+                        Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm"),
+                        Username = "Admin",
+                        Action = $"Deleted subject: {subject.Code}"
+                    });
+                }
+                catch
+                {
+                    // ignore if audit log model is not present
+                }
             }
             return RedirectToPage();
         }
