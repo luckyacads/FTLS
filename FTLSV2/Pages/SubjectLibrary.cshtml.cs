@@ -8,12 +8,15 @@ namespace FTLSV2.Pages
 {
     public class SubjectLibraryModel : PageModel
     {
-        // 1. Temporary list to store our subjects
-        public static List<SubjectModel> Subjects { get; set; } = new List<SubjectModel>
+        private readonly Data.FtlsDbContext _db;
+
+        public SubjectLibraryModel(Data.FtlsDbContext db)
         {
-            new SubjectModel { Id = Guid.NewGuid().ToString(), Code = "CS101", Title = "Introduction to Programming", Units = 3, Department = "Computer Science" },
-            new SubjectModel { Id = Guid.NewGuid().ToString(), Code = "MATH201", Title = "Calculus II", Units = 4, Department = "Mathematics" }
-        };
+            _db = db;
+        }
+
+        // Subjects loaded from the database
+        public List<Models.Subject> Subjects { get; set; } = new List<Models.Subject>();
 
         // --- PROPERTIES FOR ADDING A SUBJECT ---
         [BindProperty] public string NewSubjectCode { get; set; }
@@ -22,7 +25,7 @@ namespace FTLSV2.Pages
         [BindProperty] public string NewSubjectDepartment { get; set; }
 
         // --- PROPERTIES FOR EDITING A SUBJECT ---
-        [BindProperty] public string EditSubjectId { get; set; }
+        [BindProperty] public int EditSubjectId { get; set; }
         [BindProperty] public string EditSubjectCode { get; set; }
         [BindProperty] public string EditSubjectTitle { get; set; }
         [BindProperty] public int EditSubjectUnits { get; set; }
@@ -30,6 +33,7 @@ namespace FTLSV2.Pages
 
         public void OnGet()
         {
+            Subjects = _db.Subjects.OrderBy(s => s.Title).ToList();
         }
 
         // 2. Add Subject Method
@@ -37,24 +41,32 @@ namespace FTLSV2.Pages
         {
             if (!string.IsNullOrEmpty(NewSubjectCode) && !string.IsNullOrEmpty(NewSubjectTitle))
             {
-                // 1. Add the subject to the Subject list
-                Subjects.Add(new SubjectModel
+                var subject = new Models.Subject
                 {
-                    Id = Guid.NewGuid().ToString(),
                     Code = NewSubjectCode,
                     Title = NewSubjectTitle,
                     Units = NewSubjectUnits,
                     Department = NewSubjectDepartment
-                });
+                };
 
-                // 2. NEW: Send a record to the Audit Logs!
-                AuditLogsModel.Logs.Insert(0, new LogEntry
+                _db.Subjects.Add(subject);
+                _db.SaveChanges();
+
+                // 2. NEW: Send a record to the Audit Logs if available
+                try
                 {
-                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm"),
-                    Username = "Admin",
-                    Action = $"Created subject: {NewSubjectCode}",
-                    IPAddress = "127.0.0.1"
-                });
+                    AuditLogsModel.Logs.Insert(0, new LogEntry
+                    {
+                        Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm"),
+                        Username = "Admin",
+                        Action = $"Created subject: {NewSubjectCode}",
+                        IPAddress = "127.0.0.1"
+                    });
+                }
+                catch
+                {
+                    // ignore if audit log model is not present
+                }
 
                 TempData["SuccessMessage"] = "Subject successfully added!";
             }
@@ -64,7 +76,7 @@ namespace FTLSV2.Pages
         // 3. Edit Subject Method
         public IActionResult OnPostEditSubject()
         {
-            var subjectToEdit = Subjects.FirstOrDefault(s => s.Id == EditSubjectId);
+            var subjectToEdit = _db.Subjects.FirstOrDefault(s => s.SubjectId == EditSubjectId);
             if (subjectToEdit != null)
             {
                 subjectToEdit.Code = EditSubjectCode;
@@ -72,19 +84,25 @@ namespace FTLSV2.Pages
                 subjectToEdit.Units = EditSubjectUnits;
                 subjectToEdit.Department = EditSubjectDepartment;
 
+                _db.SaveChanges();
                 TempData["SuccessMessage"] = "Subject successfully updated!";
+            }
+            return RedirectToPage();
+        }
+
+        // 4. Delete Subject Method
+        public IActionResult OnPostDeleteSubject(int subjectId)
+        {
+            var subject = _db.Subjects.FirstOrDefault(s => s.SubjectId == subjectId);
+            if (subject != null)
+            {
+                _db.Subjects.Remove(subject);
+                _db.SaveChanges();
+                TempData["SuccessMessage"] = "Subject successfully deleted!";
             }
             return RedirectToPage();
         }
     }
 
-    // Class defining what a Subject looks like
-    public class SubjectModel
-    {
-        public string Id { get; set; }
-        public string Code { get; set; }
-        public string Title { get; set; }
-        public int Units { get; set; }
-        public string Department { get; set; }
-    }
+    // Note: use Models.Subject for the EF-backed subject entity
 }

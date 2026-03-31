@@ -15,6 +15,9 @@ namespace FTLSV2.Data
         // Rooms table mapped to the room_registry table in NeonDB
         public DbSet<Room> Rooms { get; set; }
 
+        // Subjects table mapped to the subject_library table
+        public DbSet<Subject> Subjects { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -33,6 +36,18 @@ namespace FTLSV2.Data
                 entity.Property(e => e.Type).HasColumnName("type").HasMaxLength(100);
                 entity.Property(e => e.Capacity).HasColumnName("capacity");
                 entity.Property(e => e.Availability).HasColumnName("availability").HasMaxLength(50);
+            });
+
+            // Map Subject entity to the subject_library table
+            modelBuilder.Entity<Subject>(entity =>
+            {
+                entity.ToTable("subject_library");
+                entity.HasKey(e => e.SubjectId);
+                entity.Property(e => e.SubjectId).HasColumnName("subject_id");
+                entity.Property(e => e.Code).HasColumnName("subject_code").HasMaxLength(50);
+                entity.Property(e => e.Title).HasColumnName("title").HasMaxLength(300);
+                entity.Property(e => e.Units).HasColumnName("units");
+                entity.Property(e => e.Department).HasColumnName("department").HasMaxLength(200);
             });
         }
     }
