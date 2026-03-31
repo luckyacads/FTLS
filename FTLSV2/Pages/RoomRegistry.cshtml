@@ -50,7 +50,7 @@
     <div id="editRoomSection" class="card" style="display: none; margin-bottom: 20px; border-left: 5px solid #17a2b8;">
         <h3>Edit Room</h3>
         <form method="post" asp-page-handler="EditRoom">
-            <input type="hidden" asp-for="EditRoomId" id="editRoomId" />
+            <input type="hidden" name="EditRoomId" id="editRoomId" />
 
             <div style="display: flex; gap: 15px; margin-bottom: 15px;">
                 <div style="flex: 1;">
@@ -94,7 +94,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var room in RoomRegistryModel.Rooms)
+                @foreach (var room in Model.Rooms)
                 {
                     <tr>
                         <td>@room.Name</td>
@@ -112,10 +112,10 @@
                         </td>
                         <td>
                             <div style="display: flex; gap: 5px;">
-                                <button class="btn-edit" onclick="showEditForm('@room.Id', '@room.Name', '@room.Type', @room.Capacity, '@room.Availability')">Edit</button>
+                                <button class="btn-edit" onclick="showEditForm(@room.RoomId, '@room.Name', '@room.Type', @room.Capacity, '@room.Availability')">Edit</button>
 
-                                <form method="post" asp-page-handler="DeleteRoom" style="margin: 0;" onsubmit="return confirm('Are you sure you want to delete @room.Name?');">
-                                    <input type="hidden" name="roomId" value="@room.Id" />
+                                <form method="post" asp-page-handler="DeleteRoom" style="margin: 0;" onsubmit="return confirm('Are you sure you want to delete @room.RoomId?');">
+                                    <input type="hidden" name="roomId" value="@room.RoomId" />
                                     <button type="submit" class="btn-delete" style="color: red; border-color: red;">Delete</button>
                                 </form>
                             </div>
