@@ -18,6 +18,9 @@ namespace FTLSV2.Data
         // Subjects table mapped to the subject_library table
         public DbSet<Subject> Subjects { get; set; }
 
+        // ---> ADD THIS BRAND NEW LINE HERE! <---
+        public DbSet<Schedule> Schedules { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

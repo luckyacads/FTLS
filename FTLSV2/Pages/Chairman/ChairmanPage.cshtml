@@ -13,36 +13,47 @@
 <div style="display: flex; gap: 20px; margin-bottom: 25px;">
     <div class="chairman-card" style="flex: 1; border-left: 5px solid #2ecc71; padding: 12px 20px;">
         <p style="color: #7f8c8d; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-bottom: 2px;">Total Faculty</p>
-        <h2 style="margin: 0; color: #07362d; font-size: 24px;">12</h2>
+        <h2 style="margin: 0; color: #07362d; font-size: 24px;">@Model.ActiveTeachers?.Count</h2>
     </div>
 
     <div class="chairman-card" style="flex: 1; border-left: 5px solid #2ecc71; padding: 12px 20px;">
         <p style="color: #7f8c8d; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-bottom: 2px;">Total Courses</p>
-        <h2 style="margin: 0; color: #07362d; font-size: 24px;">42</h2>
+        <h2 style="margin: 0; color: #07362d; font-size: 24px;">@Model.ActiveSubjects?.Count</h2>
     </div>
 </div>
 
 <h2 style="margin-bottom: 15px; color: #07362d; font-size: 20px;">Teaching Load Management</h2>
 
-<div class="card-grid">
+<div class="card-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+
     <div class="chairman-card">
         <h3>New Assignment</h3>
         <form id="scheduleForm" method="post">
             <div style="display: flex; gap: 15px;">
                 <div class="form-group" style="flex: 1;">
                     <label>Faculty Member</label>
-                    <select>
-                        <option>Engr. Harley (Current: 12 Units)</option>
-                        <option>Engr. Lucky (Current: 15 Units)</option>
-                        <option>Engr. Charle (Current: 6 Units)</option>
+                    <select asp-for="SelectedFacultyId" required>
+                        <option value="">-- Select a Teacher --</option>
+                        @if (Model.ActiveTeachers != null)
+                        {
+                            @foreach (var teacher in Model.ActiveTeachers)
+                            {
+                                <option value="@teacher.FacultyId">Engr. @teacher.FirstName @teacher.LastName</option>
+                            }
+                        }
                     </select>
                 </div>
                 <div class="form-group" style="flex: 1;">
                     <label>Course Selection</label>
-                    <select>
-                        <option>B104 - Intro to Programming (3 Units)</option>
-                        <option>B105 - Data Structures (3 Units)</option>
-                        <option>B106 - Software Development (3 Units)</option>
+                    <select asp-for="SelectedSubjectId" required>
+                        <option value="">-- Select a Course --</option>
+                        @if (Model.ActiveSubjects != null)
+                        {
+                            @foreach (var subject in Model.ActiveSubjects)
+                            {
+                                <option value="@subject.SubjectId">@subject.Code - @subject.Title</option>
+                            }
+                        }
                     </select>
                 </div>
             </div>
@@ -50,14 +61,26 @@
             <div style="display: flex; gap: 15px;">
                 <div class="form-group" style="flex: 1;">
                     <label>Time Slot</label>
-                    <input type="text" placeholder="e.g., TTH 1:00 PM - 2:30 PM">
+                    <input type="text" asp-for="InputTimeSlot" placeholder="e.g., TTH 1:00 PM - 2:30 PM" required>
                 </div>
                 <div class="form-group" style="flex: 1;">
                     <label>Assigned Room</label>
-                    <select>
-                        <option>Room 101 (Available)</option>
-                        <option>Room 102 (Available)</option>
-                        <option>Audio Visual Room (Occupied)</option>
+                    <select asp-for="SelectedRoomId" required>
+                        <option value="">-- Select a Room --</option>
+                        @if (Model.AllRooms != null)
+                        {
+                            @foreach (var room in Model.AllRooms)
+                            {
+                                @if (room.Availability == "Booked")
+                                {
+                                    <option value="@room.RoomId" disabled>@room.Name (Booked)</option>
+                                }
+                                else
+                                {
+                                    <option value="@room.RoomId">@room.Name (Available)</option>
+                                }
+                            }
+                        }
                     </select>
                 </div>
             </div>
@@ -73,11 +96,12 @@
         <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
         <p><small>System checking for overlaps and double-booking in real-time.</small></p>
     </div>
+
 </div>
 
-<div class="chairman-card" style="margin-top: 20px;">
+<div class="chairman-card" style="margin-top: 20px; width: 100%;">
     <h3>Assigned Teaching Loads (Current Semester)</h3>
-    <table class="table-light">
+    <table class="table-light" style="width: 100%;">
         <thead>
             <tr>
                 <th>Faculty</th>
@@ -88,20 +112,19 @@
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>Engr. Harley</td>
-                <td>B104</td>
-                <td>Mon/Wed 09:00 - 10:30</td>
-                <td>Lab A</td>
-                <td><span class="badge badge-success">Regular Load</span></td>
-            </tr>
-            <tr>
-                <td>Engr. Lucky</td>
-                <td>B105</td>
-                <td>Tue/Thu 13:00 - 14:30</td>
-                <td>Room 101</td>
-                <td><span class="badge badge-warning">Near Limit</span></td>
-            </tr>
+            @if (Model.CurrentSchedules != null)
+            {
+                @foreach (var load in Model.CurrentSchedules)
+                {
+                    <tr>
+                        <td>@load.FacultyName</td>
+                        <td>@load.CourseCode</td>
+                        <td>@load.Schedule</td>
+                        <td>@load.RoomName</td>
+                        <td><span class="badge badge-success">Assigned</span></td>
+                    </tr>
+                }
+            }
         </tbody>
     </table>
 </div>
