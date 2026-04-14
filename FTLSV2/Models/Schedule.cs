@@ -27,6 +27,9 @@ namespace FTLSV2.Models
         [Column("time_slot")]
         public string TimeSlot { get; set; }
 
+        [Column("assigned_units")]
+        public int AssignedUnits { get; set; }
+
         // Navigation properties
         [ForeignKey(nameof(FacultyId))]
         public User Faculty { get; set; }

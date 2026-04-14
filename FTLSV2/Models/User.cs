@@ -34,5 +34,8 @@ namespace FTLSV2.Models
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; }
+
+        [Column("max_units")]
+        public int MaxUnits { get; set; }
     }
 }

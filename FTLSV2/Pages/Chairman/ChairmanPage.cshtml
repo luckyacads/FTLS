@@ -41,8 +41,10 @@
                 ✓ @TempData["SuccessMessage"]
             </div>
         }
+
         <form id="scheduleForm" method="post">
-            <div style="display: flex; gap: 15px;">
+
+            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
                 <div class="form-group" style="flex: 1;">
                     <label>Faculty Member</label>
                     <select asp-for="SelectedFacultyId" required>
@@ -71,14 +73,16 @@
                 </div>
             </div>
 
-            <div style="display: flex; gap: 15px;">
-                <div class="form-group" style="flex: 1;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+
+                <div class="form-group">
                     <label>Time Slot</label>
-                    <input type="text" asp-for="InputTimeSlot" placeholder="e.g., TTH 1:00 PM - 2:30 PM" required />
+                    <input type="text" asp-for="InputTimeSlot" placeholder="e.g., TTH 1:00 PM - 2:30 PM" required style="width: 300px; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" />
                 </div>
-                <div class="form-group" style="flex: 1;">
+
+                <div class="form-group">
                     <label>Assigned Room</label>
-                    <select asp-for="SelectedRoomId" required>
+                    <select asp-for="SelectedRoomId" required style="width: 300px; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
                         <option value="">-- Select a Room --</option>
                         @if (Model.AllRooms != null)
                         {
@@ -96,6 +100,7 @@
                         }
                     </select>
                 </div>
+
             </div>
 
             <button type="submit" class="btn-primary">Finalize Assignment</button>
