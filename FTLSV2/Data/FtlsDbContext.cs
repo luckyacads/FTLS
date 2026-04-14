@@ -20,6 +20,8 @@ namespace FTLSV2.Data
 
         // ---> ADD THIS BRAND NEW LINE HERE! <---
         public DbSet<Schedule> Schedules { get; set; }
+        // Map faculty load summary view/table
+        public DbSet<FacultyLoadSummary> FacultyLoadSummaries { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -51,6 +53,37 @@ namespace FTLSV2.Data
                 entity.Property(e => e.Title).HasColumnName("title").HasMaxLength(300);
                 entity.Property(e => e.Units).HasColumnName("units");
                 entity.Property(e => e.Department).HasColumnName("department").HasMaxLength(200);
+            });
+
+            // Map Schedule entity to the schedule table
+            modelBuilder.Entity<Schedule>(entity =>
+            {
+                entity.ToTable("schedule");
+                entity.HasKey(e => e.ScheduleId);
+                entity.Property(e => e.ScheduleId).HasColumnName("schedule_id");
+                entity.Property(e => e.FacultyId).HasColumnName("faculty_id");
+                entity.Property(e => e.SubjectId).HasColumnName("subject_id");
+                entity.Property(e => e.RoomId).HasColumnName("room_id");
+                entity.Property(e => e.TimeSlot).HasColumnName("time_slot").HasMaxLength(50);
+
+                // Relationships
+                entity.HasOne(e => e.Faculty).WithMany().HasForeignKey(e => e.FacultyId).HasConstraintName("fk_schedule_users");
+                entity.HasOne(e => e.Subject).WithMany().HasForeignKey(e => e.SubjectId).HasConstraintName("fk_schedule_subject");
+                entity.HasOne(e => e.Room).WithMany().HasForeignKey(e => e.RoomId).HasConstraintName("fk_schedule_room");
+            });
+
+            // Map FacultyLoadSummary entity to the faculty_load_summary table/view
+            modelBuilder.Entity<FacultyLoadSummary>(entity =>
+            {
+                entity.ToTable("faculty_load_summary");
+
+                // The summary is a view without a stable primary key. Configure it as keyless.
+                entity.HasNoKey();
+
+                entity.Property(e => e.FirstName).HasColumnName("first_name").HasMaxLength(200);
+                entity.Property(e => e.LastName).HasColumnName("last_name").HasMaxLength(200);
+                entity.Property(e => e.TotalLoad).HasColumnName("total_load");
+                entity.Property(e => e.Email).HasColumnName("email").HasMaxLength(200);
             });
         }
     }

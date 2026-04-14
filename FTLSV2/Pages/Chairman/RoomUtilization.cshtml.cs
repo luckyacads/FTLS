@@ -1,22 +1,33 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using FTLSV2.Data;
 
 namespace FTLSV2.Pages.Chairman
 {
     public class RoomUtilizationModel : PageModel
     {
-        public record Room(string Name, string Status, int Capacity);
+        private readonly FtlsDbContext _db;
 
-        public List<Room> Rooms { get; set; } = new();
+        public RoomUtilizationModel(FtlsDbContext db)
+        {
+            _db = db;
+        }
+
+        // View model for rooms shown in the UI
+        public record RoomView(string Name, string Status, int Capacity);
+
+        public List<RoomView> Rooms { get; set; } = new();
 
         public void OnGet()
         {
-            Rooms = new List<Room>
-            {
-                new Room("Lab A","Available",40),
-                new Room("Room 101","Booked",30),
-                new Room("Audio Visual Room","In Use",25),
-            };
+            // Load rooms from the room_registry table
+            Rooms = _db.Rooms
+                .AsNoTracking()
+                .OrderBy(r => r.Name)
+                .Select(r => new RoomView(r.Name, r.Availability, r.Capacity))
+                .ToList();
         }
     }
 }

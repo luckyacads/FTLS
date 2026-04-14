@@ -33,12 +33,12 @@
                 <div class="form-group" style="flex: 1;">
                     <label>Faculty Member</label>
                     <select asp-for="SelectedFacultyId" required>
-                        <option value="">-- Select a Teacher --</option>
+                        <option value="0">-- Select a Teacher --</option>
                         @if (Model.ActiveTeachers != null)
                         {
                             @foreach (var teacher in Model.ActiveTeachers)
                             {
-                                <option value="@teacher.FacultyId">Engr. @teacher.FirstName @teacher.LastName</option>
+                                <option value="@teacher.Id">Engr. @teacher.FirstName @teacher.LastName</option>
                             }
                         }
                     </select>
@@ -61,7 +61,7 @@
             <div style="display: flex; gap: 15px;">
                 <div class="form-group" style="flex: 1;">
                     <label>Time Slot</label>
-                    <input type="text" asp-for="InputTimeSlot" placeholder="e.g., TTH 1:00 PM - 2:30 PM" required>
+                    <input type="text" asp-for="InputTimeSlot" placeholder="e.g., TTH 1:00 PM - 2:30 PM" required />
                 </div>
                 <div class="form-group" style="flex: 1;">
                     <label>Assigned Room</label>

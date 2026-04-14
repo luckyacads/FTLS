@@ -23,7 +23,7 @@ namespace FTLSV2.Pages.Chairman
         public IList<Room> AllRooms { get; set; }
 
         // --- FORM INPUTS TO CATCH ---
-        [BindProperty] public string SelectedFacultyId { get; set; }
+        [BindProperty] public int SelectedFacultyId { get; set; }
         [BindProperty] public int SelectedSubjectId { get; set; }
         [BindProperty] public int SelectedRoomId { get; set; }
         [BindProperty] public string InputTimeSlot { get; set; }
@@ -40,7 +40,7 @@ namespace FTLSV2.Pages.Chairman
 
             // 2. Load existing schedules to display in the table
             CurrentSchedules = (from s in _context.Schedules
-                                join u in _context.Users on s.FacultyId equals u.FacultyId
+                                join u in _context.Users on s.FacultyId equals u.Id
                                 join sub in _context.Subjects on s.SubjectId equals sub.SubjectId
                                 join r in _context.Rooms on s.RoomId equals r.RoomId
                                 select new AssignedLoad
@@ -55,7 +55,7 @@ namespace FTLSV2.Pages.Chairman
         public IActionResult OnPost()
         {
             // Save the new schedule to the database!
-            if (!string.IsNullOrEmpty(SelectedFacultyId) && !string.IsNullOrEmpty(InputTimeSlot))
+            if (SelectedFacultyId != 0 && !string.IsNullOrWhiteSpace(InputTimeSlot))
             {
                 var newSchedule = new Schedule
                 {
@@ -63,7 +63,6 @@ namespace FTLSV2.Pages.Chairman
                     SubjectId = SelectedSubjectId,
                     RoomId = SelectedRoomId,
                     TimeSlot = InputTimeSlot,
-                    CreatedAt = DateTime.UtcNow
                 };
 
                 _context.Schedules.Add(newSchedule);
