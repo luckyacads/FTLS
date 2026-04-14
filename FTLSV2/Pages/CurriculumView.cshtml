@@ -21,7 +21,7 @@
                 <a href="/TeacherPage">My Schedule</a>
                 <a href="/CurriculumView" class="active">Curriculum View</a>
                 <a href="/AccountSettings">Account Settings</a>
-                <a href="/LoginPage" class="logout">Logout</a>
+                <a href="/LoginPage?handler=Logout" class="logout">Logout</a>
             </nav>
         </aside>
 
@@ -39,28 +39,28 @@
                                 <th>Code</th>
                                 <th>Subject</th>
                                 <th>Units</th>
-                                <th>Prerequisite</th>
+                                <th>Department</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>B104</td>
-                                <td>Intro to Programming</td>
-                                <td>3</td>
-                                <td>None</td>
-                            </tr>
-                            <tr>
-                                <td>M101</td>
-                                <td>Calculus I</td>
-                                <td>4</td>
-                                <td>None</td>
-                            </tr>
-                            <tr>
-                                <td>CS210</td>
-                                <td>Data Structures</td>
-                                <td>3</td>
-                                <td>B104</td>
-                            </tr>
+                            @if (Model.MySubjects != null && Model.MySubjects.Any())
+                            {
+                                @foreach (var subject in Model.MySubjects)
+                                {
+                                    <tr class="subject-row" data-semester="@subject.Semester">
+                                        <td>@subject.Code</td>
+                                        <td>@subject.Title</td>
+                                        <td>@subject.Units</td>
+                                        <td>@subject.Department</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" style="text-align: center; padding: 20px; color: #7f8c8d;">No subjects assigned yet.</td>
+                                </tr>
+                            }
                         </tbody>
                     </table>
                 </section>
@@ -69,10 +69,16 @@
                     <h3>Filter</h3>
                     <div class="filter-group">
                         <label>Year / Semester</label>
-                        <select>
-                            <option>1st Year - 1st Sem</option>
-                            <option>1st Year - 2nd Sem</option>
-                            <option>2nd Year - 1st Sem</option>
+                        <select id="semesterFilter" onchange="filterSubjects()">
+                            <option value="All">All Semesters</option>
+                            <option value="1st Year - 1st Sem">1st Year - 1st Sem</option>
+                            <option value="1st Year - 2nd Sem">1st Year - 2nd Sem</option>
+                            <option value="2nd Year - 1st Sem">2nd Year - 1st Sem</option>
+                            <option value="2nd Year - 2nd Sem">2nd Year - 2nd Sem</option>
+                            <option value="3rd Year - 1st Sem">3rd Year - 1st Sem</option>
+                            <option value="3rd Year - 2nd Sem">3rd Year - 2nd Sem</option>
+                            <option value="4th Year - 1st Sem">4th Year - 1st Sem</option>
+                            <option value="4th Year - 2nd Sem">4th Year - 2nd Sem</option>
                         </select>
                     </div>
                 </section>
@@ -80,5 +86,21 @@
         </main>
     </div>
 
+    <script>
+        function filterSubjects() {
+            var selectedSemester = document.getElementById("semesterFilter").value;
+            var rows = document.querySelectorAll(".subject-row");
+
+            rows.forEach(row => {
+                var rowSemester = row.getAttribute("data-semester");
+
+                if (selectedSemester === "All" || rowSemester === selectedSemester) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        }
+    </script>
 </body>
 </html>
