@@ -40,6 +40,9 @@ namespace FTLSV2.Pages
         [BindProperty]
         public string InputRole { get; set; }
 
+        [BindProperty]
+        public int InputMaxUnits { get; set; } = 21; // Defaulting to 21 in the UI
+
         // --- LOAD CONSTRAINT DATA (Keeping your existing logic) ---
         public static int CurrentRegularLoad { get; set; } = 15;
         public static int CurrentMaxOverload { get; set; } = 21;
@@ -72,7 +75,8 @@ namespace FTLSV2.Pages
                 Email = InputEmail,
                 Password = InputPassword,
                 Role = InputRole,
-                Status = "Active",  
+                Status = "Active",
+                MaxUnits = InputMaxUnits,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -153,6 +157,18 @@ namespace FTLSV2.Pages
                 TempData["SuccessMessage"] = $"Account for {dbUser.FirstName} {dbUser.LastName} has been permanently deleted.";
             }
 
+            return RedirectToPage();
+        }
+        // CHANGED: int facultyId is now string facultyId!
+        public IActionResult OnPostUpdateUserUnits(string facultyId, int newUnits)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
+            if (user != null)
+            {
+                user.MaxUnits = newUnits;
+                _context.SaveChanges();
+                TempData["SuccessMessage"] = $"Max units for {user.FirstName} {user.LastName} successfully updated to {newUnits}.";
+            }
             return RedirectToPage();
         }
     }

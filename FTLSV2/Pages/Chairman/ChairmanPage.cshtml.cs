@@ -28,6 +28,7 @@ namespace FTLSV2.Pages.Chairman
         [BindProperty] public int SelectedSubjectId { get; set; }
         [BindProperty] public int SelectedRoomId { get; set; }
         [BindProperty] public string InputTimeSlot { get; set; }
+      
 
         // --- LIST TO DISPLAY IN THE TABLE ---
         public IList<AssignedLoad> CurrentSchedules { get; set; }
@@ -55,40 +56,35 @@ namespace FTLSV2.Pages.Chairman
 
         public IActionResult OnPost()
         {
-            // FIXED: SelectedFacultyId is a number, so we check if it is != 0
-            if (SelectedFacultyId != 0 && !string.IsNullOrEmpty(InputTimeSlot))
+            if (SelectedFacultyId != 0 && !string.IsNullOrEmpty(InputTimeSlot) && SelectedSubjectId != 0)
             {
-                // 1. Find the subject they are trying to assign to get its units
+                // 1. Find the subject the Chairman selected
                 var targetSubject = _context.Subjects.FirstOrDefault(s => s.SubjectId == SelectedSubjectId);
 
                 if (targetSubject != null)
                 {
-                    // 2. Calculate how many units this teacher CURRENTLY has
+                    // 2. Automatically grab the official units for this subject!
+                    int officialSubjectUnits = targetSubject.Units;
+
+                    // Calculate current units the teacher already has
                     var currentSchedules = _context.Schedules.Where(s => s.FacultyId == SelectedFacultyId).ToList();
-                    int currentTotalUnits = 0;
+                    int currentTotalUnits = currentSchedules.Sum(s => s.AssignedUnits);
 
-                    foreach (var sched in currentSchedules)
+                    // 3. THE GUARDRAIL: Use the official units to check if it exceeds the limit
+                    if ((currentTotalUnits + officialSubjectUnits) > FTLSV2.Pages.AdminPageModel.CurrentMaxOverload)
                     {
-                        var sub = _context.Subjects.FirstOrDefault(s => s.SubjectId == sched.SubjectId);
-                        if (sub != null) currentTotalUnits += sub.Units;
-                    }
-
-                    // 3. THE GUARDRAIL: Check if adding this new class exceeds the Admin's Max Overload limit
-                    if ((currentTotalUnits + targetSubject.Units) > FTLSV2.Pages.AdminPageModel.CurrentMaxOverload)
-                    {
-                        // Too many units! Block the save and send an error.
-                        TempData["ErrorMessage"] = $"Assignment Blocked: Adding this class exceeds the Max Overload limit of {FTLSV2.Pages.AdminPageModel.CurrentMaxOverload} units for this teacher.";
+                        TempData["ErrorMessage"] = $"Assignment Blocked: Adding {officialSubjectUnits} units for {targetSubject.Code} pushes this teacher over the Max Overload limit of {FTLSV2.Pages.AdminPageModel.CurrentMaxOverload} units.";
                         return RedirectToPage();
                     }
 
-                    // 4. If it's safe, save the schedule normally!
+                    // 4. If safe, save the schedule and automatically attach the correct units
                     var newSchedule = new Schedule
                     {
                         FacultyId = SelectedFacultyId,
                         SubjectId = SelectedSubjectId,
                         RoomId = SelectedRoomId,
-                        TimeSlot = InputTimeSlot
-                        
+                        TimeSlot = InputTimeSlot,
+                        AssignedUnits = officialSubjectUnits // <-- Automatically saving it!
                     };
 
                     _context.Schedules.Add(newSchedule);
@@ -97,10 +93,9 @@ namespace FTLSV2.Pages.Chairman
                     if (room != null) room.Availability = "Booked";
 
                     _context.SaveChanges();
-                    TempData["SuccessMessage"] = "Schedule successfully assigned!";
+                    TempData["SuccessMessage"] = $"Schedule successfully assigned! ({officialSubjectUnits} units automatically added to load)";
                 }
             }
-
             return RedirectToPage();
         }
 
