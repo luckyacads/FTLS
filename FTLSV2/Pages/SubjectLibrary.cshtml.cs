@@ -3,26 +3,29 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FTLSV2.Data;
+using FTLSV2.Models;
 
 namespace FTLSV2.Pages
 {
     public class SubjectLibraryModel : PageModel
     {
-        private readonly Data.FtlsDbContext _db;
+        private readonly FtlsDbContext _db;
 
-        public SubjectLibraryModel(Data.FtlsDbContext db)
+        public SubjectLibraryModel(FtlsDbContext db)
         {
             _db = db;
         }
 
         // Subjects loaded from the database
-        public List<Models.Subject> Subjects { get; set; } = new List<Models.Subject>();
+        public List<Subject> Subjects { get; set; } = new List<Subject>();
 
         // --- PROPERTIES FOR ADDING A SUBJECT ---
         [BindProperty] public string NewSubjectCode { get; set; }
         [BindProperty] public string NewSubjectTitle { get; set; }
         [BindProperty] public int NewSubjectUnits { get; set; }
         [BindProperty] public string NewSubjectDepartment { get; set; }
+        [BindProperty] public string NewSubjectSemester { get; set; } // <-- NEW
 
         // --- PROPERTIES FOR EDITING A SUBJECT ---
         [BindProperty] public int EditSubjectId { get; set; }
@@ -30,6 +33,7 @@ namespace FTLSV2.Pages
         [BindProperty] public string EditSubjectTitle { get; set; }
         [BindProperty] public int EditSubjectUnits { get; set; }
         [BindProperty] public string EditSubjectDepartment { get; set; }
+        [BindProperty] public string EditSubjectSemester { get; set; } // <-- NEW
 
         public void OnGet()
         {
@@ -41,31 +45,17 @@ namespace FTLSV2.Pages
         {
             if (!string.IsNullOrEmpty(NewSubjectCode) && !string.IsNullOrEmpty(NewSubjectTitle))
             {
-                var subject = new Models.Subject
+                var subject = new Subject
                 {
                     Code = NewSubjectCode,
                     Title = NewSubjectTitle,
                     Units = NewSubjectUnits,
-                    Department = NewSubjectDepartment
+                    Department = NewSubjectDepartment,
+                    Semester = NewSubjectSemester // <-- Save to DB
                 };
 
                 _db.Subjects.Add(subject);
                 _db.SaveChanges();
-
-                // 2. NEW: Send a record to the Audit Logs if available
-                try
-                {
-                    AuditLogsModel.Logs.Insert(0, new LogEntry
-                    {
-                        Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm"),
-                        Username = "Admin",
-                        Action = $"Created subject: {NewSubjectCode}"
-                    });
-                }
-                catch
-                {
-                    // ignore if audit log model is not present
-                }
 
                 TempData["SuccessMessage"] = "Subject successfully added!";
             }
@@ -82,23 +72,10 @@ namespace FTLSV2.Pages
                 subjectToEdit.Title = EditSubjectTitle;
                 subjectToEdit.Units = EditSubjectUnits;
                 subjectToEdit.Department = EditSubjectDepartment;
+                subjectToEdit.Semester = EditSubjectSemester; // <-- Save to DB
 
                 _db.SaveChanges();
                 TempData["SuccessMessage"] = "Subject successfully updated!";
-                // Log the update
-                try
-                {
-                    AuditLogsModel.Logs.Insert(0, new LogEntry
-                    {
-                        Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm"),
-                        Username = "Admin",
-                        Action = $"Updated subject: {EditSubjectCode}"
-                    });
-                }
-                catch
-                {
-                    // ignore if audit log model is not present
-                }
             }
             return RedirectToPage();
         }
@@ -112,24 +89,8 @@ namespace FTLSV2.Pages
                 _db.Subjects.Remove(subject);
                 _db.SaveChanges();
                 TempData["SuccessMessage"] = "Subject successfully deleted!";
-                // Log the deletion
-                try
-                {
-                    AuditLogsModel.Logs.Insert(0, new LogEntry
-                    {
-                        Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm"),
-                        Username = "Admin",
-                        Action = $"Deleted subject: {subject.Code}"
-                    });
-                }
-                catch
-                {
-                    // ignore if audit log model is not present
-                }
             }
             return RedirectToPage();
         }
     }
-
-    // Note: use Models.Subject for the EF-backed subject entity
 }

@@ -20,5 +20,8 @@ namespace FTLSV2.Models
 
         [Column("department")]
         public string Department { get; set; }
+
+        [Column("semester")]
+        public string Semester { get; set; }
     }
 }

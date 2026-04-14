@@ -1,10 +1,11 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using FTLSV2.Data;
 using FTLSV2.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.IdentityModel.Tokens;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System;
 
 namespace FTLSV2.Pages.Chairman
 {
@@ -54,36 +55,62 @@ namespace FTLSV2.Pages.Chairman
 
         public IActionResult OnPost()
         {
-            // Save the new schedule to the database!
-            if (SelectedFacultyId != 0 && !string.IsNullOrWhiteSpace(InputTimeSlot))
+            // FIXED: SelectedFacultyId is a number, so we check if it is != 0
+            if (SelectedFacultyId != 0 && !string.IsNullOrEmpty(InputTimeSlot))
             {
-                var newSchedule = new Schedule
+                // 1. Find the subject they are trying to assign to get its units
+                var targetSubject = _context.Subjects.FirstOrDefault(s => s.SubjectId == SelectedSubjectId);
+
+                if (targetSubject != null)
                 {
-                    FacultyId = SelectedFacultyId,
-                    SubjectId = SelectedSubjectId,
-                    RoomId = SelectedRoomId,
-                    TimeSlot = InputTimeSlot,
-                };
+                    // 2. Calculate how many units this teacher CURRENTLY has
+                    var currentSchedules = _context.Schedules.Where(s => s.FacultyId == SelectedFacultyId).ToList();
+                    int currentTotalUnits = 0;
 
-                _context.Schedules.Add(newSchedule);
+                    foreach (var sched in currentSchedules)
+                    {
+                        var sub = _context.Subjects.FirstOrDefault(s => s.SubjectId == sched.SubjectId);
+                        if (sub != null) currentTotalUnits += sub.Units;
+                    }
 
-                // Optional: If you want to automatically mark a room as "Booked" when scheduled
-                var room = _context.Rooms.FirstOrDefault(r => r.RoomId == SelectedRoomId);
-                if (room != null) room.Availability = "Booked";
+                    // 3. THE GUARDRAIL: Check if adding this new class exceeds the Admin's Max Overload limit
+                    if ((currentTotalUnits + targetSubject.Units) > FTLSV2.Pages.AdminPageModel.CurrentMaxOverload)
+                    {
+                        // Too many units! Block the save and send an error.
+                        TempData["ErrorMessage"] = $"Assignment Blocked: Adding this class exceeds the Max Overload limit of {FTLSV2.Pages.AdminPageModel.CurrentMaxOverload} units for this teacher.";
+                        return RedirectToPage();
+                    }
 
-                _context.SaveChanges();
+                    // 4. If it's safe, save the schedule normally!
+                    var newSchedule = new Schedule
+                    {
+                        FacultyId = SelectedFacultyId,
+                        SubjectId = SelectedSubjectId,
+                        RoomId = SelectedRoomId,
+                        TimeSlot = InputTimeSlot
+                        
+                    };
+
+                    _context.Schedules.Add(newSchedule);
+
+                    var room = _context.Rooms.FirstOrDefault(r => r.RoomId == SelectedRoomId);
+                    if (room != null) room.Availability = "Booked";
+
+                    _context.SaveChanges();
+                    TempData["SuccessMessage"] = "Schedule successfully assigned!";
+                }
             }
 
-            return RedirectToPage(); // Refresh the page to show the new data
+            return RedirectToPage();
         }
-    }
 
-    // A helper class just to structure the data for our HTML table
-    public class AssignedLoad
-    {
-        public string FacultyName { get; set; }
-        public string CourseCode { get; set; }
-        public string Schedule { get; set; }
-        public string RoomName { get; set; }
+        // A helper class just to structure the data for our HTML table
+        public class AssignedLoad
+        {
+            public string FacultyName { get; set; }
+            public string CourseCode { get; set; }
+            public string Schedule { get; set; }
+            public string RoomName { get; set; }
+        }
     }
 }

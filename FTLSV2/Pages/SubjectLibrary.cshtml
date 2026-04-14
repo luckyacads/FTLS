@@ -42,6 +42,19 @@
                     <label>Department</label>
                     <input type="text" asp-for="NewSubjectDepartment" required style="width: 100%; padding: 8px;" placeholder="e.g. Computer Science">
                 </div>
+                <div style="flex: 1.5;">
+                    <label>Semester</label>
+                    <select asp-for="NewSubjectSemester" required style="width: 100%; padding: 8px;">
+                        <option value="1st Year - 1st Sem">1st Year - 1st Sem</option>
+                        <option value="1st Year - 2nd Sem">1st Year - 2nd Sem</option>
+                        <option value="2nd Year - 1st Sem">2nd Year - 1st Sem</option>
+                        <option value="2nd Year - 2nd Sem">2nd Year - 2nd Sem</option>
+                        <option value="3rd Year - 1st Sem">3rd Year - 1st Sem</option>
+                        <option value="3rd Year - 2nd Sem">3rd Year - 2nd Sem</option>
+                        <option value="4th Year - 1st Sem">4th Year - 1st Sem</option>
+                        <option value="4th Year - 2nd Sem">4th Year - 2nd Sem</option>
+                    </select>
+                </div>
             </div>
             <button type="submit" class="btn-primary">Save Subject</button>
             <button type="button" class="btn-ghost" onclick="toggleAddSubjectForm()" style="margin-left: 10px; padding: 10px; border: none; background: #eee; cursor: pointer;">Cancel</button>
@@ -70,6 +83,19 @@
                     <label>Department</label>
                     <input type="text" asp-for="EditSubjectDepartment" id="editSubjectDepartment" required style="width: 100%; padding: 8px;">
                 </div>
+                <div style="flex: 1.5;">
+                    <label>Semester</label>
+                    <select asp-for="EditSubjectSemester" id="editSubjectSemester" required style="width: 100%; padding: 8px;">
+                        <option value="1st Year - 1st Sem">1st Year - 1st Sem</option>
+                        <option value="1st Year - 2nd Sem">1st Year - 2nd Sem</option>
+                        <option value="2nd Year - 1st Sem">2nd Year - 1st Sem</option>
+                        <option value="2nd Year - 2nd Sem">2nd Year - 2nd Sem</option>
+                        <option value="3rd Year - 1st Sem">3rd Year - 1st Sem</option>
+                        <option value="3rd Year - 2nd Sem">3rd Year - 2nd Sem</option>
+                        <option value="4th Year - 1st Sem">4th Year - 1st Sem</option>
+                        <option value="4th Year - 2nd Sem">4th Year - 2nd Sem</option>
+                    </select>
+                </div>
             </div>
             <button type="submit" class="btn-primary" style="background-color: #17a2b8;">Update Subject</button>
             <button type="button" class="btn-ghost" onclick="hideEditForm()" style="margin-left: 10px; padding: 10px; border: none; background: #eee; cursor: pointer;">Cancel</button>
@@ -88,6 +114,7 @@
                     <th>Title</th>
                     <th>Units</th>
                     <th>Department</th>
+                    <th>Semester</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -99,9 +126,10 @@
                         <td>@subject.Title</td>
                         <td>@subject.Units</td>
                         <td>@subject.Department</td>
+                        <td>@subject.Semester</td>
                         <td>
                             <div style="display: flex; gap: 8px;">
-                                <button class="btn-edit" onclick="showEditForm(@subject.SubjectId, '@subject.Code', '@subject.Title', @subject.Units, '@subject.Department')">Edit</button>
+                                <button class="btn-edit" onclick="showEditForm(@subject.SubjectId, '@subject.Code', '@subject.Title', @subject.Units, '@subject.Department', '@subject.Semester')">Edit</button>
 
                                 <form method="post" asp-page-handler="DeleteSubject" style="margin:0;" onsubmit="return confirm('Are you sure you want to delete this subject?');">
                                     <input type="hidden" name="subjectId" value="@subject.SubjectId" />
@@ -129,8 +157,8 @@
         }
     }
 
-    // Populate and Show Edit Form
-    function showEditForm(id, code, title, units, department) {
+    // Populate and Show Edit Form (Updated to include semester!)
+    function showEditForm(id, code, title, units, department, semester) {
         document.getElementById("addSubjectSection").style.display = "none";
 
         // Fill the textboxes with current data
@@ -139,6 +167,7 @@
         document.getElementById("editSubjectTitle").value = title;
         document.getElementById("editSubjectUnits").value = units;
         document.getElementById("editSubjectDepartment").value = department;
+        document.getElementById("editSubjectSemester").value = semester || "1st Year - 1st Sem"; // Default if null
 
         // Show the edit form
         document.getElementById("editSubjectSection").style.display = "block";
@@ -148,27 +177,19 @@
     function hideEditForm() {
         document.getElementById("editSubjectSection").style.display = "none";
     }
+
     // Real-time Search Filter
     function filterSubjects() {
-        // 1. Get the text the user typed and convert it to lowercase
         var input = document.getElementById("subjectSearchInput");
         var filter = input.value.toLowerCase();
-
-        // 2. Get the table and all of its rows (<tr>) inside the tbody
         var table = document.querySelector(".subject-table tbody");
         var rows = table.getElementsByTagName("tr");
 
-        // 3. Loop through all the rows
         for (var i = 0; i < rows.length; i++) {
-            // Get all the text inside the current row
             var rowText = rows[i].textContent || rows[i].innerText;
-
-            // 4. Check if the row's text contains the search filter
             if (rowText.toLowerCase().indexOf(filter) > -1) {
-                // If it's a match, show the row
                 rows[i].style.display = "";
             } else {
-                // If it doesn't match, hide the row
                 rows[i].style.display = "none";
             }
         }

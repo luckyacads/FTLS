@@ -21,7 +21,7 @@
                 <a href="/TeacherPage" class="active">My Schedule</a>
                 <a href="/CurriculumView">Curriculum View</a>
                 <a href="/AccountSettings">Account Settings</a>
-                <a href="/LoginPage" class="logout">Logout</a>
+                <a href="/LoginPage?handler=Logout" class="logout">Logout</a>
             </nav>
         </aside>
 
@@ -32,10 +32,11 @@
             </header>
 
             <div class="teacher-grid">
+
                 <section class="card stats">
                     <h3>Load Status</h3>
-                    <p>Total Units: <strong>12 Units</strong></p>
-                    <p>Status: <span class="status-regular">Regular Load</span></p>
+                    <p>Total Units: <strong>@Model.TotalUnits Units</strong></p>
+                    <p>Status: <span style="color: @Model.StatusColor; font-weight: bold;">@Model.LoadStatus</span></p>
                 </section>
 
                 <section class="card full-width">
@@ -44,21 +45,34 @@
                         <thead>
                             <tr>
                                 <th>Subject</th>
-                                <th>Section</th>
+                                <th>Units</th>
                                 <th>Schedule</th>
                                 <th>Room</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>B104 - Intro to Programming</td>
-                                <td>BSCpE - 1A</td>
-                                <td>Mon/Wed 09:00 - 10:30</td>
-                                <td>Lab A</td>
-                            </tr>
+                            @if (Model.MySchedules != null && Model.MySchedules.Any())
+                            {
+                                @foreach (var sched in Model.MySchedules)
+                                {
+                                    <tr>
+                                        <td>@sched.CourseTitle</td>
+                                        <td>@sched.Units</td>
+                                        <td>@sched.ScheduleTime</td>
+                                        <td>@sched.RoomName</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" style="text-align: center; padding: 20px; color: #7f8c8d;">No classes assigned yet.</td>
+                                </tr>
+                            }
                         </tbody>
                     </table>
                 </section>
+
             </div>
         </main>
     </div>

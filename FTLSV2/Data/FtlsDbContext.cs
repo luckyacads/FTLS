@@ -55,21 +55,19 @@ namespace FTLSV2.Data
                 entity.Property(e => e.Department).HasColumnName("department").HasMaxLength(200);
             });
 
-            // Map Schedule entity to the schedule table
-            modelBuilder.Entity<Schedule>(entity =>
+            // Map Subject entity to the subject_library table
+            modelBuilder.Entity<Subject>(entity =>
             {
-                entity.ToTable("schedule");
-                entity.HasKey(e => e.ScheduleId);
-                entity.Property(e => e.ScheduleId).HasColumnName("schedule_id");
-                entity.Property(e => e.FacultyId).HasColumnName("faculty_id");
+                entity.ToTable("subject_library");
+                entity.HasKey(e => e.SubjectId);
                 entity.Property(e => e.SubjectId).HasColumnName("subject_id");
-                entity.Property(e => e.RoomId).HasColumnName("room_id");
-                entity.Property(e => e.TimeSlot).HasColumnName("time_slot").HasMaxLength(50);
+                entity.Property(e => e.Code).HasColumnName("subject_code").HasMaxLength(50);
+                entity.Property(e => e.Title).HasColumnName("title").HasMaxLength(300);
+                entity.Property(e => e.Units).HasColumnName("units");
+                entity.Property(e => e.Department).HasColumnName("department").HasMaxLength(200);
 
-                // Relationships
-                entity.HasOne(e => e.Faculty).WithMany().HasForeignKey(e => e.FacultyId).HasConstraintName("fk_schedule_users");
-                entity.HasOne(e => e.Subject).WithMany().HasForeignKey(e => e.SubjectId).HasConstraintName("fk_schedule_subject");
-                entity.HasOne(e => e.Room).WithMany().HasForeignKey(e => e.RoomId).HasConstraintName("fk_schedule_room");
+                // --- NEW MAPPING LINE ADDED HERE ---
+                entity.Property(e => e.Semester).HasColumnName("semester").HasMaxLength(50);
             });
 
             // Map FacultyLoadSummary entity to the faculty_load_summary table/view
