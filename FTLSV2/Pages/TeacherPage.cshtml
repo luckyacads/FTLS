@@ -35,8 +35,12 @@
 
                 <section class="card stats">
                     <h3>Load Status</h3>
-                    <p>Total Units: <strong>@Model.TotalUnits Units</strong></p>
-                    <p>Status: <span style="color: @Model.StatusColor; font-weight: bold;">@Model.LoadStatus</span></p>
+                    <p>Total Units: <strong>@Model.TotalUnits / @Model.LoggedInUser.MaxUnits Units</strong></p>
+
+                    @if (!string.IsNullOrEmpty(Model.LoadStatus))
+                    {
+                        <p>Status: <span style="color: @Model.StatusColor; font-weight: bold;">@Model.LoadStatus</span></p>
+                    }
                 </section>
 
                 <section class="card full-width">

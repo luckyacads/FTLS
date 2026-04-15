@@ -41,14 +41,10 @@ namespace FTLSV2.Pages
         public string InputRole { get; set; }
 
         [BindProperty]
-        public int InputMaxUnits { get; set; } = 21; // Defaulting to 21 in the UI
+        public int InputMaxUnits { get; set; } = 21;
 
-        // --- LOAD CONSTRAINT DATA (Keeping your existing logic) ---
-        public static int CurrentRegularLoad { get; set; } = 15;
+        // --- LOAD CONSTRAINT DATA (Cleaned up!) ---
         public static int CurrentMaxOverload { get; set; } = 21;
-
-        [BindProperty]
-        public int InputRegularLoad { get; set; }
 
         [BindProperty]
         public int InputMaxOverload { get; set; }
@@ -56,17 +52,13 @@ namespace FTLSV2.Pages
         // --- GET METHOD ---
         public void OnGet()
         {
-            // Fetch all users from the real database to display in the table
             DbUsers = _context.Users.ToList();
-
-            InputRegularLoad = CurrentRegularLoad;
             InputMaxOverload = CurrentMaxOverload;
         }
 
         // --- POST METHODS ---
         public IActionResult OnPostAddUser()
         {
-            // 1. Create a new User object matching your NeonDB table
             var newUser = new User
             {
                 FacultyId = InputFacultyId,
@@ -80,7 +72,6 @@ namespace FTLSV2.Pages
                 CreatedAt = DateTime.UtcNow
             };
 
-            // 2. Save to the real database!
             _context.Users.Add(newUser);
             _context.SaveChanges();
 
@@ -90,23 +81,16 @@ namespace FTLSV2.Pages
 
         public IActionResult OnPostUpdateRules()
         {
-            CurrentRegularLoad = InputRegularLoad;
             CurrentMaxOverload = InputMaxOverload;
-            TempData["SuccessMessage"] = "Load constraint rules successfully updated!";
+            TempData["SuccessMessage"] = "Global Max Overload limit successfully updated!";
             return RedirectToPage();
         }
 
-        // Note: I temporarily disabled the toggle status logic because your NeonDB 
-        // doesn't have a 'Status' column yet! We can add that next.
-        // 1. Method to Activate/Deactivate a user
         public IActionResult OnPostToggleUserStatus(string facultyId)
         {
-            // Find the exact user in the database
             var dbUser = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
-
             if (dbUser != null)
             {
-                // Flip their status
                 if (dbUser.Status == "Active" || string.IsNullOrEmpty(dbUser.Status))
                 {
                     dbUser.Status = "Inactive";
@@ -116,50 +100,36 @@ namespace FTLSV2.Pages
                     dbUser.Status = "Active";
                 }
 
-                // Save the change to NeonDB
                 _context.SaveChanges();
                 TempData["SuccessMessage"] = $"{dbUser.FirstName}'s account is now {dbUser.Status}!";
             }
-
             return RedirectToPage();
         }
 
-        // 2. Method to Reset a user's password to a default
         public IActionResult OnPostResetPassword(string facultyId)
         {
             var dbUser = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
-
             if (dbUser != null)
             {
-                // Set a default temporary password
                 dbUser.Password = "usjr1234";
-
                 _context.SaveChanges();
                 TempData["SuccessMessage"] = $"Password for {dbUser.FirstName} has been reset to 'usjr1234'.";
             }
-
             return RedirectToPage();
         }
-        // 3. Method to PERMANENTLY Delete a user
+
         public IActionResult OnPostDeleteUser(string facultyId)
         {
-            // Find the exact user in the database
             var dbUser = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
-
             if (dbUser != null)
             {
-                // Remove them entirely from the database
                 _context.Users.Remove(dbUser);
-
-                // Save the changes to NeonDB
                 _context.SaveChanges();
-
                 TempData["SuccessMessage"] = $"Account for {dbUser.FirstName} {dbUser.LastName} has been permanently deleted.";
             }
-
             return RedirectToPage();
         }
-        // CHANGED: int facultyId is now string facultyId!
+
         public IActionResult OnPostUpdateUserUnits(string facultyId, int newUnits)
         {
             var user = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);

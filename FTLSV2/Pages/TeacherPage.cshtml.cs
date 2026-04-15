@@ -52,23 +52,26 @@ namespace FTLSV2.Pages
             // 2. Add up all the units
             TotalUnits = MySchedules.Sum(s => s.Units);
 
-            // 3. Determine their status based on the Admin Rules!
-            int regularLimit = FTLSV2.Pages.AdminPageModel.CurrentRegularLoad;
+            // 3. SMART STATUS CHECK: Handling Overloads and Edge Cases!
+            int globalMaxLimit = FTLSV2.Pages.AdminPageModel.CurrentMaxOverload;
 
-            if (TotalUnits == 0)
+            if (TotalUnits > LoggedInUser.MaxUnits || TotalUnits > globalMaxLimit)
             {
-                LoadStatus = "No Load Assigned";
-                StatusColor = "#7f8c8d"; // Grey
+                // Edge Case 1: They have more units than their personal limit OR the global limit!
+                LoadStatus = "OVERLOAD WARNING";
+                StatusColor = "#e74c3c"; // Red
             }
-            else if (TotalUnits <= regularLimit)
+            else if (TotalUnits == LoggedInUser.MaxUnits)
             {
-                LoadStatus = "Regular Load";
-                StatusColor = "#2ecc71"; // Green
+                // Edge Case 2: They are exactly at their maximum allowed capacity
+                LoadStatus = "MAX LIMIT REACHED";
+                StatusColor = "#f39c12"; // Orange
             }
             else
             {
-                LoadStatus = "Overload";
-                StatusColor = "#f39c12"; // Orange
+                // Normal Life: They are under the limit, so we hide the status!
+                LoadStatus = "";
+                StatusColor = "transparent";
             }
 
             return Page();
