@@ -172,25 +172,6 @@
             </tbody>
         </table>
     </section>
-
-    <section class="card full-width">
-        <h3>Load Constraint Rules</h3>
-
-        @if (TempData["SuccessMessage"] != null)
-        {
-            <div id="success-alert" style="background-color: #d4edda; color: #155724; padding: 12px; margin-bottom: 20px; border-radius: 6px; border-left: 5px solid #28a745; font-weight: 500; transition: opacity 1s ease-out; opacity: 1;">
-                ✓ @TempData["SuccessMessage"]
-            </div>
-        }
-        <form method="post" asp-page-handler="UpdateRules">
-            <div class="form-group">
-                <label>Global Max Overload Limit (Units)</label>
-                <input type="number" asp-for="InputMaxOverload" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
-                <small style="color: #7f8c8d; display: block; margin-top: 5px;">This sets the absolute highest limit any teacher can be assigned in the system.</small>
-            </div>
-            <button type="submit" class="btn-primary" style="margin-top: 15px;">Update Rules</button>
-        </form>
-    </section>
 </div>
 
 <div id="editUnitsModal" class="modal-overlay" style="display:none;">
