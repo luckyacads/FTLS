@@ -24,16 +24,20 @@
         /* SIDEBAR NAV STYLE */
         .sidebar nav a {
             display: block;
-            padding: 8px 12px; /* ↓ reduced from 10–14px */
-            margin-bottom: 6px; /* ↓ tighter spacing */
+            padding: 8px 12px;
             border-radius: 6px;
             color: #ffffff;
             text-decoration: none;
-            font-size: 14px; /* cleaner size */
+            font-size: 14px;
             font-weight: 500;
             font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
-            line-height: 1.2; /* ↓ tighter line spacing */
+            line-height: 1.2;
             transition: all 0.2s ease;
+        }
+
+        /* spacing between items */
+        .sidebar nav a:not(:last-child) {
+            margin-bottom: 4px; /* tighter than before */
         }
 
         /* HOVER + ACTIVE */
@@ -97,7 +101,7 @@
                 <div style="
                     padding:16px 12px;
                     text-align:center;
-                    background: rgba(0, 212, 255, 0.12);
+                    background: rgba(255,255,255,0.08);
                     border-bottom: 1px solid rgba(255,255,255,0.1);
                     ">
                     <h2 style="
@@ -123,7 +127,7 @@
                         justify-content:center;
                         font-weight:700;
                         font-size:22px;
-                        margin: 0 auto 10px auto;
+                        margin: 15px auto 10px auto;
                         ">
                         @loggedUser.FirstName[0]@loggedUser.LastName[0]
                     </div>
@@ -167,12 +171,17 @@
 
                     </div>
                 }
-                <nav>
+                <nav style="
+                    display:flex;
+                    flex-direction:column;
+                    ">
                     <a asp-page="/AdminPage" class="@(Context.Request.Path.StartsWithSegments("/AdminPage", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">User Management</a>
                     <a asp-page="/RoomRegistry" class="@(Context.Request.Path.StartsWithSegments("/RoomRegistry", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">Room Registry</a>
                     <a asp-page="/SubjectLibrary" class="@(Context.Request.Path.StartsWithSegments("/SubjectLibrary", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">Subject Library</a>
                     <a asp-page="/AuditLogs" class="@(Context.Request.Path.StartsWithSegments("/AuditLogs", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">Audit Logs</a>
-                    <a asp-page="/LoginPage" class="logout">Logout</a>
+                    <a asp-page="/LoginPage" class="logout" style="margin-top: 10px;">
+                        Logout
+                    </a>
                 </nav>
             </aside>
 
