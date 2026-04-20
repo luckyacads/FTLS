@@ -122,6 +122,46 @@ header p {
     grid-template-columns: 2fr 1fr;
     gap: 20px;
 }
+
+.dropdown-menu {
+    min-width: 200px;   /* increase width */
+    white-space: nowrap; /* prevent line breaks */
+}
+
+.dropdown-item-btn {
+    white-space: nowrap;
+    justify-content: flex-start;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 30px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    min-width: 220px;   /* ← KEY FIX */
+    padding: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 10;
+}
+
+.dropdown-item-btn {
+    display: block;
+    width: 100%;
+    padding: 8px 10px;
+    border: none;
+    background: transparent;
+    text-align: left;
+    font-size: 13px;
+    white-space: nowrap; /* ← prevents line break */
+    cursor: pointer;
+}
+
+.dropdown-item-btn:hover {
+    background: #f5f5f5;
+}
 </style>
 
 <div class="container">
@@ -201,14 +241,16 @@ header p {
     <section class="card">
         <h3>Registered Accounts (@Model.DbUsers.Count)</h3>
 
-        <table class="admin-table">
+        <table class="admin-table" style="table-layout: fixed; width: 100%;">
             <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Role</th>
-                    <th>Units</th>
-                </tr>
+            <tr>
+                <th style="width: 15%;">ID</th>
+                <th style="width: 25%;">NAME</th>
+                <th style="width: 25%;">EMAIL</th>
+                <th style="width: 15%;">UNITS</th>
+                <th style="width: 10%;">STATUS</th>
+                <th style="width: 10%;"></th>
+            </tr>
             </thead>
 
             <tbody>
@@ -227,18 +269,7 @@ header p {
 
                     <td>
                         <div style="display:flex; align-items:center;">
-                            <span style="
-                                width:28px; height:28px;
-                                border-radius:50%;
-                                background:#e1f5ee;
-                                display:flex;
-                                align-items:center;
-                                justify-content:center;
-                                font-size:11px;
-                                font-weight:600;
-                                margin-right:8px;">
-                                @initials
-                            </span>
+                            <span style="margin-right:8px;">@initials</span>
                             @user.FirstName @user.LastName
                         </div>
                     </td>
@@ -246,13 +277,9 @@ header p {
                     <td>@user.Email</td>
 
                     <td>
-                        <span class="badge">@user.Role</span>
-                    </td>
-
-                    <td>
                         @if (user.Role == "Admin")
                         {
-                            <span style="color:#bbb;">N/A</span>
+                            <span>N/A</span>
                         }
                         else
                         {
@@ -278,7 +305,7 @@ header p {
                         </button>
 
                         <!-- DROPDOWN -->
-                        <div id="menu-@user.FacultyId" style="
+                        <div id="menu-@user.FacultyId" class="dropdown-menu"
                             display:none;
                             position:absolute;
                             right:0;
@@ -289,8 +316,7 @@ header p {
                             padding:5px;
                             box-shadow:0 4px 10px rgba(0,0,0,0.1);
                             z-index:10;
-                        ">
-
+                        >
                             @if (user.Role != "Admin")
                             {
                                 <button onclick="openEditModal('@user.FacultyId', '@user.MaxUnits', @Model.InputMaxOverload)"
@@ -320,7 +346,6 @@ header p {
                                     Delete
                                 </button>
                             </form>
-
                         </div>
 
                     </td>
