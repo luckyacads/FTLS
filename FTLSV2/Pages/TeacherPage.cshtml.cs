@@ -53,7 +53,8 @@ namespace FTLSV2.Pages
             TotalUnits = MySchedules.Sum(s => s.Units);
 
             // 3. SMART STATUS CHECK: Handling Overloads and Edge Cases!
-            int globalMaxLimit = FTLSV2.Pages.AdminPageModel.CurrentMaxOverload;
+            var settings = _context.SystemSettings.FirstOrDefault();
+            int globalMaxLimit = settings?.MaxOverload ?? 21;
 
             if (TotalUnits > LoggedInUser.MaxUnits || TotalUnits > globalMaxLimit)
             {

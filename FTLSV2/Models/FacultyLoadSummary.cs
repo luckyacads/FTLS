@@ -1,9 +1,12 @@
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
 namespace FTLSV2.Models
 {
     [Table("faculty_load_summary")]
+
+    [Keyless]
     public class FacultyLoadSummary
     {
         // This entity maps to a view/table that exposes first/last name and a total load.

@@ -6,13 +6,197 @@
 }
 
 <style>
+    /* ── Three-dot menu ── */
+    .menu-wrap {
+        position: relative;
+        display: inline-block;
+    }
+
+    .dots-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        width: 30px;
+        height: 30px;
+        border-radius: 6px;
+        border: 1px solid transparent;
+        background: transparent;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s;
+    }
+
+    .dots-btn:hover,
+    .dots-btn.active {
+        background: #f0f0f0;
+        border-color: #ddd;
+    }
+
+    .dot {
+        width: 3.5px;
+        height: 3.5px;
+        border-radius: 50%;
+        background: #666;
+        display: block;
+    }
+
+    /* ── Dropdown ── */
+    .dropdown-menu {
+        position: absolute;
+        right: 0;
+        top: calc(100% + 4px);
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 4px;
+        min-width: 175px;
+        z-index: 999;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.10);
+        display: none;
+    }
+
+    .dropdown-menu.open {
+        display: block;
+    }
+
+    .dropdown-item-btn {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        width: 100%;
+        padding: 8px 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        background: transparent;
+        border: none;
+        color: #1a1a1a;
+        cursor: pointer;
+        text-align: left;
+        transition: background 0.1s;
+        font-family: inherit;
+    }
+
+    .dropdown-item-btn:hover {
+        background: #f5f5f5;
+    }
+
+    .dropdown-item-btn.danger {
+        color: #c0392b;
+    }
+
+    .dropdown-item-btn.danger:hover {
+        background: #fdf0f0;
+    }
+
+    .dropdown-divider {
+        height: 1px;
+        background: #eee;
+        margin: 4px 0;
+    }
+
+    .dropdown-item-btn svg {
+        flex-shrink: 0;
+        opacity: 0.65;
+    }
+
+    /* ── Page header ── */
+    header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+    }
+
+    /* ── Add user form ── */
+    #addUserSection {
+        border-left: 4px solid #07362d;
+        border-radius: 0 8px 8px 0;
+        margin-bottom: 20px;
+    }
+
+    /* ── Table ── */
+    .admin-table thead th {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #888;
+        padding: 8px 12px;
+        border-bottom: 1px solid #eee;
+        font-weight: 600;
+    }
+
+    .admin-table tbody tr {
+        border-bottom: 1px solid #f0f0f0;
+        transition: background 0.1s;
+    }
+
+    .admin-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .admin-table tbody tr:hover {
+        background: #fafafa;
+    }
+
+    .admin-table tbody td {
+        padding: 11px 12px;
+        vertical-align: middle;
+        font-size: 13px;
+    }
+
+    /* ── Badges ── */
+    .role-badge {
+        display: inline-block;
+        padding: 3px 9px;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .role-admin    { background: #ede9fe; color: #4c1d95; }
+    .role-teacher  { background: #e1f5ee; color: #0f6e56; }
+    .role-chairman { background: #faeeda; color: #854f0b; }
+
+    .status-badge {
+        display: inline-block;
+        padding: 3px 9px;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .status-active   { background: #eafaf1; color: #1e8449; }
+    .status-inactive { background: #fdf0f0; color: #c0392b; }
+
+    /* ── Avatar ── */
+    .avatar-circle {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #e1f5ee;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 600;
+        color: #0f6e56;
+        margin-right: 8px;
+        flex-shrink: 0;
+        vertical-align: middle;
+    }
+
+    .name-cell {
+        display: flex;
+        align-items: center;
+    }
+
+    /* ── Modal ── */
     .modal-overlay {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.6); /* Dark semi-transparent background */
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.45);
         display: flex;
         justify-content: center;
         align-items: center;
@@ -21,27 +205,52 @@
 
     .modal-content {
         background: white;
-        padding: 25px;
-        border-radius: 8px;
-        width: 350px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        border-top: 5px solid #07362d; /* Matches your theme! */
+        padding: 1.5rem;
+        border-radius: 10px;
+        width: 340px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+        border-top: 4px solid #07362d;
+    }
+
+    .modal-content h3 {
+        margin-top: 0;
+        color: #07362d;
+        font-size: 15px;
+    }
+
+    .modal-footer {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        margin-top: 1.25rem;
+        padding-top: 1rem;
+        border-top: 1px solid #eee;
     }
 </style>
 
 <header>
-    <h1>System Administration</h1>
+    <div>
+        <h1>System Administration</h1>
+        <p style="color: #888; font-size: 13px; margin-top: 2px;">Manage faculty accounts, roles, and permissions</p>
+    </div>
     <button class="btn-primary" onclick="toggleAddUserForm()">+ Add New User</button>
 </header>
 
-<div id="addUserSection" class="card full-width" style="display: none; margin-bottom: 20px; border-left: 5px solid #07362d;">
+@if (TempData["SuccessMessage"] != null)
+{
+    <div id="success-alert" style="padding: 10px 14px; border-radius: 6px; font-size: 13px; margin-bottom: 1rem; background: #eafaf1; color: #1e8449; border: 1px solid #a9dfbf; display: flex; align-items: center; gap: 8px;">
+        &#10003; @TempData["SuccessMessage"]
+    </div>
+}
+
+<div id="addUserSection" class="card full-width" style="display: none; margin-bottom: 20px;">
     <h3>Create New Account</h3>
     <form method="post" asp-page-handler="AddUser">
 
         <div style="display: flex; gap: 15px; margin-bottom: 15px;">
             <div class="form-group" style="flex: 1;">
                 <label>First Name</label>
-                <input type="text" asp-for="InputFirstName" placeholder="e.g., Charle" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                <input type="text" asp-for="InputFirstName" placeholder="e.g., Charles" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
             </div>
             <div class="form-group" style="flex: 1;">
                 <label>Last Name</label>
@@ -85,15 +294,15 @@
 
         <div style="margin-top: 15px;">
             <button type="submit" class="btn-primary">Save User</button>
-            <button type="button" class="btn-ghost" onclick="toggleAddUserForm()" style="margin-left: 10px; padding: 10px; border: none; background: #eee; cursor: pointer;">Cancel</button>
+            <button type="button" class="btn-ghost" onclick="toggleAddUserForm()" style="margin-left: 10px; padding: 10px; border: none; background: #eee; cursor: pointer; border-radius: 4px;">Cancel</button>
         </div>
     </form>
 </div>
 
 <div class="admin-grid">
     <section class="card full-width">
-        <h3>Registered Accounts</h3>
-        <table class="admin-table">
+        <h3>Registered Accounts <span style="font-size: 12px; font-weight: 400; color: #999; margin-left: 6px;">@Model.DbUsers.Count users</span></h3>
+        <table class="admin-table" style="width: 100%; border-collapse: collapse;">
             <thead>
                 <tr>
                     <th>Faculty ID</th>
@@ -101,70 +310,126 @@
                     <th>Email</th>
                     <th>Role</th>
                     <th>Max Units</th>
-                    <th>Actions</th>
+                    <th>Status</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var user in Model.DbUsers)
                 {
+                    var initials = $"{user.FirstName?[0]}{user.LastName?[0]}".ToUpper();
+                    var roleClass = user.Role switch {
+                        "Admin"    => "role-admin",
+                        "Chairman" => "role-chairman",
+                        _          => "role-teacher"
+                    };
+                    var isActive = user.Status == "Active" || string.IsNullOrEmpty(user.Status);
+
                     <tr>
-                        <td>@user.FacultyId</td>
-                        <td>@user.FirstName @user.LastName</td>
-                        <td>@user.Email</td>
-                        <td>@user.Role</td>
+                        <td style="font-family: monospace; color: #999; font-size: 15px;">@user.FacultyId</td>
+
+                        <td>
+                            <div class="name-cell">
+                                <span class="avatar-circle">@initials</span>
+                                <span style="font-weight: 500;">@user.FirstName @user.LastName</span>
+                            </div>
+                        </td>
+
+                        <td style="color: #666;">@user.Email</td>
+
+                        <td>
+                            <span class="role-badge @roleClass">@user.Role</span>
+                        </td>
 
                         <td>
                             @if (user.Role == "Admin")
                             {
-                                <span style="color: #7f8c8d; font-style: italic;">N/A</span>
+                                <span style="color: #bbb; font-style: italic;">N/A</span>
                             }
                             else
                             {
-                                <strong style="color: #07362d;">@user.MaxUnits Units</strong>
+                                <span style="font-weight: 600; color: #07362d;">@user.MaxUnits units</span>
                             }
                         </td>
 
                         <td>
-                            @if (user.Status == "Active" || string.IsNullOrEmpty(user.Status))
-                            {
-                                <span style="color: #2ecc71; font-weight: bold;">Active</span>
-                            }
-                            else
-                            {
-                                <span style="color: #e74c3c; font-weight: bold;">Inactive</span>
-                            }
+                            <span class="status-badge @(isActive ? "status-active" : "status-inactive")">
+                                @(isActive ? "Active" : "Inactive")
+                            </span>
                         </td>
 
-                        <td>
-                            <div class="button-group" style="display: flex; gap: 5px;">
+                        <td style="text-align: right;">
+                            <div class="menu-wrap" id="wrap-@user.FacultyId">
+                                <button class="dots-btn" onclick="toggleMenu('@user.FacultyId', event)" aria-label="Actions">
+                                    <span class="dot"></span>
+                                    <span class="dot"></span>
+                                    <span class="dot"></span>
+                                </button>
 
-                                @if (user.Role != "Admin")
-                                {
-                                    <button type="button" onclick="openEditModal('@user.FacultyId', '@user.MaxUnits', @Model.InputMaxOverload)" style="background-color: #3498db; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Edit Units</button>
-                                }
+                                <div class="dropdown-menu" id="menu-@user.FacultyId">
 
-                                <form method="post" asp-page-handler="ToggleUserStatus" style="margin: 0;">
-                                    <input type="hidden" name="facultyId" value="@user.FacultyId" />
-                                    @if (user.Status == "Active" || string.IsNullOrEmpty(user.Status))
+                                    @if (user.Role != "Admin")
                                     {
-                                        <button type="submit" style="background-color: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Deactivate</button>
+                                        <button type="button"
+                                                class="dropdown-item-btn"
+                                                onclick="openEditModal('@user.FacultyId', '@user.MaxUnits', @Model.InputMaxOverload); closeMenu('@user.FacultyId')">
+                                            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                                                <path d="M11 2l3 3-8 8H3v-3L11 2z"/>
+                                            </svg>
+                                            Edit units
+                                        </button>
                                     }
-                                    else
-                                    {
-                                        <button type="submit" style="background-color: #2ecc71; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Activate</button>
-                                    }
-                                </form>
 
-                                <form method="post" asp-page-handler="ResetPassword" style="margin: 0;" onsubmit="return confirm('Are you sure you want to reset this password?');">
-                                    <input type="hidden" name="facultyId" value="@user.FacultyId" />
-                                    <button type="submit" style="background-color: #f39c12; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Reset PW</button>
-                                </form>
+                                    <form method="post" asp-page-handler="ToggleUserStatus" style="margin: 0;">
+                                        <input type="hidden" name="facultyId" value="@user.FacultyId" />
+                                        @if (isActive)
+                                        {
+                                            <button type="submit" class="dropdown-item-btn">
+                                                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                                                    <circle cx="8" cy="8" r="6"/><line x1="5" y1="8" x2="11" y2="8"/>
+                                                </svg>
+                                                Deactivate account
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="submit" class="dropdown-item-btn">
+                                                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                                                    <circle cx="8" cy="8" r="6"/><line x1="8" y1="5" x2="8" y2="11"/><line x1="5" y1="8" x2="11" y2="8"/>
+                                                </svg>
+                                                Activate account
+                                            </button>
+                                        }
+                                    </form>
 
-                                <form method="post" asp-page-handler="DeleteUser" style="margin: 0;" onsubmit="return confirm('WARNING: Are you sure you want to PERMANENTLY delete this account?');">
-                                    <input type="hidden" name="facultyId" value="@user.FacultyId" />
-                                    <button type="submit" style="background-color: #34495e; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Delete</button>
-                                </form>
+                                    <form method="post" asp-page-handler="ResetPassword" style="margin: 0;"
+                                          onsubmit="return confirm('Are you sure you want to reset this password?');">
+                                        <input type="hidden" name="facultyId" value="@user.FacultyId" />
+                                        <button type="submit" class="dropdown-item-btn">
+                                            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                                                <rect x="2" y="4" width="12" height="10" rx="1"/>
+                                                <path d="M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1"/>
+                                            </svg>
+                                            Reset password
+                                        </button>
+                                    </form>
 
+                                    <div class="dropdown-divider"></div>
+
+                                    <form method="post" asp-page-handler="DeleteUser" style="margin: 0;"
+                                          onsubmit="return confirm('WARNING: Are you sure you want to PERMANENTLY delete this account?');">
+                                        <input type="hidden" name="facultyId" value="@user.FacultyId" />
+                                        <button type="submit" class="dropdown-item-btn danger">
+                                            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                                                <polyline points="2,4 14,4"/>
+                                                <path d="M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1"/>
+                                                <path d="M3 4l1 9a1 1 0 001 1h6a1 1 0 001-1l1-9"/>
+                                            </svg>
+                                            Delete account
+                                        </button>
+                                    </form>
+
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -172,28 +437,57 @@
             </tbody>
         </table>
     </section>
+
+    <!-- LOAD CONSTRAINTS -->
+     <section class="card full-width">
+        <h3>Load Constraint Rules</h3>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div id="success-alert" style="background-color: #d4edda; color: #155724; padding: 12px; margin-bottom: 20px; border-radius: 6px; border-left: 5px solid #28a745; font-weight: 500; transition: opacity 1s ease-out; opacity: 1;">
+                ✓ @TempData["SuccessMessage"]
+            </div>
+        }
+        <form method="post" asp-page-handler="UpdateRules">
+            <div class="form-group">
+                <label>Global Max Overload Limit (Units)</label>
+                <input type="number" asp-for="InputMaxOverload" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                <small style="color: #7f8c8d; display: block; margin-top: 5px;">This sets the absolute highest limit any teacher can be assigned in the system.</small>
+            </div>
+            <button type="submit" class="btn-primary" style="margin-top: 15px;">Update Rules</button>
+        </form>
+    </section>
 </div>
 
-<div id="editUnitsModal" class="modal-overlay" style="display:none;">
+
+<div id="editUnitsModal" class="modal-overlay" style="display: none;">
     <div class="modal-content">
-        <h3 style="margin-top: 0; color: #07362d;">Edit Max Units</h3>
-        <p id="modalLimitText" style="font-size: 13px; color: #e74c3c; margin-bottom: 15px; font-weight: bold;"></p>
+        <h3>Edit Max Units</h3>
+        <p id="modalLimitText" style="font-size: 12px; color: #c0392b; margin-bottom: 1rem; font-weight: 600;"></p>
 
         <form method="post" asp-page-handler="UpdateUserUnits">
             <input type="hidden" name="facultyId" id="modalFacultyId" />
             <div class="form-group">
-                <label>New Max Units</label>
-                <input type="number" name="newUnits" id="modalNewUnits" required min="1" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                <label style="font-size: 12px; color: #666; display: block; margin-bottom: 5px;">New Max Units</label>
+                <input type="number" name="newUnits" id="modalNewUnits" required min="1"
+                       style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
             </div>
-            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
-                <button type="button" class="btn-ghost" onclick="closeEditModal()" style="padding: 8px 15px; border: none; background: #eee; border-radius: 4px; cursor: pointer;">Cancel</button>
-                <button type="submit" class="btn-primary" style="padding: 8px 15px; background-color: #2ecc71; color: white; border: none; border-radius: 4px; cursor: pointer;">Save Changes</button>
+            <div class="modal-footer">
+                <button type="button" onclick="closeEditModal()"
+                        style="padding: 8px 14px; border: 1px solid #ddd; background: #f5f5f5; border-radius: 6px; cursor: pointer; font-size: 13px;">
+                    Cancel
+                </button>
+                <button type="submit" class="btn-primary"
+                        style="padding: 8px 14px; font-size: 13px;">
+                    Save Changes
+                </button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
+    // ── Add user form toggle ──
     function toggleAddUserForm() {
         var form = document.getElementById("addUserSection");
         form.style.display = (form.style.display === "none" || form.style.display === "") ? "block" : "none";
@@ -202,7 +496,6 @@
     function handleRoleChange() {
         var role = document.getElementById("roleSelect").value;
         var unitsBox = document.getElementById("maxUnitsInput");
-
         if (role === "Admin") {
             unitsBox.value = 0;
             unitsBox.readOnly = true;
@@ -214,27 +507,62 @@
         }
     }
 
-    // NEW: Open the sleek Custom Modal
+    // ── Three-dot dropdown ──
+    var openMenuId = null;
+
+    function toggleMenu(facultyId, event) {
+        event.stopPropagation();
+        var menu = document.getElementById("menu-" + facultyId);
+        var btn  = document.getElementById("wrap-" + facultyId).querySelector(".dots-btn");
+
+        if (openMenuId && openMenuId !== facultyId) closeMenu(openMenuId);
+
+        var isOpen = menu.classList.contains("open");
+        if (isOpen) {
+            menu.classList.remove("open");
+            btn.classList.remove("active");
+            openMenuId = null;
+        } else {
+            menu.classList.add("open");
+            btn.classList.add("active");
+            openMenuId = facultyId;
+        }
+    }
+
+    function closeMenu(facultyId) {
+        var menu = document.getElementById("menu-" + facultyId);
+        var wrap = document.getElementById("wrap-" + facultyId);
+        if (menu) menu.classList.remove("open");
+        if (wrap) wrap.querySelector(".dots-btn").classList.remove("active");
+        if (openMenuId === facultyId) openMenuId = null;
+    }
+
+    // Close any open menu when clicking outside
+    document.addEventListener("click", function () {
+        if (openMenuId) closeMenu(openMenuId);
+    });
+
+    // ── Edit Units Modal ──
     function openEditModal(facultyId, currentUnits, globalMax) {
-        document.getElementById('modalFacultyId').value = facultyId;
-        document.getElementById('modalNewUnits').value = currentUnits;
-        document.getElementById('modalNewUnits').max = globalMax; // Prevents them from going over the limit
-        document.getElementById('modalLimitText').innerText = "(Must not exceed the Global Limit of " + globalMax + " units)";
-
-        document.getElementById('editUnitsModal').style.display = "flex";
+        document.getElementById("modalFacultyId").value = facultyId;
+        document.getElementById("modalNewUnits").value  = currentUnits;
+        document.getElementById("modalNewUnits").max    = globalMax;
+        document.getElementById("modalLimitText").innerText = "Must not exceed the global limit of " + globalMax + " units";
+        document.getElementById("editUnitsModal").style.display = "flex";
     }
 
-    // NEW: Close the Custom Modal
     function closeEditModal() {
-        document.getElementById('editUnitsModal').style.display = "none";
+        document.getElementById("editUnitsModal").style.display = "none";
     }
 
-    window.onload = function() {
+    // ── Auto-dismiss success alert ──
+    window.onload = function () {
         var alertBox = document.getElementById("success-alert");
         if (alertBox) {
-            setTimeout(function() {
+            setTimeout(function () {
+                alertBox.style.transition = "opacity 1s";
                 alertBox.style.opacity = "0";
-                setTimeout(function() { alertBox.style.display = "none"; }, 1000);
+                setTimeout(function () { alertBox.style.display = "none"; }, 1000);
             }, 3000);
         }
     };

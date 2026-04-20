@@ -24,6 +24,9 @@ namespace FTLSV2.Data
         // Map faculty load summary view/table
         public DbSet<FacultyLoadSummary> FacultyLoadSummaries { get; set; }
 
+        // For Settings Variable
+        public DbSet<SystemSettings> SystemSettings { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -68,7 +71,7 @@ namespace FTLSV2.Data
             });
 
             // Map FacultyLoadSummary entity to the faculty_load_summary table/view
-            modelBuilder.Entity<FacultyLoadSummary>(entity =>
+            /*modelBuilder.Entity<FacultyLoadSummary>(entity =>
             {
                 entity.ToTable("faculty_load_summary");
                 entity.HasNoKey(); // The summary is a view without a stable primary key
@@ -76,7 +79,11 @@ namespace FTLSV2.Data
                 entity.Property(e => e.LastName).HasColumnName("last_name").HasMaxLength(200);
                 entity.Property(e => e.TotalLoad).HasColumnName("total_load");
                 entity.Property(e => e.Email).HasColumnName("email").HasMaxLength(200);
-            });
+            });*/
+
+            modelBuilder.Entity<FacultyLoadSummary>()
+                .HasNoKey()
+                .ToView("faculty_load_summary"); // EXACT name in PostgreSQL
         }
     }
 }

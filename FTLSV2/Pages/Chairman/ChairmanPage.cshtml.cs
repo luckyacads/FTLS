@@ -28,13 +28,17 @@ namespace FTLSV2.Pages.Chairman
         [BindProperty] public int SelectedSubjectId { get; set; }
         [BindProperty] public int SelectedRoomId { get; set; }
         [BindProperty] public string InputTimeSlot { get; set; }
-      
+        [BindProperty] public int GlobalMaxLimit { get; set; }
+
 
         // --- LIST TO DISPLAY IN THE TABLE ---
         public IList<AssignedLoad> CurrentSchedules { get; set; }
 
         public void OnGet()
         {
+            var settings = _context.SystemSettings.FirstOrDefault();
+            GlobalMaxLimit = settings?.MaxOverload ?? 21;
+
             // 1. Load data for dropdowns
             ActiveTeachers = _context.Users.Where(u => u.Role == "Teacher" && (u.Status == "Active" || string.IsNullOrEmpty(u.Status))).ToList();
             ActiveSubjects = _context.Subjects.OrderBy(s => s.Code).ToList();
@@ -71,9 +75,12 @@ namespace FTLSV2.Pages.Chairman
                     int currentTotalUnits = currentSchedules.Sum(s => s.AssignedUnits);
 
                     // 3. THE GUARDRAIL: Use the official units to check if it exceeds the limit
-                    if ((currentTotalUnits + officialSubjectUnits) > FTLSV2.Pages.AdminPageModel.CurrentMaxOverload)
+                    var settings = _context.SystemSettings.FirstOrDefault();
+                    int globalMaxLimit = settings?.MaxOverload ?? 21;
+
+                    if ((currentTotalUnits + officialSubjectUnits) > globalMaxLimit)
                     {
-                        TempData["ErrorMessage"] = $"Assignment Blocked: Adding {officialSubjectUnits} units for {targetSubject.Code} pushes this teacher over the Max Overload limit of {FTLSV2.Pages.AdminPageModel.CurrentMaxOverload} units.";
+                        TempData["ErrorMessage"] = $"Assignment Blocked: Adding {officialSubjectUnits} units for {targetSubject.Code} pushes this teacher over the Max Overload limit of {globalMaxLimit} units.";
                         return RedirectToPage();
                     }
 

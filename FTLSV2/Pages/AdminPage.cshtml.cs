@@ -41,10 +41,9 @@ namespace FTLSV2.Pages
         public string InputRole { get; set; }
 
         [BindProperty]
-        public int InputMaxUnits { get; set; } = 21;
+        public int InputMaxUnits { get; set; }
 
         // --- LOAD CONSTRAINT DATA (Cleaned up!) ---
-        public static int CurrentMaxOverload { get; set; } = 21;
 
         [BindProperty]
         public int InputMaxOverload { get; set; }
@@ -53,7 +52,17 @@ namespace FTLSV2.Pages
         public void OnGet()
         {
             DbUsers = _context.Users.ToList();
-            InputMaxOverload = CurrentMaxOverload;
+
+            var settings = _context.SystemSettings.FirstOrDefault();
+
+            if (settings == null)
+            {
+                settings = new SystemSettings { MaxOverload = 21 };
+                _context.SystemSettings.Add(settings);
+                _context.SaveChanges();
+            }
+
+            InputMaxOverload = settings.MaxOverload;
         }
 
         // --- POST METHODS ---
@@ -76,13 +85,6 @@ namespace FTLSV2.Pages
             _context.SaveChanges();
 
             TempData["SuccessMessage"] = $"Account for {InputFirstName} {InputLastName} created successfully!";
-            return RedirectToPage();
-        }
-
-        public IActionResult OnPostUpdateRules()
-        {
-            CurrentMaxOverload = InputMaxOverload;
-            TempData["SuccessMessage"] = "Global Max Overload limit successfully updated!";
             return RedirectToPage();
         }
 
@@ -130,15 +132,26 @@ namespace FTLSV2.Pages
             return RedirectToPage();
         }
 
-        public IActionResult OnPostUpdateUserUnits(string facultyId, int newUnits)
+        public IActionResult OnPostUpdateRules()
         {
-            var user = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
-            if (user != null)
+            var settings = _context.SystemSettings.FirstOrDefault();
+
+            if (settings == null)
             {
-                user.MaxUnits = newUnits;
-                _context.SaveChanges();
-                TempData["SuccessMessage"] = $"Max units for {user.FirstName} {user.LastName} successfully updated to {newUnits}.";
+                settings = new SystemSettings
+                {
+                    MaxOverload = InputMaxOverload
+                };
+                _context.SystemSettings.Add(settings);
             }
+            else
+            {
+                settings.MaxOverload = InputMaxOverload;
+            }
+
+            _context.SaveChanges();
+
+            TempData["SuccessMessage"] = $"Global Max Overload updated to {InputMaxOverload}!";
             return RedirectToPage();
         }
     }
