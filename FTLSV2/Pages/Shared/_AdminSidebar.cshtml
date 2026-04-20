@@ -1,5 +1,50 @@
-﻿<!DOCTYPE html>
+﻿@using FTLSV2.Data
+@using FTLSV2.Models
+@inject FtlsDbContext _context
+@{
+    var userId = Context.Session.GetString("ActiveUser");
+    User loggedUser = null;
+
+    if (!string.IsNullOrEmpty(userId))
+    {
+        loggedUser = _context.Users.FirstOrDefault(u => u.FacultyId == userId);
+    }
+}
+
+@* @{
+    var test = Context.Session.GetString("UserId");
+}
+<div style="color:red;">DEBUG: @test</div> --> *@
+
+<!DOCTYPE html>
 <html lang="en">
+
+    <style>
+
+        /* SIDEBAR NAV STYLE */
+        .sidebar nav a {
+            display: block;
+            padding: 8px 12px; /* ↓ reduced from 10–14px */
+            margin-bottom: 6px; /* ↓ tighter spacing */
+            border-radius: 6px;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 14px; /* cleaner size */
+            font-weight: 500;
+            font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
+            line-height: 1.2; /* ↓ tighter line spacing */
+            transition: all 0.2s ease;
+        }
+
+        /* HOVER + ACTIVE */
+        .sidebar nav a:hover,
+        .sidebar nav a.active {
+            background: #f1c40f !important;
+            color: #07362d !important;
+        }
+    </style>
+
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -48,7 +93,80 @@
     {
         <div class="admin-container">
             <aside class="sidebar">
-                <h2>Admin Control</h2>
+                <!-- CYAN HEADER -->
+                <div style="
+                    padding:16px 12px;
+                    text-align:center;
+                    background: rgba(0, 212, 255, 0.12);
+                    border-bottom: 1px solid rgba(255,255,255,0.1);
+                    ">
+                    <h2 style="
+                        margin:0;
+                        font-size:18px;
+                        font-weight:600;
+                        color:#ffffff;
+                        letter-spacing:0.5px;
+                        ">
+                        Administrator
+                    </h2>
+                </div>
+                @if (loggedUser != null)
+                {
+                    <div style="
+                        width:70px;
+                        height:70px;
+                        border-radius:50%;
+                        background:#f1c40f;          /* changed to yellow */
+                        color:#07362d;               /* keep dark green text */
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        font-weight:700;
+                        font-size:22px;
+                        margin: 0 auto 10px auto;
+                        ">
+                        @loggedUser.FirstName[0]@loggedUser.LastName[0]
+                    </div>
+
+                    <div style="
+                        text-align:center;
+                        margin-bottom: 25px;
+                        color:#f1c40f;               /* changed to yellow */
+                        ">
+
+                        <div style="
+                            font-size:18px;
+                            font-weight:600;
+                            line-height:1.2;
+                            ">
+                            @loggedUser.FirstName @loggedUser.LastName
+                        </div>
+
+                        <div style="
+                            font-size:15px;
+                            margin-top:6px;
+                            font-weight:500;
+                            ">
+                            ID: @loggedUser.FacultyId
+                        </div>
+
+                        <div style="
+                            font-size:14px;
+                            margin-top:4px;
+                            opacity:0.9;
+                            ">
+                            @loggedUser.Email
+                        </div>
+
+                        <div style="
+                        height:1px;
+                        width:80%;
+                        margin: 10px auto 20px auto;
+                        background: rgba(255,255,255,0.15);
+                        "></div>
+
+                    </div>
+                }
                 <nav>
                     <a asp-page="/AdminPage" class="@(Context.Request.Path.StartsWithSegments("/AdminPage", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">User Management</a>
                     <a asp-page="/RoomRegistry" class="@(Context.Request.Path.StartsWithSegments("/RoomRegistry", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">Room Registry</a>
@@ -72,7 +190,7 @@
         </div>
     }
 
-    <footer class="border-top footer text-muted">
+    <footer class="footer text-muted">
         <div class="container">
             &copy; 2026 - FTLSV2 - <a asp-area="" asp-page="/Privacy">Privacy</a>
         </div>

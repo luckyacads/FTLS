@@ -52,6 +52,8 @@ namespace FTLSV2.Pages
                 }
                 // --------------------------------------
                 HttpContext.Session.SetString("ActiveUser", dbUser.FacultyId);
+                HttpContext.Session.SetString("ActiveUserName", dbUser.FirstName + " " + dbUser.LastName);
+                HttpContext.Session.SetString("ActiveUserEmail", dbUser.Email);
 
                 // 3. If they are Active, route them normally
                 if (dbUser.Role == "Admin")
