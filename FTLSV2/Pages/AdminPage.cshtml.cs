@@ -18,6 +18,8 @@ namespace FTLSV2.Pages
             _context = context;
         }
 
+        public User LoggedInUser { get; set; }
+
         // 2. List to hold real users from the database
         public IList<User> DbUsers { get; set; }
 
@@ -52,6 +54,10 @@ namespace FTLSV2.Pages
         public void OnGet()
         {
             DbUsers = _context.Users.ToList();
+            var activeId = HttpContext.Session.GetString("UserId");
+
+            LoggedInUser = _context.Users
+                .FirstOrDefault(u => u.FacultyId == activeId);
 
             var settings = _context.SystemSettings.FirstOrDefault();
 

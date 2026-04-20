@@ -141,6 +141,7 @@ header p {
     </div>
 }
 
+<!-- ADD NEW USER UI --> 
 <div id="addUserSection" class="card" style="display:none;">
     <h3>Create User</h3>
     <form method="post" asp-page-handler="AddUser">
@@ -182,9 +183,21 @@ header p {
     </form>
 </div>
 
-<div class="grid">
+<div style="display: flex; flex-direction: column; gap: 20px;">
 
     <!-- USERS -->
+        <!-- RULES -->
+    <section class="card">
+        <h3>Load Rules</h3>
+
+        <form method="post" asp-page-handler="UpdateRules">
+            <div class="form-group">
+                <input class="input" asp-for="InputMaxOverload" type="number" />
+            </div>
+
+            <button class="btn-primary">Update</button>
+        </form>
+    </section>
     <section class="card">
         <h3>Registered Accounts (@Model.DbUsers.Count)</h3>
 
@@ -199,44 +212,125 @@ header p {
             </thead>
 
             <tbody>
-                @foreach (var user in Model.DbUsers)
-                {
-                    <tr>
-                        <td>@user.FacultyId</td>
-                        <td>@user.FirstName @user.LastName</td>
-                        <td>@user.Role</td>
+            @foreach (var user in Model.DbUsers)
+            {
+                var initials = $"{user.FirstName?[0]}{user.LastName?[0]}".ToUpper();
+                var roleClass = user.Role switch {
+                    "Admin"    => "role-admin",
+                    "Chairman" => "role-chairman",
+                    _          => "role-teacher"
+                };
+                var isActive = user.Status == "Active" || string.IsNullOrEmpty(user.Status);
 
-                        <td>
-                            @if (user.Role == "Admin")
+                <tr>
+                    <td>@user.FacultyId</td>
+
+                    <td>
+                        <div style="display:flex; align-items:center;">
+                            <span style="
+                                width:28px; height:28px;
+                                border-radius:50%;
+                                background:#e1f5ee;
+                                display:flex;
+                                align-items:center;
+                                justify-content:center;
+                                font-size:11px;
+                                font-weight:600;
+                                margin-right:8px;">
+                                @initials
+                            </span>
+                            @user.FirstName @user.LastName
+                        </div>
+                    </td>
+
+                    <td>@user.Email</td>
+
+                    <td>
+                        <span class="badge">@user.Role</span>
+                    </td>
+
+                    <td>
+                        @if (user.Role == "Admin")
+                        {
+                            <span style="color:#bbb;">N/A</span>
+                        }
+                        else
+                        {
+                            <span class="badge green">@user.MaxUnits units</span>
+                        }
+                    </td>
+
+                    <td>
+                        <span class="badge @(isActive ? "green" : "red")">
+                            @(isActive ? "Active" : "Inactive")
+                        </span>
+                    </td>
+
+                    <td style="text-align:right; position:relative;">
+
+                        <!-- THREE DOT BUTTON -->
+                        <button onclick="toggleMenu('@user.FacultyId', event)" style="
+                            background:none;
+                            border:none;
+                            cursor:pointer;
+                            font-size:18px;">
+                            ⋮
+                        </button>
+
+                        <!-- DROPDOWN -->
+                        <div id="menu-@user.FacultyId" style="
+                            display:none;
+                            position:absolute;
+                            right:0;
+                            top:30px;
+                            background:white;
+                            border:1px solid #ddd;
+                            border-radius:8px;
+                            padding:5px;
+                            box-shadow:0 4px 10px rgba(0,0,0,0.1);
+                            z-index:10;
+                        ">
+
+                            @if (user.Role != "Admin")
                             {
-                                <span>N/A</span>
+                                <button onclick="openEditModal('@user.FacultyId', '@user.MaxUnits', @Model.InputMaxOverload)"
+                                        style="display:block; width:100%; padding:8px; border:none; background:none; text-align:left;">
+                                    Edit Units
+                                </button>
                             }
-                            else
-                            {
-                                <span class="badge green">@user.MaxUnits</span>
-                            }
-                        </td>
-                    </tr>
-                }
+
+                            <form method="post" asp-page-handler="ToggleUserStatus">
+                                <input type="hidden" name="facultyId" value="@user.FacultyId" />
+                                <button type="submit" style="display:block; width:100%; padding:8px; border:none; background:none; text-align:left;">
+                                    @(isActive ? "Deactivate" : "Activate")
+                                </button>
+                            </form>
+
+                            <form method="post" asp-page-handler="ResetPassword">
+                                <input type="hidden" name="facultyId" value="@user.FacultyId" />
+                                <button type="submit" style="display:block; width:100%; padding:8px; border:none; background:none; text-align:left;">
+                                    Reset Password
+                                </button>
+                            </form>
+
+                            <form method="post" asp-page-handler="DeleteUser"
+                                  onsubmit="return confirm('Delete this account?');">
+                                <input type="hidden" name="facultyId" value="@user.FacultyId" />
+                                <button type="submit" style="color:red; display:block; width:100%; padding:8px; border:none; background:none; text-align:left;">
+                                    Delete
+                                </button>
+                            </form>
+
+                        </div>
+
+                    </td>
+                </tr>
+            }
             </tbody>
+
         </table>
     </section>
-
-    <!-- RULES -->
-    <section class="card">
-        <h3>Load Rules</h3>
-
-        <form method="post" asp-page-handler="UpdateRules">
-            <div class="form-group">
-                <input class="input" asp-for="InputMaxOverload" type="number" />
-            </div>
-
-            <button class="btn-primary">Update</button>
-        </form>
-    </section>
-
 </div>
-
 </div>
 
 <script>
@@ -244,4 +338,23 @@ function toggleAddUserForm() {
     var x = document.getElementById("addUserSection");
     x.style.display = x.style.display === "none" ? "block" : "none";
 }
+
+function toggleMenu(id, event) {
+    event.stopPropagation();
+
+    var menu = document.getElementById("menu-" + id);
+
+    // close others
+    document.querySelectorAll('[id^="menu-"]').forEach(m => {
+        if (m !== menu) m.style.display = "none";
+    });
+
+    menu.style.display = (menu.style.display === "block") ? "none" : "block";
+}
+
+document.addEventListener("click", function () {
+    document.querySelectorAll('[id^="menu-"]').forEach(m => {
+        m.style.display = "none";
+    });
+});
 </script>
