@@ -68,14 +68,20 @@
 
         <aside class="sidebar">
 
-            <!-- HEADER -->
+            <!-- HEADER (MATCH ADMIN EXACTLY) -->
             <div style="
                 padding:16px 12px;
                 text-align:center;
                 background: rgba(255,255,255,0.08);
                 border-bottom: 1px solid rgba(255,255,255,0.1);
                 ">
-                <h2 style="margin:0; font-size:18px; color:#fff;">
+                <h2 style="
+                    margin:0;
+                    font-size:18px;
+                    font-weight:600;
+                    color:#ffffff;
+                    letter-spacing:0.5px;
+                    ">
                     Chairman Portal
                 </h2>
             </div>
@@ -88,6 +94,7 @@
 
             @if (!string.IsNullOrEmpty(id))
             {
+                <!-- AVATAR -->
                 <div style="
                     width:70px;
                     height:70px;
@@ -104,28 +111,65 @@
                     @(name?[0])@(name?.Split(' ').LastOrDefault()?[0])
                 </div>
 
-                <div style="text-align:center; color:#f1c40f; margin-bottom:20px;">
-                    <div style="font-size:18px; font-weight:600;">@name</div>
-                    <div style="font-size:15px;">ID: @id</div>
-                    <div style="font-size:14px;">@email</div>
+                <!-- USER INFO -->
+                <div style="
+                    text-align:center;
+                    margin-bottom: 25px;
+                    color:#f1c40f;
+                    ">
+                    <div style="font-size:18px; font-weight:600; line-height:1.2;">
+                        @name
+                    </div>
 
+                    <div style="font-size:15px; margin-top:6px; font-weight:500;">
+                        ID: @id
+                    </div>
+
+                    <div style="font-size:14px; margin-top:4px; opacity:0.9;">
+                        @email
+                    </div>
+
+                    <!-- DIVIDER -->
                     <div style="
                     height:1px;
                     width:80%;
-                    margin:10px auto 20px auto;
-                    background:rgba(255,255,255,0.15);
+                    margin: 10px auto 20px auto;
+                    background: rgba(255,255,255,0.15);
                     "></div>
                 </div>
             }
 
+            <!-- NAV (MATCH ADMIN EXACT STRUCTURE) -->
             <nav>
-                <a href="/ChairmanPage">Dashboard Overview</a>
-                <a href="/Chairman/FacultyProfiles">Faculty Profiles</a>
-                <a href="/Chairman/CourseCatalog">Course Catalog</a>
-                <a href="/Chairman/RoomUtilization">Room Utilization</a>
 
-                <a href="/LoginPage?handler=Logout" class="logout" style="margin-top: auto;">Logout</a>
+                <a href="/ChairmanPage"
+                       class="@(Context.Request.Path == "/ChairmanPage" ? "active" : "")">
+                    Dashboard Overview
+                </a>
+
+                <a href="/Chairman/FacultyProfiles"
+                       class="@(Context.Request.Path.StartsWithSegments("/Chairman/FacultyProfiles") ? "active" : "")">
+                    Faculty Profiles
+                </a>
+
+                <a href="/Chairman/CourseCatalog"
+                       class="@(Context.Request.Path.StartsWithSegments("/Chairman/CourseCatalog") ? "active" : "")">
+                    Course Catalog
+                </a>
+
+                <a href="/Chairman/RoomUtilization"
+                       class="@(Context.Request.Path.StartsWithSegments("/Chairman/RoomUtilization") ? "active" : "")">
+                    Room Utilization
+                </a>
+
+                <a href="/LoginPage?handler=Logout"
+                       class="logout"
+                       style="margin-top:auto;">
+                    Logout
+                </a>
+
             </nav>
+
         </aside>
 
         <main class="main-content">
