@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
+
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,13 +11,113 @@
     <link rel="stylesheet" href="~/css/chairman.css" />
 
     @await RenderSectionAsync("Styles", required: false)
+    <style>
+            <style>
+                .sidebar nav a {
+                    display: block;
+                    padding: 8px 12px;
+                    margin-bottom: 6px;
+                    border-radius: 6px;
+                    color: #fff;
+                    text-decoration: none;
+                    font-size: 14px;
+                    transition: 0.2s;
+                }
+
+                .sidebar nav a:hover,
+                .sidebar nav a.active {
+                    background: #f1c40f;
+                    color: #07362d;
+                }
+        </style>
+    </style>
+
+    <style>
+            /* MATCH ADMIN SIDEBAR FONT SYSTEM */
+
+            .sidebar,
+            .sidebar nav a {
+                font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
+            }
+
+                /* NAV LINKS */
+                .sidebar nav a {
+                    display: block;
+                    padding: 8px 12px;
+                    margin-bottom: 6px;
+                    border-radius: 6px;
+                    color: #ffffff;
+                    text-decoration: none;
+                    font-size: 14px;
+                    font-weight: 500;
+                    line-height: 1.2;
+                    transition: all 0.2s ease;
+                }
+
+                    /* HOVER + ACTIVE */
+                    .sidebar nav a:hover,
+                    .sidebar nav a.active {
+                        background: #f1c40f;
+                        color: #07362d;
+                    }
+    </style>
 </head>
 <body>
 
     <div class="teacher-container">
 
         <aside class="sidebar">
-            <h2>CHAIRMAN PORTAL</h2>
+
+            <!-- HEADER -->
+            <div style="
+                padding:16px 12px;
+                text-align:center;
+                background: rgba(255,255,255,0.08);
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+                ">
+                <h2 style="margin:0; font-size:18px; color:#fff;">
+                    Chairman Portal
+                </h2>
+            </div>
+
+            @{
+                var id = Context.Session.GetString("ActiveUser");
+                var name = Context.Session.GetString("ActiveUserName");
+                var email = Context.Session.GetString("ActiveUserEmail");
+            }
+
+            @if (!string.IsNullOrEmpty(id))
+            {
+                <div style="
+                    width:70px;
+                    height:70px;
+                    border-radius:50%;
+                    background:#f1c40f;
+                    color:#07362d;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    font-weight:700;
+                    font-size:22px;
+                    margin: 15px auto 10px auto;
+                    ">
+                    @(name?[0])@(name?.Split(' ').LastOrDefault()?[0])
+                </div>
+
+                <div style="text-align:center; color:#f1c40f; margin-bottom:20px;">
+                    <div style="font-size:18px; font-weight:600;">@name</div>
+                    <div style="font-size:15px;">ID: @id</div>
+                    <div style="font-size:14px;">@email</div>
+
+                    <div style="
+                    height:1px;
+                    width:80%;
+                    margin:10px auto 20px auto;
+                    background:rgba(255,255,255,0.15);
+                    "></div>
+                </div>
+            }
+
             <nav>
                 <a href="/ChairmanPage">Dashboard Overview</a>
                 <a href="/Chairman/FacultyProfiles">Faculty Profiles</a>
