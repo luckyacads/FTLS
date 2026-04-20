@@ -154,5 +154,31 @@ namespace FTLSV2.Pages
             TempData["SuccessMessage"] = $"Global Max Overload updated to {InputMaxOverload}!";
             return RedirectToPage();
         }
+
+        public IActionResult OnPostUpdateUserUnits(string facultyId, int newUnits)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
+
+            if (user != null)
+            {
+                // 🔒 Get global max limit
+                var settings = _context.SystemSettings.FirstOrDefault();
+                int max = settings?.MaxOverload ?? 21;
+
+                // 🚫 Prevent exceeding limit
+                if (newUnits > max)
+                {
+                    TempData["SuccessMessage"] = $"Cannot exceed {max} units!";
+                    return RedirectToPage();
+                }
+
+                user.MaxUnits = newUnits;
+                _context.SaveChanges();
+
+                TempData["SuccessMessage"] = $"Updated units for {user.FirstName}.";
+            }
+
+            return RedirectToPage(); // 🔥 IMPORTANT
+        }
     }
 }
