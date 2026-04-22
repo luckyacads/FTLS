@@ -18,6 +18,7 @@ body {
     color: white;
     display: flex;
     flex-direction: column;
+    justify-content: flex-start;
 }
 
 .sidebar-header {
@@ -118,7 +119,8 @@ body {
 
 /* ===== LOGOUT ===== */
 .sidebar-bottom {
-    padding: 10px;
+    margin-top: 20px; /* instead of auto */
+    padding: 5px;
 }
 
 .logout {
@@ -142,6 +144,8 @@ body {
 .main-content {
     flex: 1;
     padding: 25px;
+    max-width: 1000px; /* 🔥 key fix */
+    margin: 0 auto; /* center it */
 }
 
 /* ===== PAGE CONTENT / CARDS ===== */
@@ -213,4 +217,90 @@ header {
     .schedule-table tr:hover,
     .curriculum-table tr:hover {
         background: #f6f9fc;
+    }
+
+/* ===== GRID LAYOUT ===== */
+.two-columns {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ===== FORM GRID ===== */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+    max-width: 600px; /* 🔥 prevents overextension */
+}
+
+.form-group.full {
+    grid-column: 1 / -1;
+}
+
+/* ===== LABEL ===== */
+.form-group label {
+    display: block;
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+/* ===== INPUT ===== */
+.input {
+    width: 100%;
+    max-width: 100%;
+    padding: 10px 12px;
+    box-sizing: border-box;
+    border: 1px solid #dcdfe6;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #f9fafb;
+    transition: all 0.2s ease;
+}
+
+    .input:focus {
+        outline: none;
+        border-color: #07362d;
+        background: #fff;
+    }
+
+    /* Disabled inputs */
+    .input:disabled {
+        background: #f1f3f5;
+        color: #555;
+    }
+
+/* ===== BUTTON ===== */
+.btn-primary {
+    margin-top: 15px;
+    background: #07362d;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+    .btn-primary:hover {
+        background: #0a4a3f;
+    }
+
+/* ===== ALERTS ===== */
+.alert {
+    margin-top: 15px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+    .alert.error {
+        background: #ffe5e5;
+        color: #c0392b;
+    }
+
+    .alert.success {
+        background: #e6f7ec;
+        color: #27ae60;
     }
