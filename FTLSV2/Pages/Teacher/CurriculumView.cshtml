@@ -1,327 +1,72 @@
 @page
 @model FTLSV2.Pages.Teacher.CurriculumViewModel
 @{
-    Layout = null;
+    ViewData["Title"] = "Curriculum View";
 }
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Curriculum View - FTLS</title>
-    <style>
-            /* ===== SIDEBAR HEADER ===== */
-            .sidebar-header {
-                padding: 16px 12px;
-                text-align: center;
-                background: rgba(255,255,255,0.08);
-                border-bottom: 1px solid rgba(255,255,255,0.1);
-                margin: -20px -15px 15px -15px;
-            }
+<header>
+    <h1>Curriculum Overview</h1>
+</header>
 
-                .sidebar-header h2 {
-                    margin: 0;
-                    font-size: 18px;
-                    font-weight: 600;
-                    color: #ffffff;
-                    letter-spacing: 0.5px;
-                }
+<div class="teacher-grid">
 
-            /* ===== PROFILE BLOCK ===== */
-            .profile-avatar {
-                width: 70px;
-                height: 70px;
-                border-radius: 50%;
-                background: #f1c40f;
-                color: #07362d;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: 700;
-                font-size: 22px;
-                margin: 15px auto 10px auto;
-            }
-
-            .profile-info {
-                text-align: center;
-                margin-bottom: 25px;
-                color: #f1c40f;
-            }
-
-            .profile-name {
-                font-size: 18px;
-                font-weight: 600;
-                line-height: 1.2;
-            }
-
-            .profile-id {
-                font-size: 15px;
-                margin-top: 6px;
-                font-weight: 500;
-            }
-
-            .profile-email {
-                font-size: 14px;
-                margin-top: 4px;
-                opacity: 0.9;
-                word-break: break-word;
-            }
-
-            .profile-divider {
-                height: 1px;
-                width: 80%;
-                margin: 10px auto 20px auto;
-                background: rgba(255,255,255,0.15);
-            }
-            /* ===== GLOBAL ===== */
-            body {
-                margin: 0;
-                font-family: 'Segoe UI', system-ui, sans-serif;
-                background: #f5f7fa;
-            }
-
-            /* ===== LAYOUT ===== */
-            .teacher-container {
-                display: flex;
-            }
-
-            /* ===== SIDEBAR ===== */
-            .sidebar {
-                width: 230px;
-                height: 100vh;
-                background: #07362d;
-                color: white;
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
-                padding: 20px 15px;
-            }
-
-                .sidebar h2 {
-                    font-size: 18px;
-                    font-weight: 600;
-                    margin-bottom: 25px;
-                }
-
-            /* NAV GROUP */
-            .nav-links {
-                display: flex;
-                flex-direction: column;
-                gap: 6px;
-            }
-
-                /* LINKS */
-                .nav-links a {
-                    text-decoration: none;
-                    color: #dfe6e9;
-                    padding: 10px 12px;
-                    border-radius: 6px;
-                    font-size: 14px;
-                    transition: all 0.2s ease;
-                }
-
-                    /* HOVER */
-                    .nav-links a:hover {
-                        background: rgba(255,255,255,0.08);
-                        color: white;
-                    }
-
-                    /* ACTIVE */
-                    .nav-links a.active {
-                        background: #f1c40f;
-                        color: #07362d;
-                        font-weight: 600;
-                    }
-
-            /* LOGOUT */
-            .sidebar-bottom {
-                margin-top: 20px;
-            }
-
-            .logout {
-                display: block;
-                text-decoration: none;
-                color: #ff7675;
-                padding: 10px 12px;
-                border-radius: 6px;
-                font-size: 14px;
-            }
-
-                .logout:hover {
-                    background: rgba(255,255,255,0.08);
-                }
-
-            /* ===== MAIN ===== */
-            .main-content {
-                flex: 1;
-                padding: 25px;
-            }
-
-            header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-
-            .btn-secondary {
-                background: #07362d;
-                color: white;
-                border: none;
-                padding: 9px 14px;
-                border-radius: 6px;
-                cursor: pointer;
-            }
-
-            /* ===== CARDS ===== */
-            .card {
-                background: white;
-                border-radius: 12px;
-                padding: 20px;
-                box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-            }
-
-            .teacher-grid {
-                display: grid;
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .full-width {
-                grid-column: 1 / -1;
-            }
-
-            /* ===== TABLE ===== */
-            .schedule-table {
-                width: 100%;
-                border-collapse: collapse;
-            }
-
-                .schedule-table th {
-                    background: #f8f9fb;
-                    font-size: 11px;
-                    text-transform: uppercase;
-                    color: #999;
-                    padding: 10px;
-                }
-
-                .schedule-table td {
-                    padding: 12px 10px;
-                }
-
-                .schedule-table tr:hover {
-                    background: #f6f9fc;
-                }
-
-    </style>
-</head>
-
-
-<body>
-
-    <div class="teacher-container">
-        <aside class="sidebar">
-            <div class="sidebar-top">
-                <div class="sidebar-header">
-                    <h2>Teacher Portal</h2>
-                </div>
-
-                @if (Model.LoggedInUser != null)
+    <section class="card full-width">
+        <h3>Curriculum Subjects</h3>
+        <table class="curriculum-table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Subject</th>
+                    <th>Units</th>
+                    <th>Department</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.MySubjects != null && Model.MySubjects.Any())
                 {
-                    <div class="profile-avatar">
-                        @Model.LoggedInUser.FirstName[0]@Model.LoggedInUser.LastName[0]
-                    </div>
-
-                    <div class="profile-info">
-                        <div class="profile-name">
-                            @Model.LoggedInUser.FirstName @Model.LoggedInUser.LastName
-                        </div>
-
-                        <div class="profile-id">
-                            ID: @Model.LoggedInUser.FacultyId
-                        </div>
-
-                        <div class="profile-email">
-                            @Model.LoggedInUser.Email
-                        </div>
-
-                        <div class="profile-divider"></div>
-                    </div>
+                    @foreach (var subject in Model.MySubjects)
+                    {
+                        <tr class="subject-row" data-semester="@subject.Semester">
+                            <td>@subject.Code</td>
+                            <td>@subject.Title</td>
+                            <td>@subject.Units</td>
+                            <td>@subject.Department</td>
+                        </tr>
+                    }
                 }
+                else
+                {
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 20px; color: #7f8c8d;">
+                            No subjects assigned yet.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
 
-                <nav class="nav-links">
-                    <a href="/Teacher/TeacherPage">My Schedule</a>
-                    <a href="/Teacher/CurriculumView"" class="active">Curriculum View</a>
-                    <a href="/Teacher/AccountSettings">Account Settings</a>
-                </nav>
-            </div>
+    <section class="card">
+        <h3>Filter</h3>
+        <div class="filter-group">
+            <label>Year / Semester</label>
+            <select id="semesterFilter" onchange="filterSubjects()">
+                <option value="All">All Semesters</option>
+                <option value="1st Year - 1st Sem">1st Year - 1st Sem</option>
+                <option value="1st Year - 2nd Sem">1st Year - 2nd Sem</option>
+                <option value="2nd Year - 1st Sem">2nd Year - 1st Sem</option>
+                <option value="2nd Year - 2nd Sem">2nd Year - 2nd Sem</option>
+                <option value="3rd Year - 1st Sem">3rd Year - 1st Sem</option>
+                <option value="3rd Year - 2nd Sem">3rd Year - 2nd Sem</option>
+                <option value="4th Year - 1st Sem">4th Year - 1st Sem</option>
+                <option value="4th Year - 2nd Sem">4th Year - 2nd Sem</option>
+            </select>
+        </div>
+    </section>
 
-            <div class="sidebar-bottom">
-                <a href="/LoginPage?handler=Logout"" class="logout">Logout</a>
-            </div>
-        </aside>
+</div>
 
-        <main class="main-content">
-            <header>
-                <h1>Curriculum Overview</h1>
-            </header>
-
-            <div class="teacher-grid">
-                <section class="card full-width">
-                    <h3>Curriculum Subjects</h3>
-                    <table class="curriculum-table">
-                        <thead>
-                            <tr>
-                                <th>Code</th>
-                                <th>Subject</th>
-                                <th>Units</th>
-                                <th>Department</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if (Model.MySubjects != null && Model.MySubjects.Any())
-                            {
-                                @foreach (var subject in Model.MySubjects)
-                                {
-                                    <tr class="subject-row" data-semester="@subject.Semester">
-                                        <td>@subject.Code</td>
-                                        <td>@subject.Title</td>
-                                        <td>@subject.Units</td>
-                                        <td>@subject.Department</td>
-                                    </tr>
-                                }
-                            }
-                            else
-                            {
-                                <tr>
-                                    <td colspan="4" style="text-align: center; padding: 20px; color: #7f8c8d;">No subjects assigned yet.</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </section>
-
-                <section class="card">
-                    <h3>Filter</h3>
-                    <div class="filter-group">
-                        <label>Year / Semester</label>
-                        <select id="semesterFilter" onchange="filterSubjects()">
-                            <option value="All">All Semesters</option>
-                            <option value="1st Year - 1st Sem">1st Year - 1st Sem</option>
-                            <option value="1st Year - 2nd Sem">1st Year - 2nd Sem</option>
-                            <option value="2nd Year - 1st Sem">2nd Year - 1st Sem</option>
-                            <option value="2nd Year - 2nd Sem">2nd Year - 2nd Sem</option>
-                            <option value="3rd Year - 1st Sem">3rd Year - 1st Sem</option>
-                            <option value="3rd Year - 2nd Sem">3rd Year - 2nd Sem</option>
-                            <option value="4th Year - 1st Sem">4th Year - 1st Sem</option>
-                            <option value="4th Year - 2nd Sem">4th Year - 2nd Sem</option>
-                        </select>
-                    </div>
-                </section>
-            </div>
-        </main>
-    </div>
-
+@section Scripts {
     <script>
         function filterSubjects() {
             var selectedSemester = document.getElementById("semesterFilter").value;
@@ -338,5 +83,4 @@
             });
         }
     </script>
-</body>
-</html>
+}

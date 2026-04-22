@@ -1,0 +1,216 @@
+﻿/* ===== GLOBAL LAYOUT ===== */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #f5f7fa;
+}
+
+.teacher-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+    width: 230px;
+    min-height: 100vh;
+    background: #07362d;
+    color: white;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    padding: 16px 12px;
+    text-align: center;
+    background: rgba(255,255,255,0.08);
+    border-bottom: 1px solid rgba(255,255,255,0.10);
+}
+
+    .sidebar-header h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #ffffff;
+        letter-spacing: 0.5px;
+    }
+
+/* ===== PROFILE ===== */
+.profile-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: #f1c40f;
+    color: #07362d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 22px;
+    margin: 15px auto 10px auto;
+}
+
+.profile-info {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #f1c40f;
+    padding: 0 12px;
+}
+
+.profile-name {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.profile-id {
+    font-size: 15px;
+    margin-top: 6px;
+    font-weight: 500;
+}
+
+.profile-email {
+    font-size: 14px;
+    margin-top: 4px;
+    opacity: 0.9;
+    word-break: break-word;
+}
+
+.profile-divider {
+    height: 1px;
+    width: 80%;
+    margin: 10px auto 20px auto;
+    background: rgba(255,255,255,0.15);
+}
+
+/* ===== NAV ===== */
+.sidebar-top {
+    flex: 1;
+}
+
+.nav-links {
+    display: flex;
+    flex-direction: column;
+    padding: 0 10px;
+}
+
+    .nav-links a {
+        display: block;
+        padding: 8px 12px;
+        border-radius: 6px;
+        color: #ffffff;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 1.2;
+        transition: all 0.2s ease;
+    }
+
+        .nav-links a:not(:last-child) {
+            margin-bottom: 4px;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: #f1c40f;
+            color: #07362d;
+        }
+
+/* ===== LOGOUT ===== */
+.sidebar-bottom {
+    padding: 10px;
+}
+
+.logout {
+    display: block;
+    padding: 8px 12px;
+    border-radius: 6px;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.2;
+    transition: all 0.2s ease;
+}
+
+    .logout:hover {
+        background: #f1c40f;
+        color: #07362d;
+    }
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+    flex: 1;
+    padding: 25px;
+}
+
+/* ===== PAGE CONTENT / CARDS ===== */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+    header h1 {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 0;
+    }
+
+.btn-secondary {
+    background: #07362d;
+    color: white;
+    border: none;
+    padding: 9px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.teacher-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+/* ===== TABLE ===== */
+.schedule-table,
+.curriculum-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .schedule-table thead,
+    .curriculum-table thead {
+        background: #f8f9fb;
+    }
+
+    .schedule-table th,
+    .curriculum-table th {
+        font-size: 11px;
+        text-transform: uppercase;
+        color: #999;
+        padding: 10px;
+        text-align: left;
+    }
+
+    .schedule-table td,
+    .curriculum-table td {
+        padding: 12px 10px;
+    }
+
+    .schedule-table tr:hover,
+    .curriculum-table tr:hover {
+        background: #f6f9fc;
+    }

@@ -9,6 +9,7 @@ namespace FTLSV2.Pages.Teacher
 {
     public class AccountSettingsModel : PageModel
     {
+
         private readonly FtlsDbContext _context;
 
         public AccountSettingsModel(FtlsDbContext context)

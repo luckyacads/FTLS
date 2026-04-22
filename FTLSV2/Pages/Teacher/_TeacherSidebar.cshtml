@@ -1,0 +1,87 @@
+﻿@using FTLSV2.Data
+@using FTLSV2.Models
+@inject FtlsDbContext _context
+
+@{
+    var userId = Context.Session.GetString("ActiveUser");
+    User loggedUser = null;
+
+    if (!string.IsNullOrEmpty(userId))
+    {
+        loggedUser = _context.Users.FirstOrDefault(u => u.FacultyId == userId);
+    }
+
+    var path = Context.Request.Path.Value ?? "";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - FTLSV2</title>
+    <link rel="stylesheet" href="~/css/Teacher-Sidebar.css" />
+    @RenderSection("Styles", required: false)
+</head>
+<body>
+    <div class="teacher-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Teacher Portal</h2>
+            </div>
+
+            @if (loggedUser != null)
+            {
+                <div class="profile-avatar">
+                    @loggedUser.FirstName[0]@loggedUser.LastName[0]
+                </div>
+
+                <div class="profile-info">
+                    <div class="profile-name">
+                        @loggedUser.FirstName @loggedUser.LastName
+                    </div>
+
+                    <div class="profile-id">
+                        ID: @loggedUser.FacultyId
+                    </div>
+
+                    <div class="profile-email">
+                        @loggedUser.Email
+                    </div>
+
+                    <div class="profile-divider"></div>
+                </div>
+            }
+
+            <div class="sidebar-top">
+                <nav class="nav-links">
+                    <a asp-page="/Teacher/TeacherPage"
+                           class="@(path.StartsWith("/Teacher/TeacherPage", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                        My Schedule
+                    </a>
+
+                    <a asp-page="/Teacher/CurriculumView"
+                           class="@(path.StartsWith("/Teacher/CurriculumView", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                        Curriculum View
+                    </a>
+
+                    <a asp-page="/Teacher/AccountSettings"
+                           class="@(path.StartsWith("/Teacher/AccountSettings", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                        Account Settings
+                    </a>
+                </nav>
+            </div>
+
+            <div class="sidebar-bottom">
+                <a asp-page="/LoginPage" asp-page-handler="Logout" class="logout">Logout</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            @RenderBody()
+        </main>
+    </div>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
