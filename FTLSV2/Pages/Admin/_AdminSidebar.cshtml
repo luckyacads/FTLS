@@ -61,10 +61,10 @@
 </head>
 <body>
     @* Show top header only on non-admin pages *@
-    @if (!(Context.Request.Path.StartsWithSegments("/AdminPage", System.StringComparison.OrdinalIgnoreCase)
-           || Context.Request.Path.StartsWithSegments("/RoomRegistry", System.StringComparison.OrdinalIgnoreCase)
-           || Context.Request.Path.StartsWithSegments("/SubjectLibrary", System.StringComparison.OrdinalIgnoreCase)
-           || Context.Request.Path.StartsWithSegments("/AuditLogs", System.StringComparison.OrdinalIgnoreCase)))
+    @if (!(Context.Request.Path.StartsWithSegments("/Admin", System.StringComparison.OrdinalIgnoreCase)
+           || Context.Request.Path.StartsWithSegments("/Admin/RoomRegistry", System.StringComparison.OrdinalIgnoreCase)
+           || Context.Request.Path.StartsWithSegments("/Admin/SubjectLibrary", System.StringComparison.OrdinalIgnoreCase)
+           || Context.Request.Path.StartsWithSegments("/Admin/AuditLogs", System.StringComparison.OrdinalIgnoreCase)))
     {
         <header>
             <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
@@ -90,10 +90,7 @@
     }
 
     @* Show admin sidebar/layout only on admin pages *@
-    @if (Context.Request.Path.StartsWithSegments("/AdminPage", System.StringComparison.OrdinalIgnoreCase)
-         || Context.Request.Path.StartsWithSegments("/RoomRegistry", System.StringComparison.OrdinalIgnoreCase)
-         || Context.Request.Path.StartsWithSegments("/SubjectLibrary", System.StringComparison.OrdinalIgnoreCase)
-         || Context.Request.Path.StartsWithSegments("/AuditLogs", System.StringComparison.OrdinalIgnoreCase))
+    @if (Context.Request.Path.StartsWithSegments("/Admin", System.StringComparison.OrdinalIgnoreCase))
     {
         <div class="admin-container">
             <aside class="sidebar">
@@ -175,10 +172,10 @@
                     display:flex;
                     flex-direction:column;
                     ">
-                    <a asp-page="/AdminPage" class="@(Context.Request.Path.StartsWithSegments("/AdminPage", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">User Management</a>
-                    <a asp-page="/RoomRegistry" class="@(Context.Request.Path.StartsWithSegments("/RoomRegistry", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">Room Registry</a>
-                    <a asp-page="/SubjectLibrary" class="@(Context.Request.Path.StartsWithSegments("/SubjectLibrary", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">Subject Library</a>
-                    <a asp-page="/AuditLogs" class="@(Context.Request.Path.StartsWithSegments("/AuditLogs", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">Audit Logs</a>
+                    <a asp-page="/Admin/AdminPage" class="@(Context.Request.Path.StartsWithSegments("/Admin/AdminPage", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">User Management</a>
+                    <a asp-page="/Admin/RoomRegistry" class="@(Context.Request.Path.StartsWithSegments("/Admin/RoomRegistry", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">Room Registry</a>
+                    <a asp-page="/Admin/SubjectLibrary" class="@(Context.Request.Path.StartsWithSegments("/Admin/SubjectLibrary", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">Subject Library</a>
+                    <a asp-page="/Admin/AuditLogs" class="@(Context.Request.Path.StartsWithSegments("/Admin/AuditLogs", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">Audit Logs</a>
                     <a asp-page="/LoginPage" class="logout" style="margin-top: 10px;">
                         Logout
                     </a>

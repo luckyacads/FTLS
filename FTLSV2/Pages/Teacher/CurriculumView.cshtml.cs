@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace FTLSV2.Pages
+namespace FTLSV2.Pages.Teacher
 {
     public class CurriculumViewModel : PageModel
     {

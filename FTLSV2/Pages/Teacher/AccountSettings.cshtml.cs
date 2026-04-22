@@ -5,7 +5,7 @@ using FTLSV2.Models;
 using Microsoft.AspNetCore.Http;
 using System.Linq;
 
-namespace FTLSV2.Pages
+namespace FTLSV2.Pages.Teacher
 {
     public class AccountSettingsModel : PageModel
     {

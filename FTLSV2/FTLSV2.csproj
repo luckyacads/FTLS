@@ -9,22 +9,18 @@
   <ItemGroup>
     <Compile Remove="Controllers\**" />
     <Compile Remove="Pages\Chairman\Admin\**" />
-    <Compile Remove="Pages\Teacher\**" />
     <Compile Remove="Services\**" />
     <Compile Remove="ViewModels\**" />
     <Content Remove="Controllers\**" />
     <Content Remove="Pages\Chairman\Admin\**" />
-    <Content Remove="Pages\Teacher\**" />
     <Content Remove="Services\**" />
     <Content Remove="ViewModels\**" />
     <EmbeddedResource Remove="Controllers\**" />
     <EmbeddedResource Remove="Pages\Chairman\Admin\**" />
-    <EmbeddedResource Remove="Pages\Teacher\**" />
     <EmbeddedResource Remove="Services\**" />
     <EmbeddedResource Remove="ViewModels\**" />
     <None Remove="Controllers\**" />
     <None Remove="Pages\Chairman\Admin\**" />
-    <None Remove="Pages\Teacher\**" />
     <None Remove="Services\**" />
     <None Remove="ViewModels\**" />
   </ItemGroup>

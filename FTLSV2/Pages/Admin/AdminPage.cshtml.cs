@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 
-namespace FTLSV2.Pages
+namespace FTLSV2.Pages.Admin
 {
     public class AdminPageModel : PageModel
     {

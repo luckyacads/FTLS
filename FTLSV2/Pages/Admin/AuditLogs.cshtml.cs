@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Collections.Generic;
 
-namespace FTLSV2.Pages
+namespace FTLSV2.Pages.Admin
 {
     public class AuditLogsModel : PageModel
     {

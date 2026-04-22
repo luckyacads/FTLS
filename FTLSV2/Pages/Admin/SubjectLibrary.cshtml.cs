@@ -6,7 +6,7 @@ using System.Linq;
 using FTLSV2.Data;
 using FTLSV2.Models;
 
-namespace FTLSV2.Pages
+namespace FTLSV2.Pages.Admin
 {
     public class SubjectLibraryModel : PageModel
     {
