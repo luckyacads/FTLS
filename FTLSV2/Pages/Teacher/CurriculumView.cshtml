@@ -11,7 +11,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Curriculum View - FTLS</title>
     <style>
+            /* ===== SIDEBAR HEADER ===== */
+            .sidebar-header {
+                padding: 16px 12px;
+                text-align: center;
+                background: rgba(255,255,255,0.08);
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+                margin: -20px -15px 15px -15px;
+            }
 
+                .sidebar-header h2 {
+                    margin: 0;
+                    font-size: 18px;
+                    font-weight: 600;
+                    color: #ffffff;
+                    letter-spacing: 0.5px;
+                }
+
+            /* ===== PROFILE BLOCK ===== */
+            .profile-avatar {
+                width: 70px;
+                height: 70px;
+                border-radius: 50%;
+                background: #f1c40f;
+                color: #07362d;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 22px;
+                margin: 15px auto 10px auto;
+            }
+
+            .profile-info {
+                text-align: center;
+                margin-bottom: 25px;
+                color: #f1c40f;
+            }
+
+            .profile-name {
+                font-size: 18px;
+                font-weight: 600;
+                line-height: 1.2;
+            }
+
+            .profile-id {
+                font-size: 15px;
+                margin-top: 6px;
+                font-weight: 500;
+            }
+
+            .profile-email {
+                font-size: 14px;
+                margin-top: 4px;
+                opacity: 0.9;
+                word-break: break-word;
+            }
+
+            .profile-divider {
+                height: 1px;
+                width: 80%;
+                margin: 10px auto 20px auto;
+                background: rgba(255,255,255,0.15);
+            }
             /* ===== GLOBAL ===== */
             body {
                 margin: 0;
@@ -67,7 +129,7 @@
 
                     /* ACTIVE */
                     .nav-links a.active {
-                        background: white;
+                        background: #f1c40f;
                         color: #07362d;
                         font-weight: 600;
                     }
@@ -160,17 +222,42 @@
     <div class="teacher-container">
         <aside class="sidebar">
             <div class="sidebar-top">
-                <h2>Teacher Portal</h2>
+                <div class="sidebar-header">
+                    <h2>Teacher Portal</h2>
+                </div>
+
+                @if (Model.LoggedInUser != null)
+                {
+                    <div class="profile-avatar">
+                        @Model.LoggedInUser.FirstName[0]@Model.LoggedInUser.LastName[0]
+                    </div>
+
+                    <div class="profile-info">
+                        <div class="profile-name">
+                            @Model.LoggedInUser.FirstName @Model.LoggedInUser.LastName
+                        </div>
+
+                        <div class="profile-id">
+                            ID: @Model.LoggedInUser.FacultyId
+                        </div>
+
+                        <div class="profile-email">
+                            @Model.LoggedInUser.Email
+                        </div>
+
+                        <div class="profile-divider"></div>
+                    </div>
+                }
 
                 <nav class="nav-links">
                     <a href="/Teacher/TeacherPage">My Schedule</a>
-                    <a href="/Teacher/CurriculumView" class="active">Curriculum View</a>
+                    <a href="/Teacher/CurriculumView"" class="active">Curriculum View</a>
                     <a href="/Teacher/AccountSettings">Account Settings</a>
                 </nav>
             </div>
 
             <div class="sidebar-bottom">
-                <a href="/LoginPage?handler=Logout" class="logout">Logout</a>
+                <a href="/LoginPage?handler=Logout"" class="logout">Logout</a>
             </div>
         </aside>
 
