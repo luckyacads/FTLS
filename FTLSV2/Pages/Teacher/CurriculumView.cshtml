@@ -47,20 +47,45 @@
     </section>
 
     <section class="card">
-        <h3>Filter</h3>
-        <div class="filter-group">
-            <label>Year / Semester</label>
-            <select id="semesterFilter" onchange="filterSubjects()">
-                <option value="All">All Semesters</option>
-                <option value="1st Year - 1st Sem">1st Year - 1st Sem</option>
-                <option value="1st Year - 2nd Sem">1st Year - 2nd Sem</option>
-                <option value="2nd Year - 1st Sem">2nd Year - 1st Sem</option>
-                <option value="2nd Year - 2nd Sem">2nd Year - 2nd Sem</option>
-                <option value="3rd Year - 1st Sem">3rd Year - 1st Sem</option>
-                <option value="3rd Year - 2nd Sem">3rd Year - 2nd Sem</option>
-                <option value="4th Year - 1st Sem">4th Year - 1st Sem</option>
-                <option value="4th Year - 2nd Sem">4th Year - 2nd Sem</option>
-            </select>
+        <h3 style="margin-bottom: 20px; color: #07362d;">Filter Curriculum</h3>
+
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+
+            <div class="form-group">
+                <label style="font-weight: bold; font-size: 13px; color: #7f8c8d; text-transform: uppercase;">Degree Program</label>
+                <select id="programFilter" onchange="filterSubjects()" style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <option value="All">All Programs</option>
+                    <option value="Civil Engineering">Civil Engineering</option>
+                    <option value="Mechanical Engineering">Mechanical Engineering</option>
+                    <option value="Electronics Engineering">Electronics Engineering</option>
+                    <option value="Computer Engineering">Computer Engineering</option>
+                    <option value="Electrical Engineering">Electrical Engineering</option>
+                    <option value="Industrial Engineering">Industrial Engineering</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label style="font-weight: bold; font-size: 13px; color: #7f8c8d; text-transform: uppercase;">Year Level</label>
+                <select id="yearFilter" onchange="filterSubjects()" style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <option value="All">All Years</option>
+                    <option value="1st Year">1st Year</option>
+                    <option value="2nd Year">2nd Year</option>
+                    <option value="3rd Year">3rd Year</option>
+                    <option value="4th Year">4th Year</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label style="font-weight: bold; font-size: 13px; color: #7f8c8d; text-transform: uppercase;">Semester</label>
+                <select id="semFilter" onchange="filterSubjects()" style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <option value="All">All Semesters</option>
+                    <option value="1st Sem">1st Semester</option>
+                    <option value="2nd Sem">2nd Semester</option>
+                </select>
+            </div>
+
+            <button class="btn-ghost" onclick="resetFilters()" style="margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f8f9fa; border-radius: 4px; cursor: pointer; font-weight: bold; color: #07362d;">Reset Filters</button>
+
         </div>
     </section>
 
@@ -69,18 +94,39 @@
 @section Scripts {
     <script>
         function filterSubjects() {
-            var selectedSemester = document.getElementById("semesterFilter").value;
+            var selectedProgram = document.getElementById("programFilter").value;
+            var selectedYear = document.getElementById("yearFilter").value;
+            var selectedSem = document.getElementById("semFilter").value;
+
             var rows = document.querySelectorAll(".subject-row");
 
             rows.forEach(row => {
-                var rowSemester = row.getAttribute("data-semester");
+                // Get the Year/Sem from your existing data tag
+                var rowSemester = row.getAttribute("data-semester") || "";
 
-                if (selectedSemester === "All" || rowSemester === selectedSemester) {
+                // SMART FIX: Read the text directly from the 4th column (Department) so we don't have to edit your HTML!
+                var deptCell = row.querySelector("td:nth-child(4)");
+                var rowDept = deptCell ? deptCell.textContent : "";
+
+                // Check for matches
+                var matchProgram = (selectedProgram === "All" || rowDept.includes(selectedProgram));
+                var matchYear = (selectedYear === "All" || rowSemester.includes(selectedYear));
+                var matchSem = (selectedSem === "All" || rowSemester.includes(selectedSem));
+
+                // Show or hide the row
+                if (matchProgram && matchYear && matchSem) {
                     row.style.display = "";
                 } else {
                     row.style.display = "none";
                 }
             });
+        }
+
+        function resetFilters() {
+            document.getElementById("programFilter").value = "All";
+            document.getElementById("yearFilter").value = "All";
+            document.getElementById("semFilter").value = "All";
+            filterSubjects();
         }
     </script>
 }
