@@ -4,92 +4,133 @@
     ViewData["Title"] = "Curriculum View";
 }
 
+<style>
+    .curriculum-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-right: 6px;
+        white-space: nowrap;
+    }
+
+    .badge-year {
+        background-color: #f1f3f5; /* Light professional gray */
+        color: #495057; /* Dark gray text */
+        border: 1px solid #dee2e6;
+    }
+
+    .badge-sem {
+        background-color: #eafbf1; /* Soft green */
+        color: #07362d; /* Your theme's dark green */
+        border: 1px solid #c8e6c9;
+    }
+</style>
+
 <header>
     <h1>Curriculum Overview</h1>
 </header>
 
-<div class="teacher-grid">
+<section class="card" style="margin-bottom: 20px;">
+    <h3 style="margin-bottom: 15px; margin-top: 0; color: #07362d;">Filter Curriculum</h3>
 
-    <section class="card full-width">
-        <h3>Curriculum Subjects</h3>
-        <table class="curriculum-table">
-            <thead>
-                <tr>
-                    <th>Code</th>
-                    <th>Subject</th>
-                    <th>Units</th>
-                    <th>Department</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model.MySubjects != null && Model.MySubjects.Any())
+    <div style="display: flex; flex-direction: row; gap: 20px; align-items: flex-end; flex-wrap: wrap;">
+
+        <div class="form-group" style="flex: 1; min-width: 200px;">
+            <label style="font-weight: bold; font-size: 12px; color: #7f8c8d; text-transform: uppercase; margin-bottom: 5px; display: block;">Degree Program</label>
+            <select id="programFilter" onchange="filterSubjects()" style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <option value="All">All Programs</option>
+                <option value="Civil Engineering">Civil Engineering</option>
+                <option value="Mechanical Engineering">Mechanical Engineering</option>
+                <option value="Electronics Engineering">Electronics Engineering</option>
+                <option value="Computer Engineering">Computer Engineering</option>
+                <option value="Electrical Engineering">Electrical Engineering</option>
+                <option value="Industrial Engineering">Industrial Engineering</option>
+            </select>
+        </div>
+
+        <div class="form-group" style="flex: 1; min-width: 150px;">
+            <label style="font-weight: bold; font-size: 12px; color: #7f8c8d; text-transform: uppercase; margin-bottom: 5px; display: block;">Year Level</label>
+            <select id="yearFilter" onchange="filterSubjects()" style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <option value="All">All Years</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+            </select>
+        </div>
+
+        <div class="form-group" style="flex: 1; min-width: 150px;">
+            <label style="font-weight: bold; font-size: 12px; color: #7f8c8d; text-transform: uppercase; margin-bottom: 5px; display: block;">Semester</label>
+            <select id="semFilter" onchange="filterSubjects()" style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <option value="All">All Semesters</option>
+                <option value="1st Sem">1st Semester</option>
+                <option value="2nd Sem">2nd Semester</option>
+            </select>
+        </div>
+
+        <div>
+            <button class="btn-ghost" onclick="resetFilters()" style="height: 40px; padding: 0 20px; border: 1px solid #ccc; background: #f8f9fa; border-radius: 4px; cursor: pointer; font-weight: bold; color: #07362d;">Reset Filters</button>
+        </div>
+
+    </div>
+</section>
+
+<section class="card full-width">
+    <h3>Curriculum Subjects</h3>
+    <table class="curriculum-table">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Subject</th>
+                <th>Units</th>
+                <th>Year & Semester</th>
+                <th>Department</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.MySubjects != null && Model.MySubjects.Any())
+            {
+                @foreach (var subject in Model.MySubjects)
                 {
-                    @foreach (var subject in Model.MySubjects)
-                    {
-                        <tr class="subject-row" data-semester="@subject.Semester">
-                            <td>@subject.Code</td>
-                            <td>@subject.Title</td>
-                            <td>@subject.Units</td>
-                            <td>@subject.Department</td>
-                        </tr>
-                    }
-                }
-                else
-                {
-                    <tr>
-                        <td colspan="4" style="text-align: center; padding: 20px; color: #7f8c8d;">
-                            No subjects assigned yet.
+                    <tr class="subject-row" data-semester="@subject.Semester">
+                        <td style="font-weight: bold; color: #07362d;">@subject.Code</td>
+                        <td>@subject.Title</td>
+                        <td>@subject.Units</td>
+
+                        <td>
+                            @if (!string.IsNullOrEmpty(subject.Semester) && subject.Semester.Contains(" - "))
+                            {
+                                // Splits "1st Year - 1st Sem" into two pieces so we can style them differently!
+                                var parts = subject.Semester.Split(" - ");
+                                <span class="curriculum-badge badge-year">@parts[0]</span>
+                                <span class="curriculum-badge badge-sem">@parts[1]</span>
+                            }
+                            else
+                            {
+                                // Fallback just in case a subject is formatted weirdly in the database
+                                <span class="curriculum-badge badge-year">@subject.Semester</span>
+                            }
                         </td>
+
+                        <td style="color: #7f8c8d;">@subject.Department</td>
                     </tr>
                 }
-            </tbody>
-        </table>
-    </section>
-
-    <section class="card">
-        <h3 style="margin-bottom: 20px; color: #07362d;">Filter Curriculum</h3>
-
-        <div style="display: flex; flex-direction: column; gap: 15px;">
-
-            <div class="form-group">
-                <label style="font-weight: bold; font-size: 13px; color: #7f8c8d; text-transform: uppercase;">Degree Program</label>
-                <select id="programFilter" onchange="filterSubjects()" style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                    <option value="All">All Programs</option>
-                    <option value="Civil Engineering">Civil Engineering</option>
-                    <option value="Mechanical Engineering">Mechanical Engineering</option>
-                    <option value="Electronics Engineering">Electronics Engineering</option>
-                    <option value="Computer Engineering">Computer Engineering</option>
-                    <option value="Electrical Engineering">Electrical Engineering</option>
-                    <option value="Industrial Engineering">Industrial Engineering</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label style="font-weight: bold; font-size: 13px; color: #7f8c8d; text-transform: uppercase;">Year Level</label>
-                <select id="yearFilter" onchange="filterSubjects()" style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                    <option value="All">All Years</option>
-                    <option value="1st Year">1st Year</option>
-                    <option value="2nd Year">2nd Year</option>
-                    <option value="3rd Year">3rd Year</option>
-                    <option value="4th Year">4th Year</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label style="font-weight: bold; font-size: 13px; color: #7f8c8d; text-transform: uppercase;">Semester</label>
-                <select id="semFilter" onchange="filterSubjects()" style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                    <option value="All">All Semesters</option>
-                    <option value="1st Sem">1st Semester</option>
-                    <option value="2nd Sem">2nd Semester</option>
-                </select>
-            </div>
-
-            <button class="btn-ghost" onclick="resetFilters()" style="margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f8f9fa; border-radius: 4px; cursor: pointer; font-weight: bold; color: #07362d;">Reset Filters</button>
-
-        </div>
-    </section>
-
-</div>
+            }
+            else
+            {
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 20px; color: #7f8c8d;">
+                        No subjects assigned yet.
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</section>
 
 @section Scripts {
     <script>
@@ -101,19 +142,15 @@
             var rows = document.querySelectorAll(".subject-row");
 
             rows.forEach(row => {
-                // Get the Year/Sem from your existing data tag
                 var rowSemester = row.getAttribute("data-semester") || "";
 
-                // SMART FIX: Read the text directly from the 4th column (Department) so we don't have to edit your HTML!
-                var deptCell = row.querySelector("td:nth-child(4)");
+                var deptCell = row.querySelector("td:nth-child(5)");
                 var rowDept = deptCell ? deptCell.textContent : "";
 
-                // Check for matches
                 var matchProgram = (selectedProgram === "All" || rowDept.includes(selectedProgram));
                 var matchYear = (selectedYear === "All" || rowSemester.includes(selectedYear));
                 var matchSem = (selectedSem === "All" || rowSemester.includes(selectedSem));
 
-                // Show or hide the row
                 if (matchProgram && matchYear && matchSem) {
                     row.style.display = "";
                 } else {
