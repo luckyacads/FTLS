@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
+using FTLSV2.Models;
 
 namespace FTLSV2.Pages.Admin
 {
@@ -39,7 +41,7 @@ namespace FTLSV2.Pages.Admin
         // 2. Add Room Method
         public IActionResult OnPostAddRoom()
         {
-            if (!string.IsNullOrEmpty(NewRoomName))
+            if (!string.IsNullOrEmpty(NewRoomName) && !string.IsNullOrEmpty(NewRoomType) && NewRoomCapacity > 0)
             {
                 var room = new Models.Room
                 {
@@ -49,22 +51,26 @@ namespace FTLSV2.Pages.Admin
                     Capacity = NewRoomCapacity,
                     Availability = "Available"
                 };
-                // If you need to set a specific RoomId, ensure it does not conflict with the DB sequence
-                _db.Rooms.Add(room);
-                _db.SaveChanges();
-                TempData["SuccessMessage"] = "Room successfully added!";
+
+                // Add both room and audit entry then save once to ensure atomicity
                 try
                 {
-                    AuditLogsModel.Logs.Insert(0, new LogEntry
-                    {
-                        Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm"),
-                        Username = "Admin",
-                        Action = $"Created room: {NewRoomName}"
-                    });
+                    _db.Rooms.Add(room);
+                    AddAuditEntryToContext($"Created room: {NewRoomName}");
+                    _db.SaveChanges();
+                    TempData["SuccessMessage"] = "Room successfully added!";
                 }
-                catch
+                catch (Exception ex)
                 {
+                    // Log exception for troubleshooting and show detailed message in TempData for debugging
+                    var baseMsg = ex.GetBaseException()?.Message ?? ex.Message;
+                    System.Diagnostics.Debug.WriteLine($"Error adding room: {baseMsg}");
+                    TempData["ErrorMessage"] = $"An error occurred while saving the room. {baseMsg}";
                 }
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Please fill in all fields correctly.";
             }
             return RedirectToPage();
         }
@@ -74,21 +80,21 @@ namespace FTLSV2.Pages.Admin
         {
             var room = _db.Rooms.FirstOrDefault(r => r.RoomId == roomId);
             if (room != null)
+            {
+                try
                 {
                     _db.Rooms.Remove(room);
+                    AddAuditEntryToContext($"Deleted room: {room.Name}");
                     _db.SaveChanges();
                     TempData["SuccessMessage"] = "Room successfully deleted!";
-                    try
-                    {
-                        AuditLogsModel.Logs.Insert(0, new LogEntry
-                        {
-                            Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm"),
-                            Username = "Admin",
-                            Action = $"Deleted room: {room.Name}"
-                        });
-                    }
-                    catch { }
                 }
+                catch (Exception ex)
+                {
+                    var baseMsg = ex.GetBaseException()?.Message ?? ex.Message;
+                    System.Diagnostics.Debug.WriteLine($"Error deleting room: {baseMsg}");
+                    TempData["ErrorMessage"] = $"An error occurred while deleting the room. {baseMsg}";
+                }
+            }
             return RedirectToPage();
         }
 
@@ -97,30 +103,55 @@ namespace FTLSV2.Pages.Admin
         {
             var room = _db.Rooms.FirstOrDefault(r => r.RoomId == EditRoomId);
             if (room != null)
-                {
-                    room.Name = EditRoomName;
-                    room.Type = EditRoomType;
-                    room.Capacity = EditRoomCapacity;
-                    room.Availability = EditRoomAvailability;
-                    _db.SaveChanges();
-                    TempData["SuccessMessage"] = "Room successfully updated!";
-                // Log the update
+            {
+                room.Name = EditRoomName;
+                room.Type = EditRoomType;
+                room.Capacity = EditRoomCapacity;
+                room.Availability = EditRoomAvailability;
+
                 try
                 {
-                    AuditLogsModel.Logs.Insert(0, new LogEntry
-                    {
-                        Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm"),
-                        Username = "Admin",
-                        Action = $"Updated room: {room.Name}"
-                    });
+                    AddAuditEntryToContext($"Updated room: {room.Name}");
+                    _db.SaveChanges();
+                    TempData["SuccessMessage"] = "Room successfully updated!";
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // ignore if audit log model is not present
+                    var baseMsg = ex.GetBaseException()?.Message ?? ex.Message;
+                    System.Diagnostics.Debug.WriteLine($"Error updating room: {baseMsg}");
+                    TempData["ErrorMessage"] = $"An error occurred while updating the room. {baseMsg}";
                 }
-                }
+            }
 
             return RedirectToPage();
+        }
+
+        private void AddAuditEntryToContext(string action)
+        {
+            // Get the currently logged-in user's FacultyId from session
+            var facultyId = HttpContext.Session.GetString("ActiveUser");
+            int? userId = null;
+
+            if (!string.IsNullOrEmpty(facultyId))
+            {
+                // Look up the user ID from the database using FacultyId
+                var user = _db.Users.FirstOrDefault(u => u.FacultyId == facultyId);
+                if (user != null)
+                {
+                    userId = user.Id;
+                }
+            }
+
+            var auditLog = new AuditLog
+            {
+                // Use UTC to match PostgreSQL 'timestamp with time zone' requirements
+                Timestamp = DateTime.UtcNow,
+                UserId = userId,
+                Action = action
+            };
+
+            // Add to context but do NOT call SaveChanges here. Caller will persist.
+            _db.AuditLogs.Add(auditLog);
         }
     }
 

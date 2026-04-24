@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using FTLSV2.Data;
 using FTLSV2.Models;
 
@@ -54,10 +55,23 @@ namespace FTLSV2.Pages.Admin
                     Semester = NewSubjectSemester // <-- Save to DB
                 };
 
-                _db.Subjects.Add(subject);
-                _db.SaveChanges();
-
-                TempData["SuccessMessage"] = "Subject successfully added!";
+                try
+                {
+                    _db.Subjects.Add(subject);
+                    AddAuditEntryToContext($"Created subject: {NewSubjectCode} - {NewSubjectTitle}");
+                    _db.SaveChanges();
+                    TempData["SuccessMessage"] = "Subject successfully added!";
+                }
+                catch (Exception ex)
+                {
+                    var baseMsg = ex.GetBaseException()?.Message ?? ex.Message;
+                    System.Diagnostics.Debug.WriteLine($"Error adding subject: {baseMsg}");
+                    TempData["ErrorMessage"] = $"An error occurred while saving the subject. {baseMsg}";
+                }
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Please fill in all required fields.";
             }
             return RedirectToPage();
         }
@@ -74,8 +88,18 @@ namespace FTLSV2.Pages.Admin
                 subjectToEdit.Department = EditSubjectDepartment;
                 subjectToEdit.Semester = EditSubjectSemester; // <-- Save to DB
 
-                _db.SaveChanges();
-                TempData["SuccessMessage"] = "Subject successfully updated!";
+                try
+                {
+                    AddAuditEntryToContext($"Updated subject: {EditSubjectCode} - {EditSubjectTitle}");
+                    _db.SaveChanges();
+                    TempData["SuccessMessage"] = "Subject successfully updated!";
+                }
+                catch (Exception ex)
+                {
+                    var baseMsg = ex.GetBaseException()?.Message ?? ex.Message;
+                    System.Diagnostics.Debug.WriteLine($"Error updating subject: {baseMsg}");
+                    TempData["ErrorMessage"] = $"An error occurred while updating the subject. {baseMsg}";
+                }
             }
             return RedirectToPage();
         }
@@ -86,11 +110,49 @@ namespace FTLSV2.Pages.Admin
             var subject = _db.Subjects.FirstOrDefault(s => s.SubjectId == subjectId);
             if (subject != null)
             {
-                _db.Subjects.Remove(subject);
-                _db.SaveChanges();
-                TempData["SuccessMessage"] = "Subject successfully deleted!";
+                try
+                {
+                    _db.Subjects.Remove(subject);
+                    AddAuditEntryToContext($"Deleted subject: {subject.Code} - {subject.Title}");
+                    _db.SaveChanges();
+                    TempData["SuccessMessage"] = "Subject successfully deleted!";
+                }
+                catch (Exception ex)
+                {
+                    var baseMsg = ex.GetBaseException()?.Message ?? ex.Message;
+                    System.Diagnostics.Debug.WriteLine($"Error deleting subject: {baseMsg}");
+                    TempData["ErrorMessage"] = $"An error occurred while deleting the subject. {baseMsg}";
+                }
             }
             return RedirectToPage();
+        }
+
+        private void AddAuditEntryToContext(string action)
+        {
+            // Get the currently logged-in user's FacultyId from session
+            var facultyId = HttpContext.Session.GetString("ActiveUser");
+            int? userId = null;
+
+            if (!string.IsNullOrEmpty(facultyId))
+            {
+                // Look up the user ID from the database using FacultyId
+                var user = _db.Users.FirstOrDefault(u => u.FacultyId == facultyId);
+                if (user != null)
+                {
+                    userId = user.Id;
+                }
+            }
+
+            var auditLog = new AuditLog
+            {
+                // Use UTC to match PostgreSQL 'timestamp with time zone' requirements
+                Timestamp = DateTime.UtcNow,
+                UserId = userId,
+                Action = action
+            };
+
+            // Add to context but do NOT call SaveChanges here. Caller will persist.
+            _db.AuditLogs.Add(auditLog);
         }
     }
 }

@@ -5,6 +5,7 @@ using FTLSV2.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using System.Security.Claims;
 
 namespace FTLSV2.Pages.Admin
 {
@@ -87,10 +88,19 @@ namespace FTLSV2.Pages.Admin
                 CreatedAt = DateTime.UtcNow
             };
 
-            _context.Users.Add(newUser);
-            _context.SaveChanges();
-
-            TempData["SuccessMessage"] = $"Account for {InputFirstName} {InputLastName} created successfully!";
+            try
+            {
+                _context.Users.Add(newUser);
+                AddAuditEntryToContext($"Created user: {InputFirstName} {InputLastName}");
+                _context.SaveChanges();
+                TempData["SuccessMessage"] = $"Account for {InputFirstName} {InputLastName} created successfully!";
+            }
+            catch (Exception ex)
+            {
+                var baseMsg = ex.GetBaseException()?.Message ?? ex.Message;
+                System.Diagnostics.Debug.WriteLine($"Error adding user: {baseMsg}");
+                TempData["ErrorMessage"] = $"An error occurred while creating the user. {baseMsg}";
+            }
             return RedirectToPage();
         }
 
@@ -99,17 +109,27 @@ namespace FTLSV2.Pages.Admin
             var dbUser = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
             if (dbUser != null)
             {
-                if (dbUser.Status == "Active" || string.IsNullOrEmpty(dbUser.Status))
+                try
                 {
-                    dbUser.Status = "Inactive";
-                }
-                else
-                {
-                    dbUser.Status = "Active";
-                }
+                    if (dbUser.Status == "Active" || string.IsNullOrEmpty(dbUser.Status))
+                    {
+                        dbUser.Status = "Inactive";
+                    }
+                    else
+                    {
+                        dbUser.Status = "Active";
+                    }
 
-                _context.SaveChanges();
-                TempData["SuccessMessage"] = $"{dbUser.FirstName}'s account is now {dbUser.Status}!";
+                    AddAuditEntryToContext($"Changed status for {dbUser.FirstName} {dbUser.LastName} to {dbUser.Status}");
+                    _context.SaveChanges();
+                    TempData["SuccessMessage"] = $"{dbUser.FirstName}'s account is now {dbUser.Status}!";
+                }
+                catch (Exception ex)
+                {
+                    var baseMsg = ex.GetBaseException()?.Message ?? ex.Message;
+                    System.Diagnostics.Debug.WriteLine($"Error toggling user status: {baseMsg}");
+                    TempData["ErrorMessage"] = $"An error occurred while updating the user status. {baseMsg}";
+                }
             }
             return RedirectToPage();
         }
@@ -119,9 +139,19 @@ namespace FTLSV2.Pages.Admin
             var dbUser = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
             if (dbUser != null)
             {
-                dbUser.Password = "usjr1234";
-                _context.SaveChanges();
-                TempData["SuccessMessage"] = $"Password for {dbUser.FirstName} has been reset to 'usjr1234'.";
+                try
+                {
+                    dbUser.Password = "usjr1234";
+                    AddAuditEntryToContext($"Reset password for {dbUser.FirstName} {dbUser.LastName}");
+                    _context.SaveChanges();
+                    TempData["SuccessMessage"] = $"Password for {dbUser.FirstName} has been reset to 'usjr1234'.";
+                }
+                catch (Exception ex)
+                {
+                    var baseMsg = ex.GetBaseException()?.Message ?? ex.Message;
+                    System.Diagnostics.Debug.WriteLine($"Error resetting password: {baseMsg}");
+                    TempData["ErrorMessage"] = $"An error occurred while resetting the password. {baseMsg}";
+                }
             }
             return RedirectToPage();
         }
@@ -131,9 +161,19 @@ namespace FTLSV2.Pages.Admin
             var dbUser = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
             if (dbUser != null)
             {
-                _context.Users.Remove(dbUser);
-                _context.SaveChanges();
-                TempData["SuccessMessage"] = $"Account for {dbUser.FirstName} {dbUser.LastName} has been permanently deleted.";
+                try
+                {
+                    _context.Users.Remove(dbUser);
+                    AddAuditEntryToContext($"Deleted user: {dbUser.FirstName} {dbUser.LastName}");
+                    _context.SaveChanges();
+                    TempData["SuccessMessage"] = $"Account for {dbUser.FirstName} {dbUser.LastName} has been permanently deleted.";
+                }
+                catch (Exception ex)
+                {
+                    var baseMsg = ex.GetBaseException()?.Message ?? ex.Message;
+                    System.Diagnostics.Debug.WriteLine($"Error deleting user: {baseMsg}");
+                    TempData["ErrorMessage"] = $"An error occurred while deleting the user. {baseMsg}";
+                }
             }
             return RedirectToPage();
         }
@@ -155,9 +195,17 @@ namespace FTLSV2.Pages.Admin
                 settings.MaxOverload = InputMaxOverload;
             }
 
-            _context.SaveChanges();
-
-            TempData["SuccessMessage"] = $"Global Max Overload updated to {InputMaxOverload}!";
+            try
+            {
+                _context.SaveChanges();
+                TempData["SuccessMessage"] = $"Global Max Overload updated to {InputMaxOverload}!";
+            }
+            catch (Exception ex)
+            {
+                var baseMsg = ex.GetBaseException()?.Message ?? ex.Message;
+                System.Diagnostics.Debug.WriteLine($"Error updating rules: {baseMsg}");
+                TempData["ErrorMessage"] = $"An error occurred while updating rules. {baseMsg}";
+            }
             return RedirectToPage();
         }
 
@@ -174,17 +222,54 @@ namespace FTLSV2.Pages.Admin
                 // 🚫 Prevent exceeding limit
                 if (newUnits > max)
                 {
-                    TempData["SuccessMessage"] = $"Cannot exceed {max} units!";
+                    TempData["ErrorMessage"] = $"Cannot exceed {max} units!";
                     return RedirectToPage();
                 }
 
-                user.MaxUnits = newUnits;
-                _context.SaveChanges();
-
-                TempData["SuccessMessage"] = $"Updated units for {user.FirstName}.";
+                try
+                {
+                    user.MaxUnits = newUnits;
+                    _context.SaveChanges();
+                    TempData["SuccessMessage"] = $"Updated units for {user.FirstName}.";
+                }
+                catch (Exception ex)
+                {
+                    var baseMsg = ex.GetBaseException()?.Message ?? ex.Message;
+                    System.Diagnostics.Debug.WriteLine($"Error updating user units: {baseMsg}");
+                    TempData["ErrorMessage"] = $"An error occurred while updating user units. {baseMsg}";
+                }
             }
 
             return RedirectToPage(); // 🔥 IMPORTANT
+        }
+
+        private void AddAuditEntryToContext(string action)
+        {
+            // Get the currently logged-in user's FacultyId from session
+            var facultyId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+                ?? HttpContext.Session.GetString("ActiveUser");
+            int? userId = null;
+
+            if (!string.IsNullOrEmpty(facultyId))
+            {
+                // Look up the user ID from the database using FacultyId
+                var user = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
+                if (user != null)
+                {
+                    userId = user.Id;
+                }
+            }
+
+            var auditLog = new AuditLog
+            {
+                // Use UTC to match PostgreSQL 'timestamp with time zone' requirements
+                Timestamp = DateTime.UtcNow,
+                UserId = userId,
+                Action = action
+            };
+
+            // Add to context but do NOT call SaveChanges here. Caller will persist.
+            _context.AuditLogs.Add(auditLog);
         }
     }
 }

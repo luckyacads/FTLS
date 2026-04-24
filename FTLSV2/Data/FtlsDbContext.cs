@@ -27,6 +27,9 @@ namespace FTLSV2.Data
         // For Settings Variable
         public DbSet<SystemSettings> SystemSettings { get; set; }
 
+        // Audit logs table
+        public DbSet<AuditLog> AuditLogs { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -84,6 +87,17 @@ namespace FTLSV2.Data
             modelBuilder.Entity<FacultyLoadSummary>()
                 .HasNoKey()
                 .ToView("faculty_load_summary"); // EXACT name in PostgreSQL
+
+            // Map AuditLog entity to the audit_logs table
+            modelBuilder.Entity<AuditLog>(entity =>
+            {
+                entity.ToTable("audit_logs");
+                entity.HasKey(e => e.LogId);
+                entity.Property(e => e.LogId).HasColumnName("log_id");
+                entity.Property(e => e.Timestamp).HasColumnName("timestamp");
+                entity.Property(e => e.UserId).HasColumnName("user_id");
+                entity.Property(e => e.Action).HasColumnName("action");
+            });
         }
     }
 }

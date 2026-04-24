@@ -15,7 +15,9 @@
     </header>
 
     <section class="card">
-        <h3>Recent Activity</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3>Recent Activity</h3>
+        </div>
         <table class="logs-table">
             <thead>
                 <tr>
@@ -25,12 +27,21 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var log in AuditLogsModel.Logs)
+                @if (Model.Logs != null && Model.Logs.Count > 0)
+                {
+                    @foreach (var log in Model.Logs)
+                    {
+                        <tr>
+                            <td>@log.Timestamp</td>
+                            <td>@log.Username</td>
+                            <td>@log.Action</td>
+                        </tr>
+                    }
+                }
+                else
                 {
                     <tr>
-                        <td>@log.Timestamp</td>
-                        <td>@log.Username</td>
-                        <td>@log.Action</td>
+                        <td colspan="3" style="text-align: center; padding: 20px;">No audit logs found</td>
                     </tr>
                 }
             </tbody>
