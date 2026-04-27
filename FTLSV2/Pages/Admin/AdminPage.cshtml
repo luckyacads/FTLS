@@ -357,12 +357,50 @@ header p {
     </section>
 </div>
 </div>
+<div id="editUnitsModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+    <div class="card" style="width: 350px; position: relative;">
+        <h3 style="margin-top:0; color:#07362d;">Edit Max Units</h3>
+        <p id="modalLimitText" style="font-size:12px; color:#e74c3c; margin-bottom:15px; font-weight:bold;"></p>
+
+        <form method="post" asp-page-handler="UpdateUserUnits">
+            <input type="hidden" name="facultyId" id="modalFacultyId" />
+
+            <div class="form-group">
+                <label style="font-size: 13px; color: #888; font-weight: 600; margin-bottom: 5px; display: block;">New Max Units</label>
+                <input class="input" type="number" name="newUnits" id="modalNewUnits" required min="1" />
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end;">
+                <button type="button" class="btn-primary" style="background:#eee; color:#333;" onclick="closeEditModal()">Cancel</button>
+                <button type="submit" class="btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <script>
 function toggleAddUserForm() {
     var x = document.getElementById("addUserSection");
     x.style.display = x.style.display === "none" ? "block" : "none";
 }
+    function openEditModal(facultyId, currentUnits, globalMax) {
+        // 1. Fill the hidden form inputs with the specific teacher's data
+        document.getElementById('modalFacultyId').value = facultyId;
+        document.getElementById('modalNewUnits').value = currentUnits;
+        document.getElementById('modalNewUnits').max = globalMax;
+        document.getElementById('modalLimitText').innerText = "(Must not exceed the Global Limit of " + globalMax + " units)";
+
+        // 2. Force the dropdown menu to close so it isn't floating above the popup
+        document.querySelectorAll('[id^="menu-"]').forEach(m => m.style.display = "none");
+
+        // 3. Show the popup!
+        document.getElementById('editUnitsModal').style.display = "flex";
+    }
+
+    function closeEditModal() {
+        // Hide the popup
+        document.getElementById('editUnitsModal').style.display = "none";
+    }
 
 function toggleMenu(id, event) {
     event.stopPropagation();
