@@ -15,6 +15,9 @@ builder.Services.AddRazorPages(options =>
 });
 builder.Services.AddSession();
 
+builder.Services.AddEndpointsApiExplorer(); // Swagger
+builder.Services.AddSwaggerGen(); // Swagger
+
 var app = builder.Build();
 
 // ==========================================
@@ -44,6 +47,12 @@ using (var scope = app.Services.CreateScope())
 }
 // ==========================================
 
+if (app.Environment.IsDevelopment()) // Swagger
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -54,11 +63,11 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
 app.UseSession();
 app.UseAuthorization();
 
-app.MapRazorPages();
+app.MapGet("/api/connection-check", () => "Server is reaching NeonDB!"); // Swagger
 
+app.MapRazorPages();
 app.Run();
