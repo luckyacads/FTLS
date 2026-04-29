@@ -34,7 +34,7 @@ namespace FTLSV2.Pages.Chairman
         public string ConfirmPassword { get; set; } = "";
 
         public string Message { get; set; } = "";
-
+        public bool IsSuccess { get; set; } = false;
         public IActionResult OnGet()
         {
             var role = HttpContext.Session.GetString("UserRole");
@@ -62,12 +62,14 @@ namespace FTLSV2.Pages.Chairman
             if (!System.Text.RegularExpressions.Regex.IsMatch(FacultyId, @"^\d{8}$"))
             {
                 Message = "Faculty ID must be exactly 8 digits.";
+                IsSuccess = false;
                 return Page();
             }
 
             if (Password != ConfirmPassword)
             {
                 Message = "Passwords do not match.";
+                IsSuccess = false;
                 return Page();
             }
 
@@ -77,12 +79,14 @@ namespace FTLSV2.Pages.Chairman
             if (chairman == null)
             {
                 Message = "Chairman account not found.";
+                IsSuccess = false;
                 return Page();
             }
 
             if (chairman.SchoolId == null || chairman.DepartmentId == null)
             {
                 Message = "Chairman account has no School/Department assigned.";
+                IsSuccess = false;
                 return Page();
             }
 
@@ -92,12 +96,14 @@ namespace FTLSV2.Pages.Chairman
             if (facultyExists)
             {
                 Message = "Faculty ID already exists.";
+                IsSuccess = false;
                 return Page();
             }
 
             if (emailExists)
             {
                 Message = "Email already exists.";
+                IsSuccess = false;
                 return Page();
             }
 
@@ -123,6 +129,7 @@ namespace FTLSV2.Pages.Chairman
             _context.SaveChanges();
 
             Message = "Teacher registered successfully.";
+            IsSuccess = true;
             ModelState.Clear();
 
             FacultyId = "";
