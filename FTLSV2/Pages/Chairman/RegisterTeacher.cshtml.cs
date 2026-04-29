@@ -84,7 +84,7 @@ namespace FTLSV2.Pages.Chairman
                 Password = Password, // we'll hash later
                 Role = "Teacher",
                 Status = "Active",
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
                 MaxUnits = 21,
 
                 SchoolId = chairman.SchoolId,
