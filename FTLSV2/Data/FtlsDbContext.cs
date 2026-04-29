@@ -12,6 +12,9 @@ namespace FTLSV2.Data
         // This tells Entity Framework to link the User model to the 'users' table
         public DbSet<User> Users { get; set; }
 
+        public DbSet<School> Schools { get; set; }
+        public DbSet<Department> Departments { get; set; }
+
         // Rooms table mapped to the room_registry table in NeonDB
         public DbSet<Room> Rooms { get; set; }
 
