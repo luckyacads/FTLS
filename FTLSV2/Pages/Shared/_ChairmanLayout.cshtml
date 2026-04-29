@@ -152,6 +152,11 @@
                     Faculty Profiles
                 </a>
 
+                <a href="/Chairman/RegisterTeacher"
+                       class="@(Context.Request.Path.StartsWithSegments("/Chairman/RegisterTeacher") ? "active" : "")">
+                    Register New Teacher
+                </a>
+
                 <a href="/Chairman/CourseCatalog"
                        class="@(Context.Request.Path.StartsWithSegments("/Chairman/CourseCatalog") ? "active" : "")">
                     Course Catalog
