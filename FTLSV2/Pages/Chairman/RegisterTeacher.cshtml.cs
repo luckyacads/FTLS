@@ -30,6 +30,9 @@ namespace FTLSV2.Pages.Chairman
         [BindProperty]
         public string Password { get; set; } = "";
 
+        [BindProperty]
+        public string ConfirmPassword { get; set; } = "";
+
         public string Message { get; set; } = "";
 
         public IActionResult OnGet()
@@ -50,6 +53,24 @@ namespace FTLSV2.Pages.Chairman
             if (role != "Chairman")
                 return RedirectToPage("/LoginPage");
 
+            // Normalizing inputs
+            FacultyId = FacultyId.Trim();
+            FirstName = FirstName.Trim();
+            LastName = LastName.Trim();
+            Email = Email.Trim().ToLower();
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(FacultyId, @"^\d{8}$"))
+            {
+                Message = "Faculty ID must be exactly 8 digits.";
+                return Page();
+            }
+
+            if (Password != ConfirmPassword)
+            {
+                Message = "Passwords do not match.";
+                return Page();
+            }
+
             var chairman = _context.Users
                 .FirstOrDefault(u => u.FacultyId == facultyIdSession);
 
@@ -65,13 +86,18 @@ namespace FTLSV2.Pages.Chairman
                 return Page();
             }
 
-            bool exists = _context.Users.Any(u =>
-                u.FacultyId == FacultyId ||
-                u.Email == Email);
+            bool facultyExists = _context.Users.Any(u => u.FacultyId == FacultyId);
+            bool emailExists = _context.Users.Any(u => u.Email == Email);
 
-            if (exists)
+            if (facultyExists)
             {
-                Message = "Faculty ID or Email already exists.";
+                Message = "Faculty ID already exists.";
+                return Page();
+            }
+
+            if (emailExists)
+            {
+                Message = "Email already exists.";
                 return Page();
             }
 
@@ -104,6 +130,7 @@ namespace FTLSV2.Pages.Chairman
             LastName = "";
             Email = "";
             Password = "";
+            ConfirmPassword = "";
 
             return Page();
         }
