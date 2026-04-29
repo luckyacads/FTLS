@@ -215,11 +215,11 @@ namespace FTLSV2.Pages.Admin
 
             if (user != null)
             {
-                // 🔒 Get global max limit
+                // Get global max limit
                 var settings = _context.SystemSettings.FirstOrDefault();
                 int max = settings?.MaxOverload ?? 21;
 
-                // 🚫 Prevent exceeding limit
+                // Prevent exceeding limit
                 if (newUnits > max)
                 {
                     TempData["ErrorMessage"] = $"Cannot exceed {max} units!";
@@ -240,7 +240,7 @@ namespace FTLSV2.Pages.Admin
                 }
             }
 
-            return RedirectToPage(); // 🔥 IMPORTANT
+            return RedirectToPage(); // IMPORTANT
         }
 
         private void AddAuditEntryToContext(string action)
