@@ -27,9 +27,13 @@ namespace FTLSV2.Pages.Chairman
         [BindProperty] public int SelectedFacultyId { get; set; }
         [BindProperty] public int SelectedSubjectId { get; set; }
         [BindProperty] public int SelectedRoomId { get; set; }
-        [BindProperty] public string InputTimeSlot { get; set; }
-        [BindProperty] public int GlobalMaxLimit { get; set; }
 
+        // --- NEW SEPARATE TIME INPUTS ---
+        [BindProperty] public string SelectedDays { get; set; }
+        [BindProperty] public TimeSpan StartTime { get; set; }
+        [BindProperty] public TimeSpan EndTime { get; set; }
+
+        [BindProperty] public int GlobalMaxLimit { get; set; }
 
         // --- LIST TO DISPLAY IN THE TABLE ---
         public IList<AssignedLoad> CurrentSchedules { get; set; }
@@ -39,12 +43,10 @@ namespace FTLSV2.Pages.Chairman
             var settings = _context.SystemSettings.FirstOrDefault();
             GlobalMaxLimit = settings?.MaxOverload ?? 21;
 
-            // 1. Load data for dropdowns
             ActiveTeachers = _context.Users.Where(u => u.Role == "Teacher" && (u.Status == "Active" || string.IsNullOrEmpty(u.Status))).ToList();
             ActiveSubjects = _context.Subjects.OrderBy(s => s.Code).ToList();
             AllRooms = _context.Rooms.OrderBy(r => r.Name).ToList();
 
-            // 2. Load existing schedules to display in the table
             CurrentSchedules = (from s in _context.Schedules
                                 join u in _context.Users on s.FacultyId equals u.Id
                                 join sub in _context.Subjects on s.SubjectId equals sub.SubjectId
@@ -60,21 +62,18 @@ namespace FTLSV2.Pages.Chairman
 
         public IActionResult OnPost()
         {
-            if (SelectedFacultyId != 0 && !string.IsNullOrEmpty(InputTimeSlot) && SelectedSubjectId != 0)
+            // Validate against the new inputs
+            if (SelectedFacultyId != 0 && !string.IsNullOrEmpty(SelectedDays) && SelectedSubjectId != 0)
             {
-                // 1. Find the subject the Chairman selected
                 var targetSubject = _context.Subjects.FirstOrDefault(s => s.SubjectId == SelectedSubjectId);
 
                 if (targetSubject != null)
                 {
-                    // 2. Automatically grab the official units for this subject!
                     int officialSubjectUnits = targetSubject.Units;
 
-                    // Calculate current units the teacher already has
                     var currentSchedules = _context.Schedules.Where(s => s.FacultyId == SelectedFacultyId).ToList();
                     int currentTotalUnits = currentSchedules.Sum(s => s.AssignedUnits);
 
-                    // 3. THE GUARDRAIL: Use the official units to check if it exceeds the limit
                     var settings = _context.SystemSettings.FirstOrDefault();
                     int globalMaxLimit = settings?.MaxOverload ?? 21;
 
@@ -84,29 +83,31 @@ namespace FTLSV2.Pages.Chairman
                         return RedirectToPage();
                     }
 
-                    // 4. If safe, save the schedule and automatically attach the correct units
+                    // *** THE MAGIC TRICK ***
+                    // Combine the three inputs into the standard string format your database uses
+                    string formattedTimeSlot = $"{SelectedDays} {DateTime.Today.Add(StartTime):h:mm tt} - {DateTime.Today.Add(EndTime):h:mm tt}";
+
                     var newSchedule = new Schedule
                     {
                         FacultyId = SelectedFacultyId,
                         SubjectId = SelectedSubjectId,
                         RoomId = SelectedRoomId,
-                        TimeSlot = InputTimeSlot,
-                        AssignedUnits = officialSubjectUnits // <-- Automatically saving it!
+                        TimeSlot = formattedTimeSlot, // Save the combined string!
+                        AssignedUnits = officialSubjectUnits
                     };
 
                     _context.Schedules.Add(newSchedule);
-
-                    var room = _context.Rooms.FirstOrDefault(r => r.RoomId == SelectedRoomId);
-                    if (room != null) room.Availability = "Booked";
-
                     _context.SaveChanges();
                     TempData["SuccessMessage"] = $"Schedule successfully assigned! ({officialSubjectUnits} units automatically added to load)";
                 }
             }
+            else
+            {
+                TempData["ErrorMessage"] = "Please fill in all the schedule fields.";
+            }
             return RedirectToPage();
         }
 
-        // A helper class just to structure the data for our HTML table
         public class AssignedLoad
         {
             public string FacultyName { get; set; }

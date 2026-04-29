@@ -75,27 +75,46 @@
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
 
-                <div class="form-group">
-                    <label>Time Slot</label>
-                    <input type="text" asp-for="InputTimeSlot" placeholder="e.g., TTH 1:00 PM - 2:30 PM" required style="width: 300px; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" />
-                </div>
+                <!-- THE NEW 3-PART TIME SLOT (CLASSIC & RESPONSIVE) -->
+                <div class="form-group" style="margin-bottom: 20px; width: 100%;">
+                    <label style="display: block; font-weight: bold; color: #07362d; margin-bottom: 8px;">Time Slot</label>
 
+                    <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+
+                        <!-- Day Selector -->
+                        <select asp-for="SelectedDays" required style="flex: 1.2; min-width: 0; height: 40px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; color: #333; cursor: pointer; background-color: #fff;">
+                            <option value="" disabled selected>-- Day --</option>
+                            <option value="MWF">MWF</option>
+                            <option value="TTh">TTh</option>
+                            <option value="M">Monday</option>
+                            <option value="T">Tuesday</option>
+                            <option value="W">Wednesday</option>
+                            <option value="Th">Thursday</option>
+                            <option value="F">Friday</option>
+                            <option value="S">Saturday</option>
+                        </select>
+
+                        <!-- Start Time -->
+                        <input type="time" asp-for="StartTime" required onclick="this.showPicker()" style="flex: 1; min-width: 0; height: 40px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; color: #333; cursor: pointer; background-color: #fff;" />
+
+                        <!-- Separator -->
+                        <span style="font-weight: bold; color: #555; font-size: 13px;">to</span>
+
+                        <!-- End Time -->
+                        <input type="time" asp-for="EndTime" required onclick="this.showPicker()" style="flex: 1; min-width: 0; height: 40px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; color: #333; cursor: pointer; background-color: #fff;" />
+
+                    </div>
+                </div>
+                <!-- ASSIGNED ROOM DROPDOWN (RESTORED!) -->
                 <div class="form-group">
                     <label>Assigned Room</label>
-                    <select asp-for="SelectedRoomId" required style="width: 300px; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                    <select asp-for="SelectedRoomId" required style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
                         <option value="">-- Select a Room --</option>
                         @if (Model.AllRooms != null)
                         {
                             @foreach (var room in Model.AllRooms)
                             {
-                                @if (room.Availability == "Booked")
-                                {
-                                    <option value="@room.RoomId" disabled>@room.Name (Booked)</option>
-                                }
-                                else
-                                {
-                                    <option value="@room.RoomId">@room.Name (Available)</option>
-                                }
+                                <option value="@room.RoomId">@room.Name</option>
                             }
                         }
                     </select>
@@ -117,6 +136,7 @@
 
 </div>
 
+<!-- ASSIGNED TEACHING LOADS TABLE (RESTORED TO FULL WIDTH BOTTOM!) -->
 <div class="chairman-card" style="margin-top: 20px; width: 100%;">
     <h3>Assigned Teaching Loads (Current Semester)</h3>
     <table class="table-light" style="width: 100%;">

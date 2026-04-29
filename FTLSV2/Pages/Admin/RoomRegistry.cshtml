@@ -76,13 +76,7 @@
                     <label>Capacity</label>
                     <input type="number" asp-for="EditRoomCapacity" id="editRoomCapacity" required style="width: 100%; padding: 8px;">
                 </div>
-                <div style="flex: 1;">
-                    <label>Availability</label>
-                    <select asp-for="EditRoomAvailability" id="editRoomAvailability" style="width: 100%; padding: 8px;">
-                        <option value="Available">Available</option>
-                        <option value="Booked">Booked</option>
-                    </select>
-                </div>
+                <!-- Availability Edit Field Removed -->
             </div>
             <button type="submit" class="btn-primary" style="background-color: #17a2b8;">Update Room</button>
             <button type="button" class="btn-ghost" onclick="hideEditForm()" style="margin-left: 10px; padding: 10px; border: none; background: #eee; cursor: pointer;">Cancel</button>
@@ -109,18 +103,14 @@
                         <td>@room.Type</td>
                         <td>@room.Capacity</td>
                         <td>
-                            @if (room.Availability == "Available")
-                            {
-                                <span class="status-available" style="color: green; font-weight: bold;">Available</span>
-                            }
-                            else
-                            {
-                                <span class="status-unavailable" style="color: red; font-weight: bold;">@room.Availability</span>
-                            }
+                            <span class="status-available" style="color: #0f6e56; font-weight: 600; font-size: 13px;">
+                                @room.Availability
+                            </span>
                         </td>
                         <td>
                             <div style="display: flex; gap: 5px;">
-                                <button class="btn-edit" onclick="showEditForm(@room.RoomId, '@room.Name', '@room.Type', @room.Capacity, '@room.Availability')">Edit</button>
+                                <!-- Removed availability argument from JS call -->
+                                <button class="btn-edit" onclick="showEditForm(@room.RoomId, '@room.Name', '@room.Type', @room.Capacity)">Edit</button>
 
                                 <form method="post" asp-page-handler="DeleteRoom" style="margin: 0;" onsubmit="return confirm('Are you sure you want to delete @room.RoomId?');">
                                     <input type="hidden" name="roomId" value="@room.RoomId" />
@@ -149,7 +139,7 @@
     }
 
     // Populate and Show Edit Form
-    function showEditForm(id, name, type, capacity, availability) {
+    function showEditForm(id, name, type, capacity) {
         document.getElementById("addRoomSection").style.display = "none"; // Hide add form
 
         // Fill the textboxes with the room's current data
@@ -157,7 +147,7 @@
         document.getElementById("editRoomName").value = name;
         document.getElementById("editRoomType").value = type;
         document.getElementById("editRoomCapacity").value = capacity;
-        document.getElementById("editRoomAvailability").value = availability;
+        // Removed editRoomAvailability
 
         // Show the edit form
         document.getElementById("editRoomSection").style.display = "block";

@@ -20,7 +20,5 @@ namespace FTLSV2.Models
         [Column("capacity")]
         public int Capacity { get; set; }
 
-        [Column("availability")]
-        public string Availability { get; set; }
     }
 }

@@ -53,7 +53,7 @@ namespace FTLSV2.Data
                 entity.Property(e => e.Name).HasColumnName("room_name").HasMaxLength(200);
                 entity.Property(e => e.Type).HasColumnName("type").HasMaxLength(100);
                 entity.Property(e => e.Capacity).HasColumnName("capacity");
-                entity.Property(e => e.Availability).HasColumnName("availability").HasMaxLength(50);
+               
             });
 
             // Map Subject entity to the subject_library table 

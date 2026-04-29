@@ -26,7 +26,7 @@ namespace FTLSV2.Pages.Chairman
             Rooms = _db.Rooms
                 .AsNoTracking()
                 .OrderBy(r => r.Name)
-                .Select(r => new RoomView(r.Name, r.Availability, r.Capacity))
+                .Select(r => new RoomView(r.Name, "Dynamic", r.Capacity))
                 .ToList();
         }
     }
