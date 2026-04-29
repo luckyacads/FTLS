@@ -37,5 +37,17 @@ namespace FTLSV2.Models
 
         [Column("max_units")]
         public int MaxUnits { get; set; }
+
+        [Column("school_id")]
+        public int? SchoolId { get; set; }
+
+        [Column("department_id")]
+        public int? DepartmentId { get; set; }
+
+        [Column("created_by")]
+        public int? CreatedBy { get; set; }
+
+        [Column("created_by_role")]
+        public string? CreatedByRole { get; set; }
     }
 }
