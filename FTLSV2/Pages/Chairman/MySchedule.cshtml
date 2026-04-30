@@ -1,0 +1,83 @@
+@page "/Chairman/MySchedule"
+@model FTLSV2.Pages.Chairman.MyScheduleModel
+@{
+    ViewData["Title"] = "My Schedule";
+    Layout = "_ChairmanLayout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/chairman.css" />
+    <link rel="stylesheet" href="~/css/MySchedule.css" />
+}
+
+<h1 class="chairman-title">My Schedule</h1>
+
+<div class="schedule-container">
+    <div class="schedule-card">
+        <h3>Monday, Wednesday, Friday</h3>
+        @if (Model.MWFSchedules.Any())
+        {
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th class="time-col">Time</th>
+                        <th class="subject-col">Subject</th>
+                        <th class="room-col">Room</th>
+                        <th class="section-col">Units</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var schedule in Model.MWFSchedules)
+                    {
+                        <tr>
+                            <td class="time-col">@schedule.TimeSlot</td>
+                            <td class="subject-col">@schedule.SubjectCode</td>
+                            <td class="room-col">@schedule.RoomName</td>
+                            <td class="section-col">@schedule.Units</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="empty-state">
+                <p>No classes scheduled for MWF</p>
+            </div>
+        }
+    </div>
+
+    <div class="schedule-card">
+        <h3>Tuesday, Thursday</h3>
+        @if (Model.TTHSchedules.Any())
+        {
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th class="time-col">Time</th>
+                        <th class="subject-col">Subject</th>
+                        <th class="room-col">Room</th>
+                        <th class="section-col">Units</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var schedule in Model.TTHSchedules)
+                    {
+                        <tr>
+                            <td class="time-col">@schedule.TimeSlot</td>
+                            <td class="subject-col">@schedule.SubjectCode</td>
+                            <td class="room-col">@schedule.RoomName</td>
+                            <td class="section-col">@schedule.Units</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="empty-state">
+                <p>No classes scheduled for TTH</p>
+            </div>
+        }
+    </div>
+</div>

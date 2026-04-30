@@ -7,20 +7,54 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/chairman.css" />
+    <style>
+        .room-util-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .room-util-table th, .room-util-table td {
+            padding: 12px;
+            border-bottom: 1px solid #f1f3f4;
+            text-align: left;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+        }
+
+        .room-util-table th {
+            font-weight: 600;
+            background: #f8f9fa;
+        }
+
+        .room-col {
+            width: 100px;
+        }
+
+        .availability-col {
+            width: auto;
+            min-width: 400px;
+        }
+
+        .capacity-col {
+            width: 80px;
+            text-align: right;
+        }
+    </style>
 }
 
         <h1 class="chairman-title">Room Utilization</h1>
         <div class="chairman-card">
             <h4>Room Utilization</h4>
-            <table class="table-light">
-                <thead><tr><th>Room</th><th>Status</th><th>Capacity</th></tr></thead>
+            <table class="room-util-table">
+                <thead><tr><th class="room-col">Room</th><th class="availability-col">Availability</th><th class="capacity-col">Capacity</th></tr></thead>
                 <tbody>
                 @foreach(var r in Model.Rooms)
                 {
                     <tr>
-                        <td>@r.Name</td>
-                        <td>@r.Status</td>
-                        <td>@r.Capacity</td>
+                        <td class="room-col">@r.Name</td>
+                        <td class="availability-col">@r.Availability</td>
+                        <td class="capacity-col">@r.Capacity</td>
                     </tr>
                 }
                 </tbody>
