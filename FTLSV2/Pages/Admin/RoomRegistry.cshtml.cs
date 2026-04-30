@@ -89,7 +89,9 @@ namespace FTLSV2.Pages.Admin
         // --- 2. Extracts actual Time math from text like "1:00 PM - 2:00 PM" ---
         private (TimeSpan Start, TimeSpan End)? ExtractTimeSpan(string timeSlot)
         {
-            var match = Regex.Match(timeSlot, @"(\d{1,2}:\d{2}\s*[aA][mMpP][mM]?)\s*-\s*(\d{1,2}:\d{2}\s*[aA][mMpP][mM]?)");
+            // FIXED REGEX: Changed [aA] to [aApP] so it properly detects both AM and PM!
+            var match = Regex.Match(timeSlot, @"(\d{1,2}:\d{2}\s*[aApP][mM])\s*-\s*(\d{1,2}:\d{2}\s*[aApP][mM])", RegexOptions.IgnoreCase);
+
             if (match.Success)
             {
                 if (DateTime.TryParse(match.Groups[1].Value, out DateTime startTime) &&
@@ -100,7 +102,6 @@ namespace FTLSV2.Pages.Admin
             }
             return null; // Return null if it's malformed like "TBA"
         }
-
         // --- 3. The Algorithm: Gap finding between 7 AM and 9 PM ---
         private string CalculateAvailability(List<(TimeSpan Start, TimeSpan End)> schedules)
         {
