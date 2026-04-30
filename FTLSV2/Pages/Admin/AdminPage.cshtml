@@ -12,10 +12,15 @@
         font-family: 'Segoe UI', system-ui, sans-serif;
     }
 
+    /* FIX 1: Force full width, remove Bootstrap's auto-centering and max-width */
     .container {
-        max-width: 1200px;
-        margin: auto;
+        padding: 20px 40px;
+        width: 100%;
+        max-width: 100% !important; /* Forces it to ignore Bootstrap's width limits */
+        margin: 0 !important; /* Stops it from centering in the middle of the screen */
+        box-sizing: border-box;
     }
+    
 
     /* ===== HEADER ===== */
     header {
@@ -43,6 +48,7 @@
         padding: 9px 14px;
         border-radius: 6px;
         cursor: pointer;
+        width: 100%; /* Make button stretch full width of its container */
     }
 
     /* ===== CARD ===== */
@@ -55,7 +61,7 @@
 
     /* ===== FORM ===== */
     .form-group {
-        margin-bottom: 12px;
+        margin-bottom: 15px;
     }
 
     .input {
@@ -63,6 +69,7 @@
         padding: 10px;
         border-radius: 6px;
         border: 1px solid #ddd;
+        box-sizing: border-box;
     }
 
         .input:focus {
@@ -95,10 +102,12 @@
             text-transform: uppercase;
             color: #999;
             padding: 10px;
+            text-align: left;
         }
 
         .admin-table td {
             padding: 12px 10px;
+            border-bottom: 1px solid #eee;
         }
 
         .admin-table tr:hover {
@@ -123,13 +132,15 @@
         color: #c0392b;
     }
 
-    /* ===== GRID ===== */
-    .grid {
+    /* FIX 2: THE NEW SIDE-BY-SIDE GRID */
+    .dashboard-grid {
         display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 20px;
+        grid-template-columns: 320px 1fr; /* Form gets 320px, Table gets the remaining space */
+        gap: 25px;
+        align-items: start; /* Prevents the shorter card from stretching to match the taller card */
     }
 
+    /* ===== DROPDOWN ===== */
     .dropdown-menu {
         display: none;
         position: absolute;
@@ -138,7 +149,7 @@
         background: #fff;
         border: 1px solid #ddd;
         border-radius: 8px;
-        min-width: 220px;
+        min-width: 160px;
         padding: 4px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         z-index: 10;
@@ -177,11 +188,12 @@
         </div>
     }
 
-    <div style="display: flex; flex-direction: column; gap: 20px;">
+    <!-- THIS IS THE NEW GRID WRAPPER -->
+    <div class="dashboard-grid">
 
-        <!-- 1. CREATE USER UI (Now replacing Load Rules, always visible) -->
-        <section class="card">
-            <h3>Create User</h3>
+        <!-- 1. CREATE USER UI (Left Column) -->
+        <section class="card" style="border-top: 5px solid #07362d;">
+            <h3 style="margin-top: 0; margin-bottom: 20px;">Create User</h3>
             <form method="post" asp-page-handler="AddUser">
 
                 <div class="form-group">
@@ -205,7 +217,6 @@
                 </div>
 
                 <div class="form-group">
-                    <!-- 'Admin' option removed per Professor's requirement -->
                     <select class="input" asp-for="InputRole">
                         <option value="Teacher">Teacher</option>
                         <option value="Chairman">Chairman</option>
@@ -214,114 +225,115 @@
 
                 <div class="form-group">
                     <input class="input" asp-for="InputMaxUnits" type="number"
-                           max="@Model.InputMaxOverload" placeholder="Max Units" />
+                           max="@Model.InputMaxOverload" placeholder="Max Units (e.g. 21)" required />
                 </div>
 
                 <button class="btn-primary">Save User</button>
             </form>
         </section>
 
-        <!-- 2. REGISTERED ACCOUNTS TABLE -->
+        <!-- 2. REGISTERED ACCOUNTS TABLE (Right Column) -->
         <section class="card">
-            <h3>Registered Accounts (@Model.DbUsers.Count)</h3>
+            <h3 style="margin-top: 0; margin-bottom: 20px;">Registered Accounts (@Model.DbUsers.Count)</h3>
 
-            <table class="admin-table" style="table-layout: fixed; width: 100%;">
-                <thead>
-                    <tr>
-                        <th style="width: 15%;">ID</th>
-                        <th style="width: 25%;">NAME</th>
-                        <th style="width: 25%;">EMAIL</th>
-                        <th style="width: 15%;">UNITS</th>
-                        <th style="width: 10%;">STATUS</th>
-                        <th style="width: 10%;"></th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @foreach (var user in Model.DbUsers)
-                    {
-                        var initials = $"{user.FirstName?[0]}{user.LastName?[0]}".ToUpper();
-                        var isActive = user.Status == "Active" || string.IsNullOrEmpty(user.Status);
-
+            <div style="overflow-x: auto;">
+                <table class="admin-table">
+                    <thead>
                         <tr>
-                            <td>@user.FacultyId</td>
-
-                            <td>
-                                <div style="display:flex; align-items:center;">
-                                    <span style="margin-right:8px;">@initials</span>
-                                    @user.FirstName @user.LastName
-                                </div>
-                            </td>
-
-                            <td>@user.Email</td>
-
-                            <td>
-                                @if (user.Role == "Admin")
-                                {
-                                    <span>N/A</span>
-                                }
-                                else
-                                {
-                                    <span class="badge green">@user.MaxUnits units</span>
-                                }
-                            </td>
-
-                            <td>
-                                <span class="badge @(isActive ? "green" : "red")">
-                                    @(isActive ? "Active" : "Inactive")
-                                </span>
-                            </td>
-
-                            <td style="text-align:right; position:relative;">
-
-                                <!-- THREE DOT BUTTON -->
-                                <button onclick="toggleMenu('@user.FacultyId', event)" style="
-                                background:none;
-                                border:none;
-                                cursor:pointer;
-                                font-size:18px;">
-                                    ⋮
-                                </button>
-
-                                <!-- DROPDOWN -->
-                                <div id="menu-@user.FacultyId" class="dropdown-menu">
-                                    @if (user.Role != "Admin")
-                                    {
-                                        <button onclick="openEditModal('@user.FacultyId', '@user.MaxUnits', @Model.InputMaxOverload)"
-                                                class="dropdown-item-btn">
-                                            Edit Units
-                                        </button>
-                                    }
-
-                                    <form method="post" asp-page-handler="ToggleUserStatus">
-                                        <input type="hidden" name="facultyId" value="@user.FacultyId" />
-                                        <button type="submit" class="dropdown-item-btn">
-                                            @(isActive ? "Deactivate" : "Activate")
-                                        </button>
-                                    </form>
-
-                                    <form method="post" asp-page-handler="ResetPassword">
-                                        <input type="hidden" name="facultyId" value="@user.FacultyId" />
-                                        <button type="submit" class="dropdown-item-btn">
-                                            Reset Password
-                                        </button>
-                                    </form>
-
-                                    <form method="post" asp-page-handler="DeleteUser"
-                                          onsubmit="return confirm('Delete this account?');">
-                                        <input type="hidden" name="facultyId" value="@user.FacultyId" />
-                                        <button type="submit" class="dropdown-item-btn" style="color:red;">
-                                            Delete
-                                        </button>
-                                    </form>
-                                </div>
-
-                            </td>
+                            <th style="width: 15%;">ID</th>
+                            <th style="width: 25%;">NAME</th>
+                            <th style="width: 25%;">EMAIL</th>
+                            <th style="width: 15%;">UNITS</th>
+                            <th style="width: 10%;">STATUS</th>
+                            <th style="width: 10%;"></th>
                         </tr>
-                    }
-                </tbody>
+                    </thead>
 
-            </table>
+                    <tbody>
+                        @foreach (var user in Model.DbUsers)
+                        {
+                            var initials = $"{user.FirstName?[0]}{user.LastName?[0]}".ToUpper();
+                            var isActive = user.Status == "Active" || string.IsNullOrEmpty(user.Status);
+
+                            <tr>
+                                <td>@user.FacultyId</td>
+
+                                <td>
+                                    <div style="display:flex; align-items:center;">
+                                        <div style="background: #eee; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 11px; font-weight: bold; color: #555;">
+                                            @initials
+                                        </div>
+                                        @user.FirstName @user.LastName
+                                    </div>
+                                </td>
+
+                                <td>@user.Email</td>
+
+                                <td>
+                                    @if (user.Role == "Admin")
+                                    {
+                                        <span style="color: #999; font-size: 12px;">N/A</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge green">@user.MaxUnits units</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <span class="badge @(isActive ? "green" : "red")">
+                                        @(isActive ? "Active" : "Inactive")
+                                    </span>
+                                </td>
+
+                                <td style="text-align:right; position:relative;">
+
+                                    <!-- THREE DOT BUTTON -->
+                                    <button onclick="toggleMenu('@user.FacultyId', event)" style="
+                                        background:none; border:none; cursor:pointer; font-size:18px; padding: 5px;">
+                                        ⋮
+                                    </button>
+
+                                    <!-- DROPDOWN -->
+                                    <div id="menu-@user.FacultyId" class="dropdown-menu">
+                                        @if (user.Role != "Admin")
+                                        {
+                                            <button onclick="openEditModal('@user.FacultyId', '@user.MaxUnits', @Model.InputMaxOverload)"
+                                                    class="dropdown-item-btn">
+                                                Edit Units
+                                            </button>
+                                        }
+
+                                        <form method="post" asp-page-handler="ToggleUserStatus" style="margin: 0;">
+                                            <input type="hidden" name="facultyId" value="@user.FacultyId" />
+                                            <button type="submit" class="dropdown-item-btn">
+                                                @(isActive ? "Deactivate" : "Activate")
+                                            </button>
+                                        </form>
+
+                                        <form method="post" asp-page-handler="ResetPassword" style="margin: 0;">
+                                            <input type="hidden" name="facultyId" value="@user.FacultyId" />
+                                            <button type="submit" class="dropdown-item-btn">
+                                                Reset Password
+                                            </button>
+                                        </form>
+
+                                        <form method="post" asp-page-handler="DeleteUser" style="margin: 0;"
+                                              onsubmit="return confirm('Delete this account?');">
+                                            <input type="hidden" name="facultyId" value="@user.FacultyId" />
+                                            <button type="submit" class="dropdown-item-btn" style="color:red;">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </div>
+
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+
+                </table>
+            </div>
         </section>
     </div>
 </div>
@@ -341,8 +353,8 @@
             </div>
 
             <div style="display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end;">
-                <button type="button" class="btn-primary" style="background:#eee; color:#333;" onclick="closeEditModal()">Cancel</button>
-                <button type="submit" class="btn-primary">Save Changes</button>
+                <button type="button" class="btn-primary" style="background:#eee; color:#333; width: auto;" onclick="closeEditModal()">Cancel</button>
+                <button type="submit" class="btn-primary" style="width: auto;">Save Changes</button>
             </div>
         </form>
     </div>
