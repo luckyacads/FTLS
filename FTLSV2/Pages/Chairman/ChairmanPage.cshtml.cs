@@ -43,7 +43,22 @@ namespace FTLSV2.Pages.Chairman
             var settings = _context.SystemSettings.FirstOrDefault();
             GlobalMaxLimit = settings?.MaxOverload ?? 21;
 
-            ActiveTeachers = _context.Users.Where(u => u.Role == "Teacher" && (u.Status == "Active" || string.IsNullOrEmpty(u.Status))).ToList();
+            // Get all active teachers
+            var teachers = _context.Users.Where(u => u.Role == "Teacher" && (u.Status == "Active" || string.IsNullOrEmpty(u.Status))).ToList();
+
+            // Get the current chairman from session and add them to the dropdown
+            var currentUserFacultyId = HttpContext.Session.GetString("ActiveUser");
+            if (!string.IsNullOrEmpty(currentUserFacultyId))
+            {
+                var chairman = _context.Users.FirstOrDefault(u => u.FacultyId == currentUserFacultyId && u.Role == "Chairman");
+                if (chairman != null && !teachers.Any(t => t.Id == chairman.Id))
+                {
+                    teachers.Add(chairman);
+                }
+            }
+
+            // Sort the list by name
+            ActiveTeachers = teachers.OrderBy(t => t.LastName).ThenBy(t => t.FirstName).ToList();
             ActiveSubjects = _context.Subjects.OrderBy(s => s.Code).ToList();
             AllRooms = _context.Rooms.OrderBy(r => r.Name).ToList();
 

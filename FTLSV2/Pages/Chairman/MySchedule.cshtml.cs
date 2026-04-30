@@ -22,18 +22,25 @@ namespace FTLSV2.Pages.Chairman
 
         public void OnGet()
         {
-            // Get the currently logged-in chairman's ID from session (this is the faculty_id / user id)
-            var chairmanIdStr = HttpContext.Session.GetString("ActiveUser");
+            // Get the currently logged-in chairman's faculty ID from session
+            var chairmanFacultyId = HttpContext.Session.GetString("ActiveUser");
 
-            if (string.IsNullOrEmpty(chairmanIdStr) || !int.TryParse(chairmanIdStr, out int chairmanId))
+            if (string.IsNullOrEmpty(chairmanFacultyId))
             {
-                // Not logged in or invalid ID, return empty
+                // Not logged in, return empty
                 return;
             }
 
-            // Get all schedules for this faculty member directly from schedule table
+            // Look up the user record to get their integer ID
+            var user = _db.Users.FirstOrDefault(u => u.FacultyId == chairmanFacultyId);
+            if (user == null)
+            {
+                return;
+            }
+
+            // Get all schedules for this faculty member using their integer ID
             var schedules = _db.Schedules
-                .Where(s => s.FacultyId == chairmanId)
+                .Where(s => s.FacultyId == user.Id)
                 .AsNoTracking()
                 .ToList();
 

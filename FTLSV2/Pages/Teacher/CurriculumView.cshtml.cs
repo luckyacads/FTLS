@@ -22,6 +22,10 @@ namespace FTLSV2.Pages.Teacher
         // This will hold the unique subjects assigned to the teacher
         public IList<Subject> MySubjects { get; set; }
 
+        // Filter lists
+        public IList<Department> AllDepartments { get; set; }
+        public IList<School> AllSchools { get; set; }
+
         public IActionResult OnGet()
         {
             // 1. Check who is logged in
@@ -38,6 +42,10 @@ namespace FTLSV2.Pages.Teacher
                           select sub)
                           .Distinct() // Prevent duplicates if they teach the same subject twice
                           .ToList();
+
+            // 3. Load all departments and schools for filter dropdowns
+            AllDepartments = _context.Departments.OrderBy(d => d.Name).ToList();
+            AllSchools = _context.Schools.OrderBy(s => s.Name).ToList();
 
             return Page();
         }
