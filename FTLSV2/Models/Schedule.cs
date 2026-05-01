@@ -21,7 +21,7 @@ namespace FTLSV2.Models
 
         // FK to room_registry.room_id
         [Column("room_id")]
-        public int RoomId { get; set; }
+        public int? RoomId { get; set; }
 
         // stored as varchar in DB (user-provided timeslot string)
         [Column("time_slot")]

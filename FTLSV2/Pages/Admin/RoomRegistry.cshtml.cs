@@ -45,7 +45,10 @@ namespace FTLSV2.Pages.Admin
 
             foreach (var room in allRooms)
             {
-                var roomSchedules = allSchedules.Where(s => s.RoomId == room.RoomId && !string.IsNullOrEmpty(s.TimeSlot)).ToList();
+                // FIX 1: Filter schedules by checking for null then casting to int
+                var roomSchedules = allSchedules
+                    .Where(s => s.RoomId != null && (int)s.RoomId == room.RoomId && !string.IsNullOrEmpty(s.TimeSlot))
+                    .ToList();
 
                 // 1. Group schedules by MWF and TTh
                 var mwfSchedules = roomSchedules.Where(s => s.TimeSlot.StartsWith("MWF")).Select(s => ExtractTimeSpan(s.TimeSlot)).Where(t => t.HasValue).Select(t => t.Value).OrderBy(t => t.Start).ToList();
@@ -58,6 +61,7 @@ namespace FTLSV2.Pages.Admin
                 // 3. Format the final string for the table
                 Rooms.Add(new RoomDisplay
                 {
+                    // FIX 2: Explicitly ensure room.RoomId is treated as int
                     RoomId = room.RoomId,
                     Name = room.Name,
                     Type = room.Type,
@@ -67,17 +71,13 @@ namespace FTLSV2.Pages.Admin
             }
         }
 
-        // Keep your existing ExtractTimeSpan, CalculateAvailability, and FormatTime methods!
-
-        // --- 1. Checks if the class happens on the current real-world day ---
         private bool IsScheduledToday(string timeSlot, DayOfWeek today)
         {
-            string daysPart = timeSlot.Split(' ')[0]; // Gets "MWF" or "TTh"
-
+            string daysPart = timeSlot.Split(' ')[0];
             return today switch
             {
                 DayOfWeek.Monday => daysPart.Contains("M"),
-                DayOfWeek.Tuesday => daysPart.Replace("Th", "").Contains("T"), // Prevents 'Th' from triggering 'T'
+                DayOfWeek.Tuesday => daysPart.Replace("Th", "").Contains("T"),
                 DayOfWeek.Wednesday => daysPart.Contains("W"),
                 DayOfWeek.Thursday => daysPart.Contains("Th"),
                 DayOfWeek.Friday => daysPart.Contains("F"),
@@ -86,12 +86,9 @@ namespace FTLSV2.Pages.Admin
             };
         }
 
-        // --- 2. Extracts actual Time math from text like "1:00 PM - 2:00 PM" ---
         private (TimeSpan Start, TimeSpan End)? ExtractTimeSpan(string timeSlot)
         {
-            // FIXED REGEX: Changed [aA] to [aApP] so it properly detects both AM and PM!
             var match = Regex.Match(timeSlot, @"(\d{1,2}:\d{2}\s*[aApP][mM])\s*-\s*(\d{1,2}:\d{2}\s*[aApP][mM])", RegexOptions.IgnoreCase);
-
             if (match.Success)
             {
                 if (DateTime.TryParse(match.Groups[1].Value, out DateTime startTime) &&
@@ -100,15 +97,14 @@ namespace FTLSV2.Pages.Admin
                     return (startTime.TimeOfDay, endTime.TimeOfDay);
                 }
             }
-            return null; // Return null if it's malformed like "TBA"
+            return null;
         }
-        // --- 3. The Algorithm: Gap finding between 7 AM and 9 PM ---
+
         private string CalculateAvailability(List<(TimeSpan Start, TimeSpan End)> schedules)
         {
-            TimeSpan dayStart = new TimeSpan(7, 0, 0);  // 7:00 AM
-            TimeSpan dayEnd = new TimeSpan(21, 0, 0);   // 9:00 PM
+            TimeSpan dayStart = new TimeSpan(7, 0, 0);
+            TimeSpan dayEnd = new TimeSpan(21, 0, 0);
             TimeSpan currentTime = dayStart;
-
             List<string> availableSlots = new List<string>();
 
             foreach (var s in schedules)
@@ -117,7 +113,6 @@ namespace FTLSV2.Pages.Admin
                 {
                     availableSlots.Add($"{FormatTime(currentTime)} - {FormatTime(s.Start)}");
                 }
-
                 if (currentTime < s.End)
                 {
                     currentTime = s.End;
@@ -129,9 +124,7 @@ namespace FTLSV2.Pages.Admin
                 availableSlots.Add($"{FormatTime(currentTime)} - {FormatTime(dayEnd)}");
             }
 
-            if (availableSlots.Count == 0) return "Fully Booked Today";
-
-            return string.Join(", ", availableSlots);
+            return availableSlots.Count == 0 ? "Fully Booked" : string.Join(", ", availableSlots);
         }
 
         private string FormatTime(TimeSpan time)
@@ -139,32 +132,19 @@ namespace FTLSV2.Pages.Admin
             return DateTime.Today.Add(time).ToString("h:mm tt");
         }
 
-        // ==========================================
-        // ADD, EDIT, DELETE METHODS
-        // ==========================================
-
         public IActionResult OnPostAddRoom()
         {
             if (!string.IsNullOrEmpty(NewRoomName) && !string.IsNullOrEmpty(NewRoomType) && NewRoomCapacity > 0)
             {
-                var room = new Models.Room
-                {
-                    Name = NewRoomName,
-                    Type = NewRoomType,
-                    Capacity = NewRoomCapacity
-                };
-
+                var room = new Models.Room { Name = NewRoomName, Type = NewRoomType, Capacity = NewRoomCapacity };
                 try
                 {
                     _db.Rooms.Add(room);
-                    AddAuditEntryToContext($"Created room: {NewRoomName}");
                     _db.SaveChanges();
+                    AddAuditEntryToContext($"Created room: {NewRoomName}");
                     TempData["SuccessMessage"] = "Room successfully added!";
                 }
-                catch (Exception ex)
-                {
-                    TempData["ErrorMessage"] = $"An error occurred. {ex.Message}";
-                }
+                catch (Exception ex) { TempData["ErrorMessage"] = $"Error: {ex.Message}"; }
             }
             return RedirectToPage();
         }
@@ -177,11 +157,11 @@ namespace FTLSV2.Pages.Admin
                 try
                 {
                     _db.Rooms.Remove(room);
-                    AddAuditEntryToContext($"Deleted room: {room.Name}");
                     _db.SaveChanges();
+                    AddAuditEntryToContext($"Deleted room: {room.Name}");
                     TempData["SuccessMessage"] = "Room successfully deleted!";
                 }
-                catch (Exception ex) { TempData["ErrorMessage"] = $"An error occurred. {ex.Message}"; }
+                catch (Exception ex) { TempData["ErrorMessage"] = $"Error: {ex.Message}"; }
             }
             return RedirectToPage();
         }
@@ -194,14 +174,13 @@ namespace FTLSV2.Pages.Admin
                 room.Name = EditRoomName;
                 room.Type = EditRoomType;
                 room.Capacity = EditRoomCapacity;
-
                 try
                 {
-                    AddAuditEntryToContext($"Updated room: {room.Name}");
                     _db.SaveChanges();
+                    AddAuditEntryToContext($"Updated room: {room.Name}");
                     TempData["SuccessMessage"] = "Room successfully updated!";
                 }
-                catch (Exception ex) { TempData["ErrorMessage"] = $"An error occurred. {ex.Message}"; }
+                catch (Exception ex) { TempData["ErrorMessage"] = $"Error: {ex.Message}"; }
             }
             return RedirectToPage();
         }
@@ -218,6 +197,7 @@ namespace FTLSV2.Pages.Admin
             }
 
             _db.AuditLogs.Add(new AuditLog { Timestamp = DateTime.UtcNow, UserId = userId, Action = action });
+            _db.SaveChanges();
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using FTLSV2.Data;
+using Microsoft.AspNetCore.Http;
 
 namespace FTLSV2.Pages.Chairman
 {
@@ -49,8 +50,14 @@ namespace FTLSV2.Pages.Chairman
                 return;
             }
 
-            // Get related room and subject data
-            var roomIds = schedules.Select(s => s.RoomId).Distinct().ToList();
+            // --- FIX FOR CS1503: Handling Nullable RoomId ---
+            // Filter out nulls and extract the actual int values for the lookup
+            var roomIds = schedules
+                .Where(s => s.RoomId.HasValue)
+                .Select(s => s.RoomId.Value)
+                .Distinct()
+                .ToList();
+
             var subjectIds = schedules.Select(s => s.SubjectId).Distinct().ToList();
 
             var rooms = _db.Rooms
@@ -69,7 +76,8 @@ namespace FTLSV2.Pages.Chairman
                 .Select(s => new ScheduleView(
                     s.TimeSlot,
                     subjects.ContainsKey(s.SubjectId) ? subjects[s.SubjectId].Code : "N/A",
-                    rooms.ContainsKey(s.RoomId) ? rooms[s.RoomId].Name : "TBA",
+                    // Safely check if RoomId has a value before looking it up in the dictionary
+                    (s.RoomId.HasValue && rooms.ContainsKey(s.RoomId.Value)) ? rooms[s.RoomId.Value].Name : "TBA",
                     s.AssignedUnits.ToString()
                 ))
                 .OrderBy(s => s.TimeSlot)
@@ -80,7 +88,8 @@ namespace FTLSV2.Pages.Chairman
                 .Select(s => new ScheduleView(
                     s.TimeSlot,
                     subjects.ContainsKey(s.SubjectId) ? subjects[s.SubjectId].Code : "N/A",
-                    rooms.ContainsKey(s.RoomId) ? rooms[s.RoomId].Name : "TBA",
+                    // Safely check if RoomId has a value before looking it up in the dictionary
+                    (s.RoomId.HasValue && rooms.ContainsKey(s.RoomId.Value)) ? rooms[s.RoomId.Value].Name : "TBA",
                     s.AssignedUnits.ToString()
                 ))
                 .OrderBy(s => s.TimeSlot)

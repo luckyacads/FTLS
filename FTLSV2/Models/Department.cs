@@ -11,7 +11,7 @@ namespace FTLSV2.Models
         public int Id { get; set; }
 
         [Column("school_id")]
-        public int SchoolId { get; set; }
+        public int? SchoolId { get; set; }
 
         [Column("code")]
         public string Code { get; set; } = string.Empty;

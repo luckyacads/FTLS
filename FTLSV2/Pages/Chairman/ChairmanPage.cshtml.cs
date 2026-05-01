@@ -106,7 +106,7 @@ namespace FTLSV2.Pages.Chairman
                     {
                         FacultyId = SelectedFacultyId,
                         SubjectId = SelectedSubjectId,
-                        RoomId = SelectedRoomId,
+                        RoomId = SelectedRoomId > 0 ? SelectedRoomId : null,  // Convert 0 to null for optional field
                         TimeSlot = formattedTimeSlot, // Save the combined string!
                         AssignedUnits = officialSubjectUnits
                     };
