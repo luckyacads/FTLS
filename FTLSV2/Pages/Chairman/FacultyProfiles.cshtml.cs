@@ -26,21 +26,43 @@ namespace FTLSV2.Pages.Chairman
 
         public void OnGet()
         {
-            // Step 1: fully load users first
+            // Logged-in user from session
+            var activeFacultyId = HttpContext.Session.GetString("ActiveUser");
+
+            if (string.IsNullOrEmpty(activeFacultyId))
+            {
+                FacultyList = new List<FacultyView>();
+                return;
+            }
+
+            // Get chairman viewing the page
+            var chairman = _db.Users.FirstOrDefault(u =>
+                u.FacultyId == activeFacultyId &&
+                u.Role == "Chairman");
+
+            if (chairman == null || chairman.DepartmentId == null)
+            {
+                FacultyList = new List<FacultyView>();
+                return;
+            }
+
+            int departmentId = chairman.DepartmentId.Value;
+
             var allowedRoles = new[] { "Teacher", "Faculty", "Chairman" };
 
-            var teachers = _db.Users
+            // Only same department
+            var departmentUsers = _db.Users
                 .Where(u =>
                     allowedRoles.Contains(u.Role) &&
+                    u.DepartmentId == departmentId &&
                     (u.Status == "Active" || string.IsNullOrEmpty(u.Status))
                 )
                 .ToList();
 
-            // Step 2: now safe to query schedules
-            FacultyList = teachers
+            FacultyList = departmentUsers
                 .Select(u =>
                 {
-                    var total = _db.Schedules
+                    var totalUnits = _db.Schedules
                         .Where(s => s.FacultyId == u.Id)
                         .Sum(s => (int?)s.AssignedUnits);
 
@@ -49,7 +71,7 @@ namespace FTLSV2.Pages.Chairman
                         u.FacultyId,
                         $"{u.FirstName} {u.LastName}",
                         u.Role,
-                        total == null ? "Pending" : $"{total} units"
+                        totalUnits == null ? "Pending" : $"{totalUnits} units"
                     );
                 })
                 .OrderBy(f => f.Name)
