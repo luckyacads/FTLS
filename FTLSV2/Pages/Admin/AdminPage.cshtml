@@ -12,15 +12,14 @@
         font-family: 'Segoe UI', system-ui, sans-serif;
     }
 
-    /* FIX 1: Force full width, remove Bootstrap's auto-centering and max-width */
+    /* Force full width, remove Bootstrap's auto-centering */
     .container {
         padding: 20px 40px;
         width: 100%;
-        max-width: 100% !important; /* Forces it to ignore Bootstrap's width limits */
-        margin: 0 !important; /* Stops it from centering in the middle of the screen */
+        max-width: 100% !important;
+        margin: 0 !important;
         box-sizing: border-box;
     }
-    
 
     /* ===== HEADER ===== */
     header {
@@ -40,7 +39,7 @@
             color: #888;
         }
 
-    /* ===== BUTTON ===== */
+    /* ===== BUTTONS ===== */
     .btn-primary {
         background: #07362d;
         color: white;
@@ -48,8 +47,54 @@
         padding: 9px 14px;
         border-radius: 6px;
         cursor: pointer;
-        width: 100%; /* Make button stretch full width of its container */
+        width: 100%;
     }
+
+    /* ===== ADD NEW USER BUTTON ===== */
+    .btn-add {
+        background: #07362d;
+        color: white;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        box-shadow: 0 2px 4px rgba(7, 54, 45, 0.2); /* Base shadow */
+        transition: all 0.2s ease-in-out; /* Smooth animation to match the back button */
+    }
+
+        .btn-add:hover {
+            background: #0a4d40; /* Lighter green */
+            transform: translateY(-2px); /* Lifts up */
+            box-shadow: 0 4px 10px rgba(7, 54, 45, 0.3); /* Deeper shadow */
+        }
+
+    /* ===== BACK BUTTON (SOLID DARK GREEN) ===== */
+    .btn-back {
+        background: #07362d; /* Solid dark green background */
+        border: 1px solid #07362d;
+        font-size: 18px;
+        cursor: pointer;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        margin-right: 12px;
+        color: #ffffff; /* Crisp white arrow */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(7, 54, 45, 0.2); /* Soft green shadow */
+        transition: all 0.2s ease-in-out;
+    }
+
+        .btn-back:hover {
+            background: #0a4d40; /* Slightly lighter green on hover so they know it's clickable */
+            border-color: #0a4d40;
+            color: #ffffff;
+            transform: translateY(-2px); /* Lifts up off the page on hover */
+            box-shadow: 0 4px 10px rgba(7, 54, 45, 0.3); /* Shadow grows on hover */
+        }
 
     /* ===== CARD ===== */
     .card {
@@ -132,13 +177,19 @@
         color: #c0392b;
     }
 
-    /* FIX 2: THE NEW SIDE-BY-SIDE GRID */
+    /* DYNAMIC GRID LAYOUT */
     .dashboard-grid {
         display: grid;
-        grid-template-columns: 320px 1fr; /* Form gets 320px, Table gets the remaining space */
+        grid-template-columns: 1fr; /* Default: Table takes full width */
         gap: 25px;
-        align-items: start; /* Prevents the shorter card from stretching to match the taller card */
+        align-items: start;
+        transition: grid-template-columns 0.3s ease;
     }
+
+        /* Applied via JS when form is open */
+        .dashboard-grid.form-active {
+            grid-template-columns: 320px 1fr;
+        }
 
     /* ===== DROPDOWN ===== */
     .dropdown-menu {
@@ -179,6 +230,8 @@
             <h1>System Administration</h1>
             <p>Manage faculty accounts</p>
         </div>
+        <!-- NEW ADD USER BUTTON -->
+        <button class="btn-add" id="btnShowForm" onclick="toggleCreateForm()">+ Add New User</button>
     </header>
 
     @if (TempData["SuccessMessage"] != null)
@@ -188,12 +241,17 @@
         </div>
     }
 
-    <!-- THIS IS THE NEW GRID WRAPPER -->
-    <div class="dashboard-grid">
+    <div class="dashboard-grid" id="mainGrid">
 
-        <!-- 1. CREATE USER UI (Left Column) -->
-        <section class="card" style="border-top: 5px solid #07362d;">
-            <h3 style="margin-top: 0; margin-bottom: 20px;">Create User</h3>
+        <!-- 1. CREATE USER UI (Hidden by Default) -->
+        <section class="card" id="createUserSection" style="border-top: 5px solid #07362d; display: none;">
+
+            <!-- BACK BUTTON AND HEADER -->
+            <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                <button class="btn-back" onclick="toggleCreateForm()" title="Close Form">←</button>
+                <h3 style="margin: 0;">Create User</h3>
+            </div>
+
             <form method="post" asp-page-handler="AddUser">
 
                 <div class="form-group">
@@ -232,7 +290,7 @@
             </form>
         </section>
 
-        <!-- 2. REGISTERED ACCOUNTS TABLE (Right Column) -->
+        <!-- 2. REGISTERED ACCOUNTS TABLE -->
         <section class="card">
             <h3 style="margin-top: 0; margin-bottom: 20px;">Registered Accounts (@Model.DbUsers.Count)</h3>
 
@@ -289,7 +347,7 @@
                                 <td style="text-align:right; position:relative;">
 
                                     <!-- THREE DOT BUTTON -->
-                                    <button onclick="toggleMenu('@user.FacultyId', event)" style="
+                                    <button onclick="toggleUserMenu('@user.FacultyId', event)" style="
                                         background:none; border:none; cursor:pointer; font-size:18px; padding: 5px;">
                                         ⋮
                                     </button>
@@ -361,6 +419,26 @@
 </div>
 
 <script>
+    // --- TOGGLE CREATE FORM ---
+    function toggleCreateForm() {
+        var grid = document.getElementById('mainGrid');
+        var formSection = document.getElementById('createUserSection');
+        var btnShow = document.getElementById('btnShowForm');
+
+        if (formSection.style.display === "none" || formSection.style.display === "") {
+            // Show Form
+            formSection.style.display = "block";
+            grid.classList.add("form-active");
+            btnShow.style.display = "none"; // Hide the "+ Add User" button
+        } else {
+            // Hide Form
+            formSection.style.display = "none";
+            grid.classList.remove("form-active");
+            btnShow.style.display = "block"; // Bring the "+ Add User" button back
+        }
+    }
+
+    // --- MODAL LOGIC ---
     function openEditModal(facultyId, currentUnits, globalMax) {
         document.getElementById('modalFacultyId').value = facultyId;
         document.getElementById('modalNewUnits').value = currentUnits;
@@ -375,7 +453,8 @@
         document.getElementById('editUnitsModal').style.display = "none";
     }
 
-    function toggleMenu(id, event) {
+    // --- THREE DOT MENU LOGIC ---
+    function toggleUserMenu(id, event) {
         event.stopPropagation();
         var menu = document.getElementById("menu-" + id);
 
