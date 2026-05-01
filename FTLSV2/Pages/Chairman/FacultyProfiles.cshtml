@@ -9,22 +9,33 @@
     <link rel="stylesheet" href="~/css/chairman.css" />
 }
 
-        <h1 class="chairman-title">Faculty Profiles</h1>
-        <div class="chairman-card">
-            <h4>Faculty Directory</h4>
-            <table class="table-light">
-                <thead>
-                    <tr><th>Name</th><th>Email</th><th>Current Load</th></tr>
-                </thead>
-                <tbody>
-                @foreach(var f in Model.FacultyList)
-                {
-                    <tr>
-                        <td>@f.Name</td>
-                        <td>@f.Email</td>
-                        <td>@f.CurrentLoad units</td>
-                    </tr>
-                }
-                </tbody>
-            </table>
-        </div>
+<h1 class="chairman-title">Faculty Profiles</h1>
+
+<div class="chairman-card">
+    <h4>Faculty Directory</h4>
+
+    <table class="table-light">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Faculty ID</th>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Current Load</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var f in Model.FacultyList)
+            {
+                <tr>
+                    <td>@f.Id</td>
+                    <td>@f.FacultyId</td>
+                    <td>@f.Name</td>
+                    <td>@f.Role</td>
+                    <td>@f.CurrentLoadDisplay</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

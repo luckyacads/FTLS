@@ -38,6 +38,9 @@ namespace FTLSV2.Models
         [Column("max_units")]
         public int MaxUnits { get; set; }
 
+        [Column("current_load")]
+        public int? CurrentLoad { get; set; }
+
         [Column("school_id")]
         public int? SchoolId { get; set; }
 
@@ -49,5 +52,7 @@ namespace FTLSV2.Models
 
         [Column("created_by_role")]
         public string? CreatedByRole { get; set; }
+
+
     }
 }
