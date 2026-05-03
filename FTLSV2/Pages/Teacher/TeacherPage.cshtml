@@ -6,7 +6,7 @@
 
 <header>
     <h1>Welcome, @Model.LoggedInUser.FirstName @Model.LoggedInUser.LastName</h1>
-    <button class="btn-secondary">Download PDF Schedule</button>
+    <button class="btn-secondary" onclick="printSchedule()">Print Faculty</button>
 </header>
 
 <div class="teacher-grid">
@@ -21,7 +21,7 @@
         }
     </section>
 
-    <section class="card full-width">
+    <section class="card full-width" id="printableArea">
         <h3>My Assigned Classes (1st Semester)</h3>
         <table class="schedule-table">
             <thead>
@@ -56,3 +56,16 @@
     </section>
 
 </div>
+
+@section Scripts {
+    <script>
+        function printSchedule() {
+            const printContent = document.getElementById('printableArea').innerHTML;
+            const originalContent = document.body.innerHTML;
+
+            document.body.innerHTML = printContent;
+            window.print();
+            document.body.innerHTML = originalContent;
+        }
+    </script>
+}

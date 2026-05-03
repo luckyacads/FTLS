@@ -10,9 +10,12 @@
     <link rel="stylesheet" href="~/css/MySchedule.css" />
 }
 
-<h1 class="chairman-title">My Schedule</h1>
+<div class="header-bar">
+    <h1 class="chairman-title">My Schedule</h1>
+    <button class="btn-print" onclick="printSchedule()">Print Faculty Loads</button>
+</div>
 
-<div class="schedule-container">
+<div class="schedule-container" id="printableArea">
     <div class="schedule-card">
         <h3>Monday, Wednesday, Friday</h3>
         @if (Model.MWFSchedules.Any())
@@ -81,3 +84,16 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        function printSchedule() {
+            const printContent = document.getElementById('printableArea').innerHTML;
+            const originalContent = document.body.innerHTML;
+
+            document.body.innerHTML = printContent;
+            window.print();
+            document.body.innerHTML = originalContent;
+        }
+    </script>
+}
