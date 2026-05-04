@@ -165,3 +165,53 @@
         </tbody>
     </table>
 </div>
+
+<!-- SCRIPTS FOR DYNAMIC ROOM FILTERING -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const daysInput = document.getElementById("SelectedDays");
+        const startInput = document.getElementById("StartTime");
+        const endInput = document.getElementById("EndTime");
+        const roomDropdown = document.getElementById("SelectedRoomId");
+
+        // Listen for changes
+        daysInput.addEventListener("change", fetchAvailableRooms);
+        startInput.addEventListener("change", fetchAvailableRooms);
+        endInput.addEventListener("change", fetchAvailableRooms);
+
+        function fetchAvailableRooms() {
+            const days = daysInput.value;
+            const start = startInput.value;
+            const end = endInput.value;
+
+            if (days && start && end) {
+                // Show loading state
+                roomDropdown.innerHTML = '<option value="">Searching for available rooms...</option>';
+
+                // Fetch data from C# handler
+                fetch(`?handler=AvailableRooms&days=${days}&startTime=${start}&endTime=${end}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        roomDropdown.innerHTML = ''; // Clear dropdown
+
+                        if (data.length === 0) {
+                            roomDropdown.innerHTML = '<option value="">-- No Rooms Available at this Time! --</option>';
+                        } else {
+                            roomDropdown.innerHTML = '<option value="">-- Select an Available Room --</option>';
+                            // Populate dropdown
+                            data.forEach(room => {
+                                const option = document.createElement("option");
+                                option.value = room.roomId;
+                                option.textContent = room.name;
+                                roomDropdown.appendChild(option);
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error fetching rooms:", error);
+                        roomDropdown.innerHTML = '<option value="">-- Error loading rooms --</option>';
+                    });
+            }
+        }
+    });
+</script>
