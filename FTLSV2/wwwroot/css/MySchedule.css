@@ -48,8 +48,12 @@
     width: 100px;
 }
 
+.subject-code-col {
+    width: 100px;
+}
+
 .subject-col {
-    width: 150px;
+    width: 200px;
 }
 
 .room-col {
@@ -57,7 +61,11 @@
 }
 
 .section-col {
-    width: 100px;
+    width: 80px;
+}
+
+.semester-col {
+    width: 120px;
 }
 
 .empty-state {

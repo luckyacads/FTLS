@@ -8,6 +8,285 @@
 @section Styles {
     <link rel="stylesheet" href="~/css/chairman.css" />
     <link rel="stylesheet" href="~/css/MySchedule.css" />
+    <style>
+        /* Summary Statistics */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #07362d 0%, #0a4a3a 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card h4 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        /* Enhanced Schedule Cards */
+        .schedule-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .class-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .class-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: #2ecc71;
+        }
+
+        .class-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .class-header h4 {
+            margin: 0;
+            color: #07362d;
+            font-size: 16px;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .offer-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .offer-badge.available {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .offer-badge.unavailable {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .class-details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .detail-row {
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .detail-icon {
+            width: 20px;
+            margin-right: 10px;
+            color: #2ecc71;
+            font-weight: bold;
+        }
+
+        .detail-label {
+            color: #666;
+            font-weight: 500;
+            min-width: 50px;
+        }
+
+        .detail-value {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .units-badge {
+            display: inline-block;
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Collapsible Sections */
+        .semester-section {
+            margin-bottom: 25px;
+        }
+
+        .semester-header {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: linear-gradient(90deg, #f1c40f 0%, #f9e79f 100%);
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+        }
+
+        .semester-header:hover {
+            background: linear-gradient(90deg, #f39c12 0%, #f1c40f 100%);
+        }
+
+        .semester-header h4 {
+            margin: 0;
+            color: #07362d;
+            font-size: 16px;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .semester-toggle {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 50%;
+            font-weight: bold;
+            color: #07362d;
+            transition: transform 0.2s ease;
+        }
+
+        .semester-section.collapsed .semester-toggle {
+            transform: rotate(-90deg);
+        }
+
+        .semester-content {
+            max-height: 1000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease, opacity 0.3s ease;
+            opacity: 1;
+        }
+
+        .semester-section.collapsed .semester-content {
+            max-height: 0;
+            opacity: 0;
+        }
+
+        .semester-table-wrapper {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+            overflow: hidden;
+        }
+
+        /* Enhanced Table */
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .schedule-table thead {
+            background-color: #f5f5f5;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .schedule-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #07362d;
+        }
+
+        .schedule-table td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            color: #333;
+        }
+
+        .schedule-table tbody tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .schedule-table .offer-code-cell {
+            font-weight: 600;
+        }
+
+        /* Responsive Design */
+        @@media (max-width: 768px) {
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+
+            .schedule-cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .class-header {
+                flex-direction: column;
+            }
+
+            .offer-badge {
+                margin-top: 8px;
+            }
+
+            .schedule-table {
+                font-size: 12px;
+            }
+
+            .schedule-table th,
+            .schedule-table td {
+                padding: 8px;
+            }
+        }
+
+        /* Print Styles */
+        @@media print {
+            .stats-row,
+            .class-card {
+                page-break-inside: avoid;
+            }
+
+            .semester-header {
+                background-color: #f1c40f !important;
+            }
+
+            .schedule-container {
+                box-shadow: none;
+            }
+        }
+    </style>
 }
 
 <div class="header-bar">
@@ -15,78 +294,199 @@
     <button class="btn-print" onclick="printSchedule()">Print Faculty Loads</button>
 </div>
 
+<!-- SUMMARY STATISTICS -->
+@if ((Model.MWFSchedules.Any() || Model.TTHSchedules.Any()))
+{
+    <div class="stats-row">
+        <div class="stat-card">
+            <h4>📊 Total Classes</h4>
+            <p class="stat-value">@Model.TotalClasses</p>
+        </div>
+        <div class="stat-card">
+            <h4>📚 Total Units</h4>
+            <p class="stat-value">@Model.TotalUnits</p>
+        </div>
+        <div class="stat-card">
+            <h4>📅 Academic Year</h4>
+            <p class="stat-value" style="font-size: 24px;">@Model.CurrentAcademicYear</p>
+        </div>
+    </div>
+}
+
 <div class="schedule-container" id="printableArea">
-    <div class="schedule-card">
-        <h3>Monday, Wednesday, Friday</h3>
-        @if (Model.MWFSchedules.Any())
-        {
-            <table class="schedule-table">
-                <thead>
-                    <tr>
-                        <th class="time-col">Time</th>
-                        <th class="subject-col">Subject</th>
-                        <th class="room-col">Room</th>
-                        <th class="section-col">Units</th>
-                    </tr>
-                </thead>
-                <tbody>
+    <!-- CURRENT SCHEDULE SECTION -->
+    @if (Model.MWFSchedules.Any() || Model.TTHSchedules.Any())
+    {
+        <div class="schedule-card">
+            <h3>📅 Current Schedule</h3>
+
+            @if (Model.MWFSchedules.Any())
+            {
+                <h4 style="color: #07362d; margin: 20px 0 15px 0; font-weight: 600;">Monday, Wednesday, Friday</h4>
+                <div class="schedule-cards-grid">
                     @foreach (var schedule in Model.MWFSchedules)
                     {
-                        <tr>
-                            <td class="time-col">@schedule.TimeSlot</td>
-                            <td class="subject-col">@schedule.SubjectCode</td>
-                            <td class="room-col">@schedule.RoomName</td>
-                            <td class="section-col">@schedule.Units</td>
-                        </tr>
+                        <div class="class-card">
+                            <div class="class-header">
+                                <h4>@schedule.SubjectCode</h4>
+                                <span class="offer-badge @(schedule.OfferCode.HasValue ? "available" : "unavailable")">
+                                    @(schedule.OfferCode?.ToString() ?? "No Offer")
+                                </span>
+                            </div>
+                            <div class="class-details">
+                                <div class="detail-row">
+                                    <span class="detail-icon">🕐</span>
+                                    <span class="detail-value">@schedule.TimeSlot</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-icon">📝</span>
+                                    <span class="detail-value">@schedule.SubjectTitle</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-icon">📍</span>
+                                    <span class="detail-value">@schedule.RoomName</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-icon">📚</span>
+                                    <span class="units-badge">@schedule.Units Units</span>
+                                </div>
+                            </div>
+                        </div>
                     }
-                </tbody>
-            </table>
-        }
-        else
-        {
-            <div class="empty-state">
-                <p>No classes scheduled for MWF</p>
-            </div>
-        }
-    </div>
+                </div>
+            }
 
-    <div class="schedule-card">
-        <h3>Tuesday, Thursday</h3>
-        @if (Model.TTHSchedules.Any())
-        {
-            <table class="schedule-table">
-                <thead>
-                    <tr>
-                        <th class="time-col">Time</th>
-                        <th class="subject-col">Subject</th>
-                        <th class="room-col">Room</th>
-                        <th class="section-col">Units</th>
-                    </tr>
-                </thead>
-                <tbody>
+            @if (Model.TTHSchedules.Any())
+            {
+                <h4 style="color: #07362d; margin: 20px 0 15px 0; font-weight: 600;">Tuesday, Thursday</h4>
+                <div class="schedule-cards-grid">
                     @foreach (var schedule in Model.TTHSchedules)
                     {
-                        <tr>
-                            <td class="time-col">@schedule.TimeSlot</td>
-                            <td class="subject-col">@schedule.SubjectCode</td>
-                            <td class="room-col">@schedule.RoomName</td>
-                            <td class="section-col">@schedule.Units</td>
-                        </tr>
+                        <div class="class-card">
+                            <div class="class-header">
+                                <h4>@schedule.SubjectCode</h4>
+                                <span class="offer-badge @(schedule.OfferCode.HasValue ? "available" : "unavailable")">
+                                    @(schedule.OfferCode?.ToString() ?? "No Offer")
+                                </span>
+                            </div>
+                            <div class="class-details">
+                                <div class="detail-row">
+                                    <span class="detail-icon">🕐</span>
+                                    <span class="detail-value">@schedule.TimeSlot</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-icon">📝</span>
+                                    <span class="detail-value">@schedule.SubjectTitle</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-icon">📍</span>
+                                    <span class="detail-value">@schedule.RoomName</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-icon">📚</span>
+                                    <span class="units-badge">@schedule.Units Units</span>
+                                </div>
+                            </div>
+                        </div>
                     }
-                </tbody>
-            </table>
-        }
-        else
+                </div>
+            }
+
+            @if (!Model.MWFSchedules.Any() && !Model.TTHSchedules.Any())
+            {
+                <div class="empty-state">
+                    <p>No classes scheduled</p>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<!-- SUBJECT HISTORY SECTION (Outside printableArea) -->
+@if (Model.SubjectHistory.Any())
+{
+    <div class="schedule-card" style="margin-top: 30px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0;">📜 Subject History by Semester/Year</h3>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <form method="get" style="display: flex; gap: 10px; margin: 0; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <label for="yearFilter" style="font-weight: 600; margin: 0; font-size: 14px;">Year:</label>
+                        <select name="SelectedYear" id="yearFilter" onchange="this.form.submit()" style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; cursor: pointer; background-color: white;">
+                            <option value="">All Years</option>
+                            @foreach (var year in Model.AvailableYears)
+                            {
+                                <option value="@year" selected="@(Model.SelectedYear == year)">@year</option>
+                            }
+                        </select>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <label for="semesterFilter" style="font-weight: 600; margin: 0; font-size: 14px;">Semester:</label>
+                        <select name="SelectedSemester" id="semesterFilter" onchange="this.form.submit()" style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; cursor: pointer; background-color: white;">
+                            <option value="">All Semesters</option>
+                            @foreach (var semester in Model.AvailableSemesters)
+                            {
+                                <option value="@semester" selected="@(Model.SelectedSemester == semester)">@semester</option>
+                            }
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        @foreach (var semesterGroup in Model.SubjectHistory)
         {
-            <div class="empty-state">
-                <p>No classes scheduled for TTH</p>
+            <div class="semester-section">
+                <div class="semester-header" onclick="toggleSemester(this)">
+                    <h4>@semesterGroup.Semester</h4>
+                    <div class="semester-toggle">▼</div>
+                </div>
+                <div class="semester-content">
+                    <div class="semester-table-wrapper">
+                        <table class="schedule-table">
+                            <thead>
+                                <tr>
+                                    <th class="subject-code-col">Subject Code</th>
+                                    <th class="subject-col">Subject</th>
+                                    <th class="offer-code-col">Offer Code</th>
+                                    <th class="section-col">Units</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var subject in semesterGroup.Subjects)
+                                {
+                                    <tr>
+                                        <td class="subject-code-col">@subject.SubjectCode</td>
+                                        <td class="subject-col">@subject.SubjectTitle</td>
+                                        <td class="offer-code-cell">
+                                            @if (subject.OfferCode.HasValue)
+                                            {
+                                                <span style="background-color: #d4edda; color: #155724; padding: 2px 8px; border-radius: 4px; font-size: 12px;">@subject.OfferCode</span>
+                                            }
+                                            else
+                                            {
+                                                <span style="color: #999;">N/A</span>
+                                            }
+                                        </td>
+                                        <td class="section-col">@subject.Units</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         }
     </div>
-</div>
+}
 
 @section Scripts {
     <script>
+        function toggleSemester(headerElement) {
+            const section = headerElement.parentElement;
+            section.classList.toggle('collapsed');
+        }
+
         function printSchedule() {
             const printContent = document.getElementById('printableArea').innerHTML;
             const originalContent = document.body.innerHTML;

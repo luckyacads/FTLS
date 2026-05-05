@@ -30,6 +30,12 @@ namespace FTLSV2.Models
         [Column("assigned_units")]
         public int AssignedUnits { get; set; }
 
+        [Column("offer_code")]
+        public int? OfferCode { get; set; }
+
+        [Column("academic_year")]
+        public string? AcademicYear { get; set; }
+
         // Navigation properties
         [ForeignKey(nameof(FacultyId))]
         public User Faculty { get; set; }

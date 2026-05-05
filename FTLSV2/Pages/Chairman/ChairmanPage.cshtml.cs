@@ -22,6 +22,7 @@ namespace FTLSV2.Pages.Chairman
         public IList<User> ActiveTeachers { get; set; }
         public IList<Subject> ActiveSubjects { get; set; }
         public IList<Room> AllRooms { get; set; }
+        public IList<string> AvailableAcademicYears { get; set; }
 
         // --- FORM INPUTS TO CATCH ---
         [BindProperty] public int SelectedFacultyId { get; set; }
@@ -32,6 +33,10 @@ namespace FTLSV2.Pages.Chairman
         [BindProperty] public string SelectedDays { get; set; }
         [BindProperty] public TimeSpan StartTime { get; set; }
         [BindProperty] public TimeSpan EndTime { get; set; }
+
+        // --- NEW OFFER CODE AND ACADEMIC YEAR INPUTS ---
+        [BindProperty] public int? SelectedOfferCode { get; set; }
+        [BindProperty] public string SelectedAcademicYear { get; set; }
 
         [BindProperty] public int GlobalMaxLimit { get; set; }
 
@@ -100,7 +105,9 @@ namespace FTLSV2.Pages.Chairman
                         SubjectId = SelectedSubjectId,
                         RoomId = SelectedRoomId > 0 ? SelectedRoomId : null,
                         TimeSlot = formattedTimeSlot,
-                        AssignedUnits = officialSubjectUnits
+                        AssignedUnits = officialSubjectUnits,
+                        OfferCode = SelectedOfferCode,
+                        AcademicYear = SelectedAcademicYear
                     };
 
                     _context.Schedules.Add(newSchedule);
@@ -185,6 +192,14 @@ namespace FTLSV2.Pages.Chairman
             ActiveSubjects = _context.Subjects.OrderBy(s => s.Code).ToList();
             AllRooms = _context.Rooms.OrderBy(r => r.Name).ToList();
 
+            // Get all available academic years from the database
+            AvailableAcademicYears = _context.Schedules
+                .Where(s => s.AcademicYear != null)
+                .Select(s => s.AcademicYear)
+                .Distinct()
+                .OrderByDescending(ay => ay)
+                .ToList();
+
             CurrentSchedules = (from s in _context.Schedules
                                 join u in _context.Users on s.FacultyId equals u.Id
                                 join sub in _context.Subjects on s.SubjectId equals sub.SubjectId
@@ -194,7 +209,9 @@ namespace FTLSV2.Pages.Chairman
                                     FacultyName = $"Engr. {u.FirstName} {u.LastName}",
                                     CourseCode = sub.Code,
                                     Schedule = s.TimeSlot,
-                                    RoomName = r.Name
+                                    RoomName = r.Name,
+                                    OfferCode = s.OfferCode,
+                                    AcademicYear = s.AcademicYear
                                 }).ToList();
         }
 
@@ -257,6 +274,8 @@ namespace FTLSV2.Pages.Chairman
             public string CourseCode { get; set; }
             public string Schedule { get; set; }
             public string RoomName { get; set; }
+            public int? OfferCode { get; set; }
+            public string AcademicYear { get; set; }
         }
     }
 }

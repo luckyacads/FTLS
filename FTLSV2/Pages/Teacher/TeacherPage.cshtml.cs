@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using FTLSV2.Data;
 using FTLSV2.Models;
 using Microsoft.AspNetCore.Http;
@@ -11,80 +12,67 @@ namespace FTLSV2.Pages.Teacher
     public class TeacherPageModel : PageModel
     {
         private readonly FtlsDbContext _context;
-
-        public TeacherPageModel(FtlsDbContext context)
-        {
-            _context = context;
-        }
+        public TeacherPageModel(FtlsDbContext context) { _context = context; }
 
         public User LoggedInUser { get; set; }
 
-        // --- NEW VARIABLES FOR DYNAMIC STATS ---
-        public int TotalUnits { get; set; }
-        public string LoadStatus { get; set; }
-        public string StatusColor { get; set; }
+        // --- Properties for Filtering ---
+        public List<string> AvailableYears { get; set; } = new();
+        public List<string> AvailableSemesters { get; set; } = new();
+        [BindProperty(SupportsGet = true)] public string SelectedYear { get; set; }
+        [BindProperty(SupportsGet = true)] public string SelectedSemester { get; set; }
 
-        // Holds their real schedule
-        public IList<TeacherScheduleItem> MySchedules { get; set; }
+        public record ScheduleView(string TimeSlot, string SubjectCode, string SubjectTitle, string RoomName, string Units, int? OfferCode);
+        public record SubjectBySemester(string Semester, List<SubjectDetail> Subjects);
+        public record SubjectDetail(string SubjectCode, string SubjectTitle, string Units, int? OfferCode);
+
+        public List<ScheduleView> MWFSchedules { get; set; } = new();
+        public List<ScheduleView> TTHSchedules { get; set; } = new();
+        public List<SubjectBySemester> SubjectHistory { get; set; } = new();
+        public int TotalUnits { get; set; }
+        public int TotalClasses { get; set; }
+        public string CurrentAcademicYear { get; set; }
 
         public IActionResult OnGet()
         {
             var activeId = HttpContext.Session.GetString("ActiveUser");
             if (string.IsNullOrEmpty(activeId)) return RedirectToPage("/LoginPage");
 
-            // Find the specific logged-in user
             LoggedInUser = _context.Users.FirstOrDefault(u => u.FacultyId == activeId);
             if (LoggedInUser == null) return RedirectToPage("/LoginPage");
 
-            // 1. Pull their actual schedule from the database!
-            MySchedules = (from s in _context.Schedules
-                           where s.FacultyId == LoggedInUser.Id // Using the teacher's ID
-                           join sub in _context.Subjects on s.SubjectId equals sub.SubjectId
-                           join r in _context.Rooms on s.RoomId equals r.RoomId
-                           select new TeacherScheduleItem
-                           {
-                               CourseTitle = sub.Code + " - " + sub.Title,
-                               ScheduleTime = s.TimeSlot,
-                               RoomName = r.Name,
-                               Units = sub.Units
-                           }).ToList();
+            // Fetch all schedules for this teacher
+            var allSchedules = _context.Schedules
+                .Where(s => s.FacultyId == LoggedInUser.Id)
+                .Include(s => s.Subject).Include(s => s.Room)
+                .AsNoTracking().ToList();
 
-            // 2. Add up all the units
-            TotalUnits = MySchedules.Sum(s => s.Units);
+            // Populate filter dropdown data
+            AvailableYears = allSchedules.Select(s => s.AcademicYear).Where(y => y != null).Distinct().OrderByDescending(y => y).ToList();
+            AvailableSemesters = allSchedules.Select(s => s.Subject.Semester).Where(s => s != null).Distinct().ToList();
 
-            // 3. SMART STATUS CHECK: Handling Overloads and Edge Cases!
-            var settings = _context.SystemSettings.FirstOrDefault();
-            int globalMaxLimit = settings?.MaxOverload ?? 21;
+            // 1. Map Current View (Separate by Day)
+            MWFSchedules = allSchedules.Where(s => s.TimeSlot != null && s.TimeSlot.StartsWith("MWF"))
+                .Select(s => new ScheduleView(s.TimeSlot, s.Subject.Code, s.Subject.Title, s.Room?.Name ?? "TBA", s.AssignedUnits.ToString(), s.OfferCode)).ToList();
 
-            if (TotalUnits > LoggedInUser.MaxUnits || TotalUnits > globalMaxLimit)
-            {
-                // Edge Case 1: They have more units than their personal limit OR the global limit!
-                LoadStatus = "OVERLOAD WARNING";
-                StatusColor = "#e74c3c"; // Red
-            }
-            else if (TotalUnits == LoggedInUser.MaxUnits)
-            {
-                // Edge Case 2: They are exactly at their maximum allowed capacity
-                LoadStatus = "MAX LIMIT REACHED";
-                StatusColor = "#f39c12"; // Orange
-            }
-            else
-            {
-                // Normal Life: They are under the limit, so we hide the status!
-                LoadStatus = "";
-                StatusColor = "transparent";
-            }
+            TTHSchedules = allSchedules.Where(s => s.TimeSlot != null && (s.TimeSlot.StartsWith("TTh") || s.TimeSlot.StartsWith("TTH")))
+                .Select(s => new ScheduleView(s.TimeSlot, s.Subject.Code, s.Subject.Title, s.Room?.Name ?? "TBA", s.AssignedUnits.ToString(), s.OfferCode)).ToList();
+
+            // 2. Apply Filters for History Section
+            var historyData = allSchedules;
+            if (!string.IsNullOrEmpty(SelectedYear)) historyData = historyData.Where(s => s.AcademicYear == SelectedYear).ToList();
+            if (!string.IsNullOrEmpty(SelectedSemester)) historyData = historyData.Where(s => s.Subject.Semester == SelectedSemester).ToList();
+
+            SubjectHistory = historyData.GroupBy(s => s.Subject.Semester ?? "N/A")
+                .Select(g => new SubjectBySemester(g.Key, g.Select(s => new SubjectDetail(s.Subject.Code, s.Subject.Title, s.AssignedUnits.ToString(), s.OfferCode)).DistinctBy(s => s.SubjectCode).ToList()))
+                .ToList();
+
+            // 3. Populate Summary Stats
+            TotalClasses = MWFSchedules.Count + TTHSchedules.Count;
+            TotalUnits = allSchedules.Sum(s => s.AssignedUnits);
+            CurrentAcademicYear = allSchedules.OrderByDescending(s => s.AcademicYear).FirstOrDefault()?.AcademicYear ?? "N/A";
 
             return Page();
         }
-    }
-
-    // A helper class just to structure the data for the Teacher's table
-    public class TeacherScheduleItem
-    {
-        public string CourseTitle { get; set; }
-        public string ScheduleTime { get; set; }
-        public string RoomName { get; set; }
-        public int Units { get; set; }
     }
 }
