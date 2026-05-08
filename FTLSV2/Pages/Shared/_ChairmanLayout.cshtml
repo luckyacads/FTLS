@@ -190,5 +190,14 @@
     </div>
 
     @await RenderSectionAsync("Scripts", required: false)
+    <script>
+        // If the browser loads this page from the Back-Forward Cache (bfcache)
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted) {
+                // Force a hard reload so the C# Server can kick them out!
+                window.location.reload(true);
+            }
+        });
+    </script>
 </body>
 </html>

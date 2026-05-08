@@ -9,6 +9,7 @@ using System.Security.Claims;
 
 namespace FTLSV2.Pages.Admin
 {
+    
     public class AdminPageModel : PageModel
     {
         // 1. Database Connection
@@ -51,11 +52,20 @@ namespace FTLSV2.Pages.Admin
         [BindProperty]
         public int InputMaxOverload { get; set; }
 
+ 
         // --- GET METHOD ---
-        public void OnGet()
+        public IActionResult OnGet()
         {
+            // FIX: Changed "UserId" to "ActiveUser" to match the Login Page!
+            var activeId = HttpContext.Session.GetString("ActiveUser");
+
+            // --- SESSION CHECK ---
+            if (string.IsNullOrEmpty(activeId))
+            {
+                return RedirectToPage("/LoginPage");
+            }
+
             DbUsers = _context.Users.ToList();
-            var activeId = HttpContext.Session.GetString("UserId");
 
             LoggedInUser = _context.Users
                 .FirstOrDefault(u => u.FacultyId == activeId);
@@ -70,6 +80,8 @@ namespace FTLSV2.Pages.Admin
             }
 
             InputMaxOverload = settings.MaxOverload;
+
+            return Page();
         }
 
         // --- POST METHODS ---

@@ -157,6 +157,15 @@
             <button type="submit" class="btn-primary">Sign In</button>
         </form>
     </div>
+    <script>
+        // 1. Push a state into the history when the page loads
+        history.pushState(null, null, location.href);
 
+        // 2. Listen for ANY attempt to use the back button
+        window.onpopstate = function(event) {
+            // 3. Immediately bounce the browser forward again!
+            history.go(1);
+        };
+    </script>
 </body>
 </html>

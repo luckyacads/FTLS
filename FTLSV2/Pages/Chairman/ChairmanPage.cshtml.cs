@@ -9,6 +9,7 @@ using System.Linq;
 
 namespace FTLSV2.Pages.Chairman
 {
+    
     public class ChairmanPageModel : PageModel
     {
         private readonly FtlsDbContext _context;
@@ -43,11 +44,18 @@ namespace FTLSV2.Pages.Chairman
         // --- LIST TO DISPLAY IN THE TABLE ---
         public IList<AssignedLoad> CurrentSchedules { get; set; }
 
-        public void OnGet()
+        public IActionResult OnGet()
         {
-            LoadPageData();
-        }
+            // --- ADDED: SESSION CHECK ---
+            var activeUser = HttpContext.Session.GetString("ActiveUser");
+            if (string.IsNullOrEmpty(activeUser))
+            {
+                return RedirectToPage("/LoginPage");
+            }
 
+            LoadPageData();
+            return Page();
+        }
         public IActionResult OnPost()
         {
             // Validate against the new inputs

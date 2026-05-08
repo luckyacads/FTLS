@@ -50,11 +50,22 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+// ==========================================
+// --- ADDED: ANTI-CACHING MIDDLEWARE ---
+// ==========================================
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+    context.Response.Headers["Pragma"] = "no-cache";
+    context.Response.Headers["Expires"] = "-1";
+    await next();
+});
+// ==========================================
+
 app.UseRouting();
 app.UseSession();
 app.UseAuthorization();
-
-app.MapGet("/api/connection-check", () => "Server is reaching NeonDB!").WithTags("FTLSV2");
 
 #region SUBJECTS API
 app.MapGet("/api/subjects", async (FtlsDbContext db) => Results.Ok(await db.Subjects.ToListAsync()))

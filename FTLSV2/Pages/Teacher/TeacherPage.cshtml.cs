@@ -9,6 +9,7 @@ using System.Linq;
 
 namespace FTLSV2.Pages.Teacher
 {
+   
     public class TeacherPageModel : PageModel
     {
         private readonly FtlsDbContext _context;
