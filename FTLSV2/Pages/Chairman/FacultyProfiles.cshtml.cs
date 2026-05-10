@@ -19,7 +19,7 @@ namespace FTLSV2.Pages.Chairman
             string FacultyId,
             string Name,
             string Role,
-            string CurrentLoadDisplay
+            string CurrentUnitsDisplay
         );
 
         public List<FacultyView> FacultyList { get; set; } = new();

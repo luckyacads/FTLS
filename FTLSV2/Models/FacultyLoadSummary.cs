@@ -20,7 +20,7 @@ namespace FTLSV2.Models
         public string LastName { get; set; }
 
         // Some databases return loads as decimals (e.g. 1.00). Keep decimal here and
-        // expose an integer-friendly CurrentLoad for existing UI code.
+        // expose an integer-friendly CurrentUnit for existing UI code.
         [Column("total_load")]
         public decimal TotalLoad { get; set; }
 
@@ -34,6 +34,6 @@ namespace FTLSV2.Models
 
         // Provide an integer load for existing UI (rounds down/up as appropriate)
         [NotMapped]
-        public int CurrentLoad => (int)System.Math.Round(TotalLoad);
+        public int CurrentUnits => (int)System.Math.Round(TotalLoad);
     }
 }

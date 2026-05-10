@@ -38,8 +38,8 @@ namespace FTLSV2.Models
         [Column("max_units")]
         public int MaxUnits { get; set; }
 
-        [Column("current_load")]
-        public int? CurrentLoad { get; set; }
+        [Column("current_units")]
+        public int? CurrentUnits { get; set; }
 
         [Column("school_id")]
         public int? SchoolId { get; set; }

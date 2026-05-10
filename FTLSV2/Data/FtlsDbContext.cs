@@ -59,11 +59,11 @@ namespace FTLSV2.Data
             // Map Subject entity to the subject_library table 
             modelBuilder.Entity<Subject>(entity =>
             {
-                entity.ToTable("subject_library");
+                entity.ToTable("subject");
                 entity.HasKey(e => e.SubjectId);
                 entity.Property(e => e.SubjectId).HasColumnName("subject_id");
                 entity.Property(e => e.Code).HasColumnName("subject_code").HasMaxLength(50);
-                entity.Property(e => e.Title).HasColumnName("title").HasMaxLength(300);
+                entity.Property(e => e.Title).HasColumnName("subject_title").HasMaxLength(300);
                 entity.Property(e => e.Units).HasColumnName("units");
                 entity.Property(e => e.Department).HasColumnName("department").HasMaxLength(200);
                 entity.Property(e => e.Semester).HasColumnName("semester").HasMaxLength(50);
