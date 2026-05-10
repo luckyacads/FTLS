@@ -96,6 +96,9 @@
                 box-shadow: 0 0 0 3px rgba(7, 54, 45, 0.15);
             }
 
+
+        /* PRIMARY button: SIGN IN */
+
         .btn-primary {
             background-color: var(--primary);
             color: white;
@@ -117,6 +120,51 @@
                 transform: translateY(-2px);
                 box-shadow: 0 6px 15px rgba(0,0,0,0.3);
             }
+
+        /* SECONDARY button: REGISTER */
+
+            .login-button-group {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 14px;
+                margin-top: 20px;
+            }
+
+            .login-btn {
+                min-width: 160px;
+                padding: 12px 22px;
+                border-radius: 10px;
+                font-weight: 600;
+                font-size: 15px;
+                cursor: pointer;
+                transition: all 0.2s ease-in-out;
+            }
+
+            .login-btn-primary {
+                background-color: #0A5927;
+                color: white;
+                border: 2px solid #198754;
+            }
+
+                .login-btn-primary:hover {
+                    background-color: #FFC305;
+                    color: #000000;
+                    border-color: #FFEAA6;
+                    transform: translateY(-1px);
+                }
+
+            .login-btn-secondary {
+                background-color: white;
+                color: #198754;
+                border: 2px solid #198754;
+            }
+
+                .login-btn-secondary:hover {
+                    background-color: #198754;
+                    color: white;
+                    transform: translateY(-1px);
+                }
 
         .alert-error {
             background-color: #ffeaea;
@@ -154,7 +202,17 @@
                 <input type="password" asp-for="Password" placeholder="Enter your password" required />
             </div>
 
-            <button type="submit" class="btn-primary">Sign In</button>
+            <!-- BUTTONS -->
+            <div class="login-button-group">
+                <button type="submit" class="login-btn login-btn-primary">
+                    SIGN IN
+                </button>
+
+                <button type="button" class="login-btn login-btn-secondary">
+                    REGISTER
+                </button>
+            </div>
+
         </form>
     </div>
     <script>
