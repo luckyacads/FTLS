@@ -18,7 +18,7 @@ namespace FTLSV2.Data
         // Rooms table mapped to the room_registry table in NeonDB
         public DbSet<Room> Rooms { get; set; }
 
-        // Subjects table mapped to the subject_library table
+        // Subjects table mapped to the subject table
         public DbSet<Subject> Subjects { get; set; }
 
         // Schedules table mapped to the schedule table
@@ -56,7 +56,7 @@ namespace FTLSV2.Data
                
             });
 
-            // Map Subject entity to the subject_library table 
+            // Map Subject entity to the subject table 
             modelBuilder.Entity<Subject>(entity =>
             {
                 entity.ToTable("subject");

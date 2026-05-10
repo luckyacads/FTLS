@@ -21,7 +21,7 @@ namespace FTLSV2.Pages.Chairman
 
         public void OnGet()
         {
-            // Load courses from the subject_library table via the Subjects DbSet.
+            // Load courses from the subject table via the Subjects DbSet.
             // Order in the database first, then project to the lightweight Course record
             // so EF Core can translate the expression.
             CourseList = _db.Subjects

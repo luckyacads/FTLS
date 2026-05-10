@@ -42,7 +42,7 @@ namespace FTLSV2.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "subject_library",
+                name: "subject",
                 columns: table => new
                 {
                     subject_id = table.Column<int>(type: "integer", nullable: false)
@@ -55,7 +55,7 @@ namespace FTLSV2.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_subject_library", x => x.subject_id);
+                    table.PrimaryKey("PK_subject", x => x.subject_id);
                 });
 
             migrationBuilder.CreateTable(
@@ -114,9 +114,9 @@ namespace FTLSV2.Migrations
                         principalColumn: "room_id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_schedule_subject_library_subject_id",
+                        name: "FK_schedule_subject_subject_id",
                         column: x => x.subject_id,
-                        principalTable: "subject_library",
+                        principalTable: "subject",
                         principalColumn: "subject_id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -159,7 +159,7 @@ namespace FTLSV2.Migrations
                 name: "room_registry");
 
             migrationBuilder.DropTable(
-                name: "subject_library");
+                name: "subject");
 
             migrationBuilder.DropTable(
                 name: "users");

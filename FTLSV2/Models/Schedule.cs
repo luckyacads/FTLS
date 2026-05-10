@@ -15,7 +15,7 @@ namespace FTLSV2.Models
         [Column("faculty_id")]
         public int FacultyId { get; set; }
 
-        // FK to subject_library.subject_id
+        // FK to subject.subject_id
         [Column("subject_id")]
         public int SubjectId { get; set; }
 

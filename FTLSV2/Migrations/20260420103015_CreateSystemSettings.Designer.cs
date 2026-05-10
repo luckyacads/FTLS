@@ -167,7 +167,7 @@ namespace FTLSV2.Migrations
 
                     b.HasKey("SubjectId");
 
-                    b.ToTable("subject_library", (string)null);
+                    b.ToTable("subject", (string)null);
                 });
 
             modelBuilder.Entity("FTLSV2.Models.SystemSettings", b =>
