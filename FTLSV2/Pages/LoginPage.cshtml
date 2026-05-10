@@ -132,13 +132,21 @@
             }
 
             .login-btn {
-                min-width: 160px;
-                padding: 12px 22px;
+                width: 180px;
+                height: 48px;
+                padding: 0 22px;
                 border-radius: 10px;
                 font-weight: 600;
                 font-size: 15px;
+                font-family: inherit;
+                line-height: 1;
                 cursor: pointer;
                 transition: all 0.2s ease-in-out;
+                display: inline-flex;
+                justify-content: center;
+                align-items: center;
+                text-decoration: none;
+                box-sizing: border-box;
             }
 
             .login-btn-primary {
@@ -208,9 +216,9 @@
                     SIGN IN
                 </button>
 
-                <button type="button" class="login-btn login-btn-secondary">
+                <a asp-page="/RegisterPage" class="login-btn login-btn-secondary">
                     REGISTER
-                </button>
+                </a>
             </div>
 
         </form>
