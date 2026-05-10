@@ -12,7 +12,7 @@ namespace FTLSV2.Models
         [Column("subject_code")]
         public string Code { get; set; }
 
-        [Column("title")]
+        [Column("subject_title")]
         public string Title { get; set; }
 
         [Column("units")]
