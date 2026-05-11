@@ -115,7 +115,7 @@ namespace FTLSV2.Pages
                 CreatedBy = null,
                 CreatedByRole = "Self-Registration",
 
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
 
             _context.Users.Add(newUser);
