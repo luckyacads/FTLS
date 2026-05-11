@@ -63,7 +63,6 @@
     @* Show top header only on non-admin pages *@
     @if (!(Context.Request.Path.StartsWithSegments("/Admin", System.StringComparison.OrdinalIgnoreCase)
            || Context.Request.Path.StartsWithSegments("/Admin/RoomRegistry", System.StringComparison.OrdinalIgnoreCase)
-           || Context.Request.Path.StartsWithSegments("/Admin/SubjectLibrary", System.StringComparison.OrdinalIgnoreCase)
            || Context.Request.Path.StartsWithSegments("/Admin/AuditLogs", System.StringComparison.OrdinalIgnoreCase)))
     {
         <header>
@@ -174,7 +173,6 @@
                     ">
                     <a asp-page="/Admin/AdminPage" class="@(Context.Request.Path.StartsWithSegments("/Admin/AdminPage", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">User Management</a>
                     <a asp-page="/Admin/RoomRegistry" class="@(Context.Request.Path.StartsWithSegments("/Admin/RoomRegistry", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">Room Registry</a>
-                    <a asp-page="/Admin/SubjectLibrary" class="@(Context.Request.Path.StartsWithSegments("/Admin/SubjectLibrary", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">Subject Library</a>
                     <a asp-page="/Admin/AuditLogs" class="@(Context.Request.Path.StartsWithSegments("/Admin/AuditLogs", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">Audit Logs</a>
                     <a asp-page="/LoginPage" class="logout" style="margin-top: 10px;">
                         Logout

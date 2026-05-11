@@ -113,11 +113,12 @@ namespace FTLSV2.Pages.Chairman
                 FirstName = FirstName,
                 LastName = LastName,
                 Email = Email,
-                Password = Password, // we'll hash later
+                Password = Password, 
                 Role = "Teacher",
                 Status = "Active",
                 CreatedAt = DateTime.UtcNow,
                 MaxUnits = 21,
+                CurrentUnits = 0,
 
                 SchoolId = chairman.SchoolId,
                 DepartmentId = chairman.DepartmentId,

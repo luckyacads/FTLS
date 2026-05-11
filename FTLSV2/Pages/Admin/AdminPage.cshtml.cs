@@ -73,6 +73,7 @@ namespace FTLSV2.Pages.Admin
                 Role = InputRole,
                 Status = "Active",
                 MaxUnits = InputMaxUnits,
+                CurrentUnits = 0, 
                 CreatedAt = DateTime.UtcNow
             };
 

@@ -1,0 +1,249 @@
+﻿@page
+@model FTLSV2.Pages.Admin.SubjectLibraryModel
+@{
+    Layout = "/Pages/Shared/_ChairmanLayout.cshtml";
+    ViewData["Title"] = "Subject Library";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/SubjectLibrary.css" />
+}
+
+<style>
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+        font-size: 13px;
+        color: #333;
+    }
+
+    .input {
+        width: 100%;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        box-sizing: border-box;
+    }
+
+        .input:focus {
+            border-color: #07362d;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(7,54,45,0.1);
+        }
+</style>
+
+<div class="page-container">
+    <header class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <h1 style="margin: 0;">Subject Library</h1>
+        <button id="btnAddSubject" class="btn-primary" onclick="toggleAddSubjectForm()">+ Add Subject</button>
+    </header>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div id="success-alert" style="background-color: #d4edda; color: #155724; padding: 12px; margin-bottom: 20px; border-radius: 6px; border-left: 5px solid #28a745; font-weight: 500; transition: opacity 1s ease-out; opacity: 1;">
+            ✓ @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div id="addSubjectSection" class="card" style="display: none; border-top: 5px solid #07362d; margin-bottom: 25px;">
+        <div style="display: flex; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0; color: #07362d;">Add New Subject</h3>
+        </div>
+
+        <form method="post" asp-page-handler="AddSubject">
+            <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>Subject Code</label>
+                    <input type="text" asp-for="NewSubjectCode" class="input" required placeholder="e.g. IT101">
+                </div>
+                <div class="form-group" style="flex: 2;">
+                    <label>Title</label>
+                    <input type="text" asp-for="NewSubjectTitle" class="input" required placeholder="e.g. Network Admin">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Units</label>
+                    <input type="number" asp-for="NewSubjectUnits" class="input" required value="3">
+                </div>
+                <div class="form-group" style="flex: 1.5;">
+                    <label>Department</label>
+                    <input type="text" asp-for="NewSubjectDepartment" class="input" required placeholder="e.g. Computer Science">
+                </div>
+                <div class="form-group" style="flex: 1.5;">
+                    <label>Semester</label>
+                    <select asp-for="NewSubjectSemester" class="input" required>
+                        <option value="1st Year - 1st Sem">1st Year - 1st Sem</option>
+                        <option value="1st Year - 2nd Sem">1st Year - 2nd Sem</option>
+                        <option value="2nd Year - 1st Sem">2nd Year - 1st Sem</option>
+                        <option value="2nd Year - 2nd Sem">2nd Year - 2nd Sem</option>
+                        <option value="3rd Year - 1st Sem">3rd Year - 1st Sem</option>
+                        <option value="3rd Year - 2nd Sem">3rd Year - 2nd Sem</option>
+                        <option value="4th Year - 1st Sem">4th Year - 1st Sem</option>
+                        <option value="4th Year - 2nd Sem">4th Year - 2nd Sem</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn-primary" style="width: auto; padding: 10px 20px;">Save Subject</button>
+                <button type="button" onclick="toggleAddSubjectForm()" style="padding: 10px 20px; border: none; background: #eee; color: #333; cursor: pointer; border-radius: 6px; font-weight: 600;">Cancel</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="editSubjectSection" class="card" style="display: none; border-top: 5px solid #155724; margin-bottom: 25px;">
+        <div style="display: flex; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0; color: #155724;">Edit Subject</h3>
+        </div>
+
+        <form method="post" asp-page-handler="EditSubject">
+            <input type="hidden" asp-for="EditSubjectId" id="editSubjectId" />
+
+            <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>Subject Code</label>
+                    <input type="text" asp-for="EditSubjectCode" id="editSubjectCode" class="input" required>
+                </div>
+                <div class="form-group" style="flex: 2;">
+                    <label>Subject Title</label>
+                    <input type="text" asp-for="EditSubjectTitle" id="editSubjectTitle" class="input" required>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Units</label>
+                    <input type="number" asp-for="EditSubjectUnits" id="editSubjectUnits" class="input" required>
+                </div>
+                <div class="form-group" style="flex: 1.5;">
+                    <label>Department</label>
+                    <input type="text" asp-for="EditSubjectDepartment" id="editSubjectDepartment" class="input" required>
+                </div>
+                <div class="form-group" style="flex: 1.5;">
+                    <label>Semester</label>
+                    <select asp-for="EditSubjectSemester" id="editSubjectSemester" class="input" required>
+                        <option value="1st Year - 1st Sem">1st Year - 1st Sem</option>
+                        <option value="1st Year - 2nd Sem">1st Year - 2nd Sem</option>
+                        <option value="2nd Year - 1st Sem">2nd Year - 1st Sem</option>
+                        <option value="2nd Year - 2nd Sem">2nd Year - 2nd Sem</option>
+                        <option value="3rd Year - 1st Sem">3rd Year - 1st Sem</option>
+                        <option value="3rd Year - 2nd Sem">3rd Year - 2nd Sem</option>
+                        <option value="4th Year - 1st Sem">4th Year - 1st Sem</option>
+                        <option value="4th Year - 2nd Sem">4th Year - 2nd Sem</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn-primary" style="background-color: #155724; width: auto; padding: 10px 20px;">Update Subject</button>
+                <button type="button" onclick="hideEditForm()" style="padding: 10px 20px; border: none; background: #eee; color: #333; cursor: pointer; border-radius: 6px; font-weight: 600;">Cancel</button>
+            </div>
+        </form>
+    </div>
+
+    <section class="card">
+        <div class="search-row" style="margin-bottom: 20px;">
+            <input type="text" id="subjectSearchInput" onkeyup="filterSubjects()" placeholder="Search subjects..." class="input" />
+        </div>
+
+        <table class="subject-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="border-bottom: 2px solid #eee;">
+                    <th style="padding: 10px;">Subject Code</th>
+                    <th style="padding: 10px;">Title</th>
+                    <th style="padding: 10px;">Units</th>
+                    <th style="padding: 10px;">Department</th>
+                    <th style="padding: 10px;">Semester</th>
+                    <th style="padding: 10px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var subject in Model.Subjects)
+                {
+                    <tr style="border-bottom: 1px solid #f5f5f5;">
+                        <td style="padding: 10px;">@subject.Code</td>
+                        <td style="padding: 10px;">@subject.Title</td>
+                        <td style="padding: 10px;">@subject.Units</td>
+                        <td style="padding: 10px;">@subject.Department</td>
+                        <td style="padding: 10px;">@subject.Semester</td>
+                        <td style="padding: 10px;">
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn-edit" style="border: 1px solid #ccc; background: white; padding: 6px 10px; border-radius: 6px; cursor: pointer;" onclick="showEditForm(@subject.SubjectId, '@subject.Code', '@subject.Title', @subject.Units, '@subject.Department', '@subject.Semester')">Edit</button>
+
+                                <form method="post" asp-page-handler="DeleteSubject" style="margin:0;" onsubmit="return confirm('Are you sure you want to delete this subject?');">
+                                    <input type="hidden" name="subjectId" value="@subject.SubjectId" />
+                                    <button type="submit" class="btn-delete" style="color: #c82333; border: 1px solid #c82333; background: transparent; padding: 6px 10px; border-radius: 6px; cursor: pointer;">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+</div>
+
+<script>
+    function toggleAddSubjectForm() {
+        var form = document.getElementById("addSubjectSection");
+        var editForm = document.getElementById("editSubjectSection");
+        var btnAdd = document.getElementById("btnAddSubject");
+
+        editForm.style.display = "none"; // Hide edit form if open
+
+        if (form.style.display === "none" || form.style.display === "") {
+            form.style.display = "block";
+            btnAdd.style.display = "none"; // Hide top button
+        } else {
+            form.style.display = "none";
+            btnAdd.style.display = "block"; // Show top button
+        }
+    }
+
+    function showEditForm(id, code, title, units, department, semester) {
+        var btnAdd = document.getElementById("btnAddSubject");
+
+        document.getElementById("addSubjectSection").style.display = "none"; // Hide add form
+
+        // Fill data
+        document.getElementById("editSubjectId").value = id;
+        document.getElementById("editSubjectCode").value = code;
+        document.getElementById("editSubjectTitle").value = title;
+        document.getElementById("editSubjectUnits").value = units;
+        document.getElementById("editSubjectDepartment").value = department;
+        document.getElementById("editSubjectSemester").value = semester || "1st Year - 1st Sem";
+
+        document.getElementById("editSubjectSection").style.display = "block";
+        btnAdd.style.display = "none"; // Hide top button
+    }
+
+    function hideEditForm() {
+        document.getElementById("editSubjectSection").style.display = "none";
+        document.getElementById("btnAddSubject").style.display = "block"; // Show top button
+    }
+
+    function filterSubjects() {
+        var input = document.getElementById("subjectSearchInput");
+        var filter = input.value.toLowerCase();
+        var table = document.querySelector(".subject-table tbody");
+        var rows = table.getElementsByTagName("tr");
+
+        for (var i = 0; i < rows.length; i++) {
+            var rowText = rows[i].textContent || rows[i].innerText;
+            if (rowText.toLowerCase().indexOf(filter) > -1) {
+                rows[i].style.display = "";
+            } else {
+                rows[i].style.display = "none";
+            }
+        }
+    }
+
+    window.onload = function() {
+        var alertBox = document.getElementById("success-alert");
+        if (alertBox) {
+            setTimeout(function() {
+                alertBox.style.opacity = "0";
+                setTimeout(function() {
+                    alertBox.style.display = "none";
+                }, 1000);
+            }, 3000);
+        }
+    };
+</script>
