@@ -5,6 +5,7 @@ using System;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
 builder.Services.AddDbContext<FtlsDbContext>(options =>
     options.UseNpgsql(connectionString));
 
@@ -12,8 +13,8 @@ builder.Services.AddRazorPages(options =>
 {
     options.Conventions.AddPageRoute("/LoginPage", "");
 });
-builder.Services.AddSession();
 
+builder.Services.AddSession();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -52,7 +53,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 // ==========================================
-// --- ADDED: ANTI-CACHING MIDDLEWARE ---
+// --- ANTI-CACHING MIDDLEWARE ---
 // ==========================================
 app.Use(async (context, next) =>
 {
@@ -61,15 +62,20 @@ app.Use(async (context, next) =>
     context.Response.Headers["Expires"] = "-1";
     await next();
 });
-// ==========================================
 
 app.UseRouting();
 app.UseSession();
 app.UseAuthorization();
 
 #region SUBJECTS API
-app.MapGet("/api/subjects", async (FtlsDbContext db) => Results.Ok(await db.Subjects.ToListAsync()))
-    .WithName("GetAllSubjects").WithTags("Subjects");
+app.MapGet("/api/subjects", async (string? code, string? title, FtlsDbContext db) =>
+{
+    var query = db.Subjects.AsQueryable();
+    if (!string.IsNullOrEmpty(code)) query = query.Where(s => s.Code.Contains(code));
+    if (!string.IsNullOrEmpty(title)) query = query.Where(s => s.Title.Contains(title));
+    return Results.Ok(await query.ToListAsync());
+})
+.WithName("GetAllSubjects").WithTags("Subjects");
 
 app.MapPost("/api/subjects", async (Subject subject, FtlsDbContext db) =>
 {
@@ -106,8 +112,14 @@ app.MapDelete("/api/subjects/{id}", async (int id, FtlsDbContext db) =>
 #endregion
 
 #region USERS API
-app.MapGet("/api/users", async (FtlsDbContext db) => Results.Ok(await db.Users.ToListAsync()))
-    .WithName("GetAllUsers").WithTags("Users");
+app.MapGet("/api/users", async (string? lastName, string? facultyId, FtlsDbContext db) =>
+{
+    var query = db.Users.AsQueryable();
+    if (!string.IsNullOrEmpty(lastName)) query = query.Where(u => u.LastName.Contains(lastName));
+    if (!string.IsNullOrEmpty(facultyId)) query = query.Where(u => u.FacultyId == facultyId);
+    return Results.Ok(await query.ToListAsync());
+})
+.WithName("GetAllUsers").WithTags("Users");
 
 app.MapPost("/api/users", async (User user, FtlsDbContext db) =>
 {
@@ -144,8 +156,14 @@ app.MapDelete("/api/users/{id}", async (int id, FtlsDbContext db) =>
 #endregion
 
 #region ROOMS API
-app.MapGet("/api/rooms", async (FtlsDbContext db) => Results.Ok(await db.Rooms.ToListAsync()))
-    .WithName("GetAllRooms").WithTags("Rooms");
+app.MapGet("/api/rooms", async (string? type, int? minCapacity, FtlsDbContext db) =>
+{
+    var query = db.Rooms.AsQueryable();
+    if (!string.IsNullOrEmpty(type)) query = query.Where(r => r.Type == type);
+    if (minCapacity.HasValue) query = query.Where(r => r.Capacity >= minCapacity.Value);
+    return Results.Ok(await query.ToListAsync());
+})
+.WithName("GetAllRooms").WithTags("Rooms");
 
 app.MapPost("/api/rooms", async (Room room, FtlsDbContext db) =>
 {
@@ -182,8 +200,13 @@ app.MapDelete("/api/rooms/{id}", async (int id, FtlsDbContext db) =>
 #endregion
 
 #region SCHOOLS API
-app.MapGet("/api/schools", async (FtlsDbContext db) => Results.Ok(await db.Schools.ToListAsync()))
-    .WithName("GetAllSchools").WithTags("Schools");
+app.MapGet("/api/schools", async (string? nameSearch, FtlsDbContext db) =>
+{
+    var query = db.Schools.AsQueryable();
+    if (!string.IsNullOrEmpty(nameSearch)) query = query.Where(s => s.Name.Contains(nameSearch));
+    return Results.Ok(await query.ToListAsync());
+})
+.WithName("GetAllSchools").WithTags("Schools");
 
 app.MapPost("/api/schools", async (School school, FtlsDbContext db) =>
 {
@@ -208,19 +231,42 @@ app.MapPut("/api/schools/{id}", async (int id, School updatedSchool, FtlsDbConte
     return Results.Ok(school);
 }).WithName("UpdateSchool").WithTags("Schools");
 
+// OPTION 2 implemented here:
 app.MapDelete("/api/schools/{id}", async (int id, FtlsDbContext db) =>
 {
     var school = await db.Schools.FindAsync(id);
     if (school == null) return Results.NotFound();
+
+    // 1. Find all departments in this school
+    var relatedDepts = await db.Departments.Where(d => d.SchoolId == id).ToListAsync();
+
+    foreach (var dept in relatedDepts)
+    {
+        // 2. Find and remove users in each department first
+        var relatedUsers = db.Users.Where(u => u.DepartmentId == dept.Id);
+        db.Users.RemoveRange(relatedUsers);
+    }
+
+    // 3. Remove the departments
+    db.Departments.RemoveRange(relatedDepts);
+
+    // 4. Finally remove the school
     db.Schools.Remove(school);
+
     await db.SaveChangesAsync();
     return Results.NoContent();
 }).WithName("DeleteSchool").WithTags("Schools");
 #endregion
 
 #region DEPARTMENTS API
-app.MapGet("/api/departments", async (FtlsDbContext db) => Results.Ok(await db.Departments.ToListAsync()))
-    .WithName("GetAllDepartments").WithTags("Departments");
+app.MapGet("/api/departments", async (string? search, int? schoolId, FtlsDbContext db) =>
+{
+    var query = db.Departments.AsQueryable();
+    if (!string.IsNullOrEmpty(search)) query = query.Where(d => d.Name.Contains(search) || d.Code.Contains(search));
+    if (schoolId.HasValue) query = query.Where(d => d.SchoolId == schoolId);
+    return Results.Ok(await query.ToListAsync());
+})
+.WithName("GetAllDepartments").WithTags("Departments");
 
 app.MapPost("/api/departments", async (Department department, FtlsDbContext db) =>
 {
@@ -245,10 +291,17 @@ app.MapPut("/api/departments/{id}", async (int id, Department updatedDept, FtlsD
     return Results.Ok(dept);
 }).WithName("UpdateDepartment").WithTags("Departments");
 
+// OPTION 2 implemented here:
 app.MapDelete("/api/departments/{id}", async (int id, FtlsDbContext db) =>
 {
     var department = await db.Departments.FindAsync(id);
     if (department == null) return Results.NotFound();
+
+    // 1. Find and remove all Users linked to this department
+    var relatedUsers = db.Users.Where(u => u.DepartmentId == id);
+    db.Users.RemoveRange(relatedUsers);
+
+    // 2. Remove the department
     db.Departments.Remove(department);
     await db.SaveChangesAsync();
     return Results.NoContent();
