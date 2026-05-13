@@ -1,7 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
-
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -11,55 +9,34 @@
     <link rel="stylesheet" href="~/css/chairman.css" />
 
     @await RenderSectionAsync("Styles", required: false)
-    <style>
-            <style>
-                .sidebar nav a {
-                    display: block;
-                    padding: 8px 12px;
-                    margin-bottom: 6px;
-                    border-radius: 6px;
-                    color: #fff;
-                    text-decoration: none;
-                    font-size: 14px;
-                    transition: 0.2s;
-                }
 
+    <style>
+        /* MATCH ADMIN SIDEBAR FONT SYSTEM */
+        .sidebar,
+        .sidebar nav a {
+            font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
+        }
+
+            /* NAV LINKS */
+            .sidebar nav a {
+                display: block;
+                padding: 8px 12px;
+                margin-bottom: 6px;
+                border-radius: 6px;
+                color: #ffffff;
+                text-decoration: none;
+                font-size: 14px;
+                font-weight: 500;
+                line-height: 1.2;
+                transition: all 0.2s ease;
+            }
+
+                /* HOVER + ACTIVE */
                 .sidebar nav a:hover,
                 .sidebar nav a.active {
                     background: #f1c40f;
                     color: #07362d;
                 }
-        </style>
-    </style>
-
-    <style>
-            /* MATCH ADMIN SIDEBAR FONT SYSTEM */
-
-            .sidebar,
-            .sidebar nav a {
-                font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
-            }
-
-                /* NAV LINKS */
-                .sidebar nav a {
-                    display: block;
-                    padding: 8px 12px;
-                    margin-bottom: 6px;
-                    border-radius: 6px;
-                    color: #ffffff;
-                    text-decoration: none;
-                    font-size: 14px;
-                    font-weight: 500;
-                    line-height: 1.2;
-                    transition: all 0.2s ease;
-                }
-
-                    /* HOVER + ACTIVE */
-                    .sidebar nav a:hover,
-                    .sidebar nav a.active {
-                        background: #f1c40f;
-                        color: #07362d;
-                    }
     </style>
 </head>
 <body>
@@ -68,7 +45,6 @@
 
         <aside class="sidebar">
 
-            <!-- HEADER (MATCH ADMIN EXACTLY) -->
             <div style="
                 padding:16px 12px;
                 text-align:center;
@@ -94,29 +70,27 @@
 
             @if (!string.IsNullOrEmpty(id))
             {
-                <!-- AVATAR -->
                 <div style="
-                    width:70px;
-                    height:70px;
-                    border-radius:50%;
-                    background:#f1c40f;
-                    color:#07362d;
-                    display:flex;
-                    align-items:center;
-                    justify-content:center;
-                    font-weight:700;
-                    font-size:22px;
-                    margin: 15px auto 10px auto;
-                    ">
+                        width:70px;
+                        height:70px;
+                        border-radius:50%;
+                        background:#f1c40f;
+                        color:#07362d;
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        font-weight:700;
+                        font-size:22px;
+                        margin: 15px auto 10px auto;
+                        ">
                     @(name?[0])@(name?.Split(' ').LastOrDefault()?[0])
                 </div>
 
-                <!-- USER INFO -->
                 <div style="
-                    text-align:center;
-                    margin-bottom: 25px;
-                    color:#f1c40f;
-                    ">
+                        text-align:center;
+                        margin-bottom: 25px;
+                        color:#f1c40f;
+                        ">
                     <div style="font-size:18px; font-weight:600; line-height:1.2;">
                         @name
                     </div>
@@ -129,32 +103,25 @@
                         @email
                     </div>
 
-                    <!-- DIVIDER -->
                     <div style="
-                    height:1px;
-                    width:80%;
-                    margin: 10px auto 20px auto;
-                    background: rgba(255,255,255,0.15);
-                    "></div>
+                        height:1px;
+                        width:80%;
+                        margin: 10px auto 20px auto;
+                        background: rgba(255,255,255,0.15);
+                        "></div>
                 </div>
             }
 
-            <!-- NAV (MATCH ADMIN EXACT STRUCTURE) -->
             <nav>
 
                 <a href="/ChairmanPage"
-                       class="@(Context.Request.Path == "/ChairmanPage" ? "active" : "")">
+                   class="@(Context.Request.Path == "/ChairmanPage" ? "active" : "")">
                     Dashboard Overview
                 </a>
 
                 <a href="/Chairman/FacultyProfiles"
-                       class="@(Context.Request.Path.StartsWithSegments("/Chairman/FacultyProfiles") ? "active" : "")">
+                   class="@(Context.Request.Path.StartsWithSegments("/Chairman/FacultyProfiles") ? "active" : "")">
                     Faculty Profiles
-                </a>
-
-                <a href="/Chairman/RegisterTeacher"
-                       class="@(Context.Request.Path.StartsWithSegments("/Chairman/RegisterTeacher") ? "active" : "")">
-                    Register New Teacher
                 </a>
 
                 <a href="/Chairman/SubjectLibrary"
@@ -163,23 +130,33 @@
                 </a>
 
                 <a href="/Chairman/CourseCatalog"
-                       class="@(Context.Request.Path.StartsWithSegments("/Chairman/CourseCatalog") ? "active" : "")">
+                   class="@(Context.Request.Path.StartsWithSegments("/Chairman/CourseCatalog") ? "active" : "")">
                     Course Catalog
                 </a>
 
+                <a href="/Chairman/ManageAssignments"
+                   class="@(Context.Request.Path.StartsWithSegments("/Chairman/ManageAssignments") ? "active" : "")">
+                    Manage Assignments
+                </a>
+
                 <a href="/Chairman/RoomUtilization"
-                       class="@(Context.Request.Path.StartsWithSegments("/Chairman/RoomUtilization") ? "active" : "")">
+                   class="@(Context.Request.Path.StartsWithSegments("/Chairman/RoomUtilization") ? "active" : "")">
                     Room Utilization
                 </a>
 
                 <a href="/Chairman/MySchedule"
-                       class="@(Context.Request.Path.StartsWithSegments("/Chairman/MySchedule") ? "active" : "")">
+                   class="@(Context.Request.Path.StartsWithSegments("/Chairman/MySchedule") ? "active" : "")">
                     My Schedule
                 </a>
 
+                <a href="/Chairman/DepartmentReports"
+                   class="@(Context.Request.Path.StartsWithSegments("/Chairman/DepartmentReports") ? "active" : "")">
+                    Department Reports
+                </a>
+
                 <a href="/LoginPage?handler=Logout"
-                       class="logout"
-                       style="margin-top:auto;">
+                   class="logout"
+                   style="margin-top:auto;">
                     Logout
                 </a>
 
