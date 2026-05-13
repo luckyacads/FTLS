@@ -17,7 +17,7 @@ namespace FTLSV2.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.5")
+                .HasAnnotation("ProductVersion", "10.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -26,26 +26,27 @@ namespace FTLSV2.Migrations
                 {
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
                         .HasColumnName("email");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
                         .HasColumnName("first_name");
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
                         .HasColumnName("last_name");
 
                     b.Property<decimal>("TotalLoad")
                         .HasColumnType("numeric")
                         .HasColumnName("total_load");
 
-                    b.ToTable("faculty_load_summary");
-
-                    b.ToView("faculty_load_summary", (string)null);
+                    b.ToTable("faculty_load_summary", (string)null);
                 });
 
             modelBuilder.Entity("FTLSV2.Models.Room", b =>
@@ -180,7 +181,7 @@ namespace FTLSV2.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SystemSettings");
+                    b.ToTable("SystemSettings", (string)null);
                 });
 
             modelBuilder.Entity("FTLSV2.Models.User", b =>
