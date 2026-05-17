@@ -22,13 +22,6 @@ namespace FTLSV2.Pages.Admin
         public User LoggedInUser { get; set; }
         public IList<User> DbUsers { get; set; }
 
-        [BindProperty] public string InputFirstName { get; set; }
-        [BindProperty] public string InputLastName { get; set; }
-        [BindProperty] public string InputFacultyId { get; set; }
-        [BindProperty] public string InputEmail { get; set; }
-        [BindProperty] public string InputPassword { get; set; }
-        [BindProperty] public string InputRole { get; set; }
-        [BindProperty] public int InputMaxUnits { get; set; }
         [BindProperty] public int InputMaxOverload { get; set; }
 
         public IActionResult OnGet()
@@ -61,38 +54,7 @@ namespace FTLSV2.Pages.Admin
             return Page();
         }
 
-        public IActionResult OnPostAddUser()
-        {
-            var newUser = new User
-            {
-                FacultyId = InputFacultyId,
-                FirstName = InputFirstName,
-                LastName = InputLastName,
-                Email = InputEmail,
-                Password = InputPassword,
-                Role = InputRole,
-                Status = "Active",
-                MaxUnits = InputMaxUnits,
-                CurrentUnits = 0, 
-                CreatedAt = DateTime.UtcNow
-            };
-
-            try
-            {
-                _context.Users.Add(newUser);
-                AddAuditEntryToContext($"Created user: {InputFirstName} {InputLastName}");
-                _context.SaveChanges();
-                TempData["SuccessMessage"] = $"Account for {InputFirstName} {InputLastName} created successfully!";
-            }
-            catch (Exception ex)
-            {
-                var baseMsg = ex.GetBaseException()?.Message ?? ex.Message;
-                TempData["ErrorMessage"] = $"An error occurred while creating the user. {baseMsg}";
-            }
-            return RedirectToPage();
-        }
-
-        // --- HANDLES ACTIVATING NEW REGISTRATIONS ---
+        // --- HANDLES ACTIVATING / DEACTIVATING USERS ---
         public IActionResult OnPostToggleUserStatus(string facultyId)
         {
             var dbUser = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
@@ -100,7 +62,8 @@ namespace FTLSV2.Pages.Admin
             {
                 try
                 {
-                    // If they are Active, make them Inactive. Otherwise (Pending/Inactive), activate them!
+                    // If they are Active, make them Inactive.
+                    // Otherwise, activate them.
                     if (dbUser.Status == "Active" || string.IsNullOrEmpty(dbUser.Status))
                     {
                         dbUser.Status = "Inactive";
@@ -112,6 +75,7 @@ namespace FTLSV2.Pages.Admin
 
                     AddAuditEntryToContext($"Changed status for {dbUser.FirstName} {dbUser.LastName} to {dbUser.Status}");
                     _context.SaveChanges();
+
                     TempData["SuccessMessage"] = $"{dbUser.FirstName}'s account is now {dbUser.Status}!";
                 }
                 catch (Exception ex)
@@ -119,10 +83,11 @@ namespace FTLSV2.Pages.Admin
                     TempData["ErrorMessage"] = $"Error updating status. {ex.Message}";
                 }
             }
+
             return RedirectToPage();
         }
 
-        // --- NEW: ASSIGN ROLE TO NEW USERS ---
+        // --- ASSIGN / UPDATE USER ROLE ---
         public IActionResult OnPostUpdateUserRole(string facultyId, string newRole)
         {
             var user = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
@@ -131,8 +96,10 @@ namespace FTLSV2.Pages.Admin
                 try
                 {
                     user.Role = newRole;
+
                     AddAuditEntryToContext($"Assigned role '{newRole}' to {user.FirstName} {user.LastName}");
                     _context.SaveChanges();
+
                     TempData["SuccessMessage"] = $"Role for {user.FirstName} updated to {newRole}.";
                 }
                 catch (Exception ex)
@@ -140,9 +107,11 @@ namespace FTLSV2.Pages.Admin
                     TempData["ErrorMessage"] = $"Error updating role. {ex.Message}";
                 }
             }
+
             return RedirectToPage();
         }
 
+        // --- UPDATE USER MAX UNITS ---
         public IActionResult OnPostUpdateUserUnits(string facultyId, int newUnits)
         {
             var user = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
@@ -159,34 +128,44 @@ namespace FTLSV2.Pages.Admin
 
                 user.MaxUnits = newUnits;
                 _context.SaveChanges();
+
                 TempData["SuccessMessage"] = $"Updated units for {user.FirstName}.";
             }
+
             return RedirectToPage();
         }
 
+        // --- RESET USER PASSWORD ---
         public IActionResult OnPostResetPassword(string facultyId)
         {
             var dbUser = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
             if (dbUser != null)
             {
                 dbUser.Password = "usjr1234";
+
                 AddAuditEntryToContext($"Reset password for {dbUser.FirstName} {dbUser.LastName}");
                 _context.SaveChanges();
+
                 TempData["SuccessMessage"] = $"Password for {dbUser.FirstName} has been reset to 'usjr1234'.";
             }
+
             return RedirectToPage();
         }
 
+        // --- DELETE USER ---
         public IActionResult OnPostDeleteUser(string facultyId)
         {
             var dbUser = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
             if (dbUser != null)
             {
                 _context.Users.Remove(dbUser);
+
                 AddAuditEntryToContext($"Deleted user: {dbUser.FirstName} {dbUser.LastName}");
                 _context.SaveChanges();
+
                 TempData["SuccessMessage"] = $"Account for {dbUser.FirstName} {dbUser.LastName} has been permanently deleted.";
             }
+
             return RedirectToPage();
         }
 
@@ -194,12 +173,17 @@ namespace FTLSV2.Pages.Admin
         {
             var facultyId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                 ?? HttpContext.Session.GetString("ActiveUser");
+
             int? userId = null;
 
             if (!string.IsNullOrEmpty(facultyId))
             {
                 var user = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
-                if (user != null) userId = user.Id;
+
+                if (user != null)
+                {
+                    userId = user.Id;
+                }
             }
 
             var auditLog = new AuditLog
@@ -208,6 +192,7 @@ namespace FTLSV2.Pages.Admin
                 UserId = userId,
                 Action = action
             };
+
             _context.AuditLogs.Add(auditLog);
         }
     }

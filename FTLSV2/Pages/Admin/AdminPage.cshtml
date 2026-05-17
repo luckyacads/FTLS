@@ -56,25 +56,6 @@
         width: 100%;
     }
 
-    .btn-add {
-        background: #07362d;
-        color: white;
-        border: none;
-        padding: 10px 18px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 14px;
-        box-shadow: 0 2px 4px rgba(7, 54, 45, 0.2);
-        transition: all 0.2s ease-in-out;
-    }
-
-        .btn-add:hover {
-            background: #0a4d40;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(7, 54, 45, 0.3);
-        }
-
     .btn-back {
         background: #07362d;
         border: 1px solid #07362d;
@@ -179,6 +160,7 @@
         background: #fcf3cf;
         color: #b7950b;
     }
+
     /* For pending registrations */
 
     .dashboard-grid {
@@ -236,32 +218,6 @@
     {
         <div class="alert">✔ @TempData["SuccessMessage"]</div>
     }
-
-    <div class="dashboard-grid" id="mainGrid">
-
-        <section class="card" id="createUserSection" style="border-top: 5px solid #07362d; display: none;">
-            <div style="display: flex; align-items: center; margin-bottom: 20px;">
-                <button class="btn-back" onclick="toggleCreateForm()" title="Close Form">←</button>
-                <h3 style="margin: 0;">Create User</h3>
-            </div>
-            <form method="post" asp-page-handler="AddUser">
-                <div class="form-group"><input class="input" asp-for="InputFirstName" placeholder="First Name" required /></div>
-                <div class="form-group"><input class="input" asp-for="InputLastName" placeholder="Last Name" required /></div>
-                <div class="form-group"><input class="input" asp-for="InputFacultyId" placeholder="Faculty ID" required /></div>
-                <div class="form-group"><input class="input" asp-for="InputEmail" placeholder="Email" required /></div>
-                <div class="form-group"><input class="input" asp-for="InputPassword" placeholder="Password" required /></div>
-                <div class="form-group">
-                    <select class="input" asp-for="InputRole">
-                        <option value="Teacher">Teacher</option>
-                        <option value="Chairman">Chairman</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <input class="input" asp-for="InputMaxUnits" type="number" max="@Model.InputMaxOverload" placeholder="Max Units (e.g. 21)" required />
-                </div>
-                <button class="btn-primary">Save User</button>
-            </form>
-        </section>
 
         <section class="card">
             <h3 style="margin-top: 0; margin-bottom: 20px;">Registered Accounts (@Model.DbUsers.Count)</h3>
@@ -365,7 +321,6 @@
                 </table>
             </div>
         </section>
-    </div>
 </div>
 
 <div id="editUnitsModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
