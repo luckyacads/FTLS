@@ -8,55 +8,162 @@
 @section Styles {
     <link rel="stylesheet" href="~/css/chairman.css" />
     <style>
-        .room-util-table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
+        /* Top Filters */
+        .filter-bar {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #800000;
+        }
+        .filter-bar select {
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-weight: bold;
+            color: #333;
         }
 
-        .room-util-table th, .room-util-table td {
-            padding: 12px;
-            border-bottom: 1px solid #f1f3f4;
-            text-align: left;
-            overflow-wrap: break-word;
-            word-wrap: break-word;
+        /* Yellow Accordion Boxes */
+        details.room-accordion {
+            margin-bottom: 20px;
+            background-color: transparent;
+        }
+        details.room-accordion summary {
+            background-color: #ffe600; /* Yellow */
+            padding: 15px;
+            border-radius: 25px;
+            font-weight: bold;
+            color: #800000;
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        details.room-accordion summary::-webkit-details-marker { display: none; }
+        details.room-accordion summary::after {
+            content: '▼';
+            position: absolute;
+            right: 25px; 
+            font-size: 1.2em;
+        }
+        details[open].room-accordion summary::after { content: '▲'; }
+
+        /* The Vertical Visual Graph Layout */
+        .schedule-layout {
+            display: flex;
+            padding: 20px 10px;
+            width: 90%;
+            margin: 0 auto;
         }
 
-        .room-util-table th {
-            font-weight: 600;
-            background: #f8f9fa;
-        }
-
-        .room-col {
-            width: 100px;
-        }
-
-        .availability-col {
-            width: auto;
-            min-width: 400px;
-        }
-
-        .capacity-col {
+        /* Time Column (Left Side) */
+        .time-scale {
             width: 80px;
+            display: flex;
+            flex-direction: column;
+        }
+        .time-label {
+            /* 1 hour = 90px tall (1.5px per minute) */
+            height: 90px; 
             text-align: right;
+            padding-right: 15px;
+            font-size: 14px;
+            color: #333;
+            position: relative;
+            top: -10px; /* Shifts text up to align perfectly with block borders */
+        }
+
+        /* Colored Blocks Column (Right Side) */
+        .blocks-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            border-left: 2px solid #eee; /* Light divider line */
+            padding-left: 15px;
+        }
+        .time-block {
+            width: 100%;
+            /* Thick white border acts as the "gap" between blocks without breaking the height math */
+            border: 5px solid white; 
+            box-sizing: border-box;
+            border-radius: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-left: 30px;
+            color: white;
+            font-weight: bold;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .block-occupied { background-color: #800000; } /* Maroon */
+        .block-vacant { background-color: #28a745; } /* Green */
+
+        .block-time-text {
+            font-size: 0.8em;
+            font-weight: normal;
+            opacity: 0.9;
         }
     </style>
 }
 
-        <h1 class="chairman-title">Room Utilization</h1>
-        <div class="chairman-card">
-            <h4>Room Utilization</h4>
-            <table class="room-util-table">
-                <thead><tr><th class="room-col">Room</th><th class="availability-col">Availability</th><th class="capacity-col">Capacity</th></tr></thead>
-                <tbody>
-                @foreach(var r in Model.Rooms)
-                {
-                    <tr>
-                        <td class="room-col">@r.Name</td>
-                        <td class="availability-col">@r.Availability</td>
-                        <td class="capacity-col">@r.Capacity</td>
-                    </tr>
-                }
-                </tbody>
-            </table>
+<h1 class="chairman-title">Room Registry</h1>
+<div class="chairman-card">
+    
+    <form method="get" id="filterForm">
+        <div class="filter-bar">
+            <span>Day:</span>
+            <select asp-for="SelectedDay" onchange="document.getElementById('filterForm').submit();">
+                <option value="Monday">Monday</option>
+                <option value="Tuesday">Tuesday</option>
+                <option value="Wednesday">Wednesday</option>
+                <option value="Thursday">Thursday</option>
+                <option value="Friday">Friday</option>
+                <option value="Saturday">Saturday</option>
+            </select>
+
+            <span>Academic Year:</span>
+            <select asp-for="SelectedYear" onchange="document.getElementById('filterForm').submit();">
+                <option value="2024-2025">2024-2025</option>
+                <option value="2025-2026">2025-2026</option>
+            </select>
         </div>
+    </form>
+
+    @foreach(var room in Model.Rooms)
+    {
+        <details class="room-accordion">
+            <summary>@room.RoomName</summary>
+            
+            <div class="schedule-layout">
+                <div class="time-scale">
+                    @for(int i = 7; i <= 21; i++) {
+                        var displayHour = i > 12 ? i - 12 : i;
+                        var ampm = i >= 12 ? "pm" : "am";
+                        if (i == 12) { ampm = "pm"; }
+                        
+                        <div class="time-label">@displayHour:00 @ampm</div>
+                    }
+                </div>
+
+                <div class="blocks-container">
+                    @foreach(var block in room.Timeline)
+                    {
+                        <div class="time-block @(block.IsOccupied ? "block-occupied" : "block-vacant")" 
+                             style="height: @(block.DurationMinutes * 1.5)px;">
+                            
+                            <span>@block.Label</span>
+                            <span class="block-time-text">@block.StartTime - @block.EndTime</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </details>
+    }
+</div>

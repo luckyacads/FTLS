@@ -1,8 +1,9 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Microsoft.EntityFrameworkCore;
 using FTLSV2.Data;
 
 namespace FTLSV2.Pages.Chairman
@@ -16,38 +17,121 @@ namespace FTLSV2.Pages.Chairman
             _db = db;
         }
 
-        // View model for rooms shown in the UI
-        public record RoomView(string Name, string Availability, int Capacity);
+        [BindProperty(SupportsGet = true)]
+        public string SelectedDay { get; set; } = "Monday";
 
-        public List<RoomView> Rooms { get; set; } = new();
+        [BindProperty(SupportsGet = true)]
+        public string SelectedYear { get; set; } = "2024-2025";
+
+        public class TimeBlock
+        {
+            public string Label { get; set; }
+            public string StartTime { get; set; }
+            public string EndTime { get; set; }
+            public bool IsOccupied { get; set; }
+            public double DurationMinutes { get; set; }
+        }
+
+        public class RoomDisplay
+        {
+            public string RoomName { get; set; }
+            public int Capacity { get; set; }
+            public List<TimeBlock> Timeline { get; set; } = new List<TimeBlock>();
+        }
+
+        public List<RoomDisplay> Rooms { get; set; } = new List<RoomDisplay>();
 
         public void OnGet()
         {
             var allRooms = _db.Rooms.OrderBy(r => r.Name).ToList();
             var allSchedules = _db.Schedules.ToList();
 
+            // ---> NEW: We load the subjects so we can cross-reference the SubjectId <---
+            var allSubjects = _db.Subjects.ToList();
+
             foreach (var room in allRooms)
             {
-                var roomSchedules = allSchedules.Where(s => s.RoomId == room.RoomId && !string.IsNullOrEmpty(s.TimeSlot)).ToList();
+                var roomSchedulesForDay = allSchedules
+                    .Where(s => s.RoomId == room.RoomId && IsScheduledToday(s.TimeSlot, SelectedDay))
+                    .Select(s => new
+                    {
+                        // ---> NEW: Find the matching subject title using the SubjectId <---
+                        Title = allSubjects.FirstOrDefault(sub => sub.SubjectId == s.SubjectId)?.Title ?? "Occupied",
+                        Time = ExtractTimeSpan(s.TimeSlot)
+                    })
+                    .Where(s => s.Time.HasValue)
+                    .Select(s => new { s.Title, Start = s.Time.Value.Start, End = s.Time.Value.End })
+                    .OrderBy(s => s.Start)
+                    .ToList();
 
-                // Group schedules by MWF and TTh
-                var mwfSchedules = roomSchedules.Where(s => s.TimeSlot.StartsWith("MWF")).Select(s => ExtractTimeSpan(s.TimeSlot)).Where(t => t.HasValue).Select(t => t.Value).OrderBy(t => t.Start).ToList();
-                var tthSchedules = roomSchedules.Where(s => s.TimeSlot.StartsWith("TTh") || s.TimeSlot.StartsWith("TTH")).Select(s => ExtractTimeSpan(s.TimeSlot)).Where(t => t.HasValue).Select(t => t.Value).OrderBy(t => t.Start).ToList();
-
-                // Calculate gaps for each group
-                string mwfAvailability = CalculateAvailability(mwfSchedules);
-                string tthAvailability = CalculateAvailability(tthSchedules);
-
-                // Format the final string for the table
-                string availability = $"MWF: {mwfAvailability} | TTh: {tthAvailability}";
-
-                Rooms.Add(new RoomView(room.Name, availability, room.Capacity));
+                Rooms.Add(new RoomDisplay
+                {
+                    RoomName = room.Name,
+                    Capacity = room.Capacity,
+                    Timeline = GenerateTimelineBlocks(roomSchedulesForDay)
+                });
             }
+        }
+
+        private bool IsScheduledToday(string timeSlot, string selectedDay)
+        {
+            if (string.IsNullOrEmpty(timeSlot)) return false;
+
+            string daysPart = timeSlot.Split(' ')[0].ToUpper();
+            return selectedDay switch
+            {
+                "Monday" => daysPart.Contains("M"),
+                "Tuesday" => daysPart.Replace("TH", "").Contains("T"),
+                "Wednesday" => daysPart.Contains("W"),
+                "Thursday" => daysPart.Contains("TH"),
+                "Friday" => daysPart.Contains("F"),
+                "Saturday" => daysPart.Contains("S"),
+                _ => false
+            };
+        }
+
+        private List<TimeBlock> GenerateTimelineBlocks(dynamic schedules)
+        {
+            var timeline = new List<TimeBlock>();
+            var dayStart = TimeSpan.FromHours(7); // 7:00 AM
+            var dayEnd = TimeSpan.FromHours(21); // 9:00 PM
+
+            TimeSpan currentTime = dayStart;
+
+            foreach (var schedule in schedules)
+            {
+                if (currentTime < schedule.Start)
+                {
+                    timeline.Add(CreateBlock("Vacant", currentTime, schedule.Start, false));
+                }
+
+                timeline.Add(CreateBlock(schedule.Title, schedule.Start, schedule.End, true));
+                currentTime = schedule.End;
+            }
+
+            if (currentTime < dayEnd)
+            {
+                timeline.Add(CreateBlock("Vacant", currentTime, dayEnd, false));
+            }
+
+            return timeline;
+        }
+
+        private TimeBlock CreateBlock(string label, TimeSpan start, TimeSpan end, bool isOccupied)
+        {
+            return new TimeBlock
+            {
+                Label = label,
+                StartTime = FormatTime(start),
+                EndTime = FormatTime(end),
+                IsOccupied = isOccupied,
+                DurationMinutes = (end - start).TotalMinutes
+            };
         }
 
         private (TimeSpan Start, TimeSpan End)? ExtractTimeSpan(string timeSlot)
         {
-            var match = Regex.Match(timeSlot, @"(\d{1,2}:\d{2}\s*[aA][mMpP][mM]?)\s*-\s*(\d{1,2}:\d{2}\s*[aA][mMpP][mM]?)");
+            var match = Regex.Match(timeSlot, @"(\d{1,2}:\d{2}\s*[aApP][mM])\s*-\s*(\d{1,2}:\d{2}\s*[aApP][mM])", RegexOptions.IgnoreCase);
             if (match.Success)
             {
                 if (DateTime.TryParse(match.Groups[1].Value, out DateTime startTime) &&
@@ -59,41 +143,9 @@ namespace FTLSV2.Pages.Chairman
             return null;
         }
 
-        private string CalculateAvailability(List<(TimeSpan Start, TimeSpan End)> schedules)
-        {
-            if (schedules.Count == 0)
-                return "7:00 AM - 9:00 PM";
-
-            var gaps = new List<(TimeSpan Start, TimeSpan End)>();
-            var dayStart = TimeSpan.FromHours(7); // 7:00 AM
-            var dayEnd = TimeSpan.FromHours(21); // 9:00 PM
-
-            if (schedules[0].Start > dayStart)
-                gaps.Add((dayStart, schedules[0].Start));
-
-            for (int i = 0; i < schedules.Count - 1; i++)
-            {
-                if (schedules[i].End < schedules[i + 1].Start)
-                    gaps.Add((schedules[i].End, schedules[i + 1].Start));
-            }
-
-            if (schedules.Last().End < dayEnd)
-                gaps.Add((schedules.Last().End, dayEnd));
-
-            if (gaps.Count == 0)
-                return "Fully booked";
-
-            return string.Join(", ", gaps.Select(g => $"{FormatTime(g.Start)} - {FormatTime(g.End)}"));
-        }
-
         private string FormatTime(TimeSpan time)
         {
-            return time.Hours switch
-            {
-                < 12 => $"{time.Hours}:{time.Minutes:D2} AM",
-                12 => $"12:{time.Minutes:D2} PM",
-                _ => $"{time.Hours - 12}:{time.Minutes:D2} PM"
-            };
+            return DateTime.Today.Add(time).ToString("h:mm tt").ToLower();
         }
     }
 }
