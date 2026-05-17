@@ -407,26 +407,16 @@
 {
     <div class="schedule-card" style="margin-top: 30px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h3 style="margin: 0;">📜 Subject History by Semester/Year</h3>
+            <h3 style="margin: 0;">📜 Subject History</h3>
             <div style="display: flex; gap: 10px; align-items: center;">
                 <form method="get" style="display: flex; gap: 10px; margin: 0; align-items: center;">
                     <div style="display: flex; align-items: center; gap: 5px;">
-                        <label for="yearFilter" style="font-weight: 600; margin: 0; font-size: 14px;">Year:</label>
-                        <select name="SelectedYear" id="yearFilter" onchange="this.form.submit()" style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; cursor: pointer; background-color: white;">
+                        <label style="font-weight: 600; margin: 0; font-size: 14px;">Academic Year:</label>
+                        <select asp-for="SelectedYear" onchange="this.form.submit()" style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; cursor: pointer; background-color: white; min-width: 150px;">
                             <option value="">All Years</option>
                             @foreach (var year in Model.AvailableYears)
                             {
-                                <option value="@year" selected="@(Model.SelectedYear == year)">@year</option>
-                            }
-                        </select>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 5px;">
-                        <label for="semesterFilter" style="font-weight: 600; margin: 0; font-size: 14px;">Semester:</label>
-                        <select name="SelectedSemester" id="semesterFilter" onchange="this.form.submit()" style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; cursor: pointer; background-color: white;">
-                            <option value="">All Semesters</option>
-                            @foreach (var semester in Model.AvailableSemesters)
-                            {
-                                <option value="@semester" selected="@(Model.SelectedSemester == semester)">@semester</option>
+                                <option value="@year">@year</option>
                             }
                         </select>
                     </div>
@@ -434,11 +424,11 @@
             </div>
         </div>
 
-        @foreach (var semesterGroup in Model.SubjectHistory)
+        @foreach (var historyGroup in Model.SubjectHistory)
         {
             <div class="semester-section">
                 <div class="semester-header" onclick="toggleSemester(this)">
-                    <h4>@semesterGroup.Semester</h4>
+                    <h4>@historyGroup.HeaderName</h4>
                     <div class="semester-toggle">▼</div>
                 </div>
                 <div class="semester-content">
@@ -453,7 +443,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var subject in semesterGroup.Subjects)
+                                @foreach (var subject in historyGroup.Subjects)
                                 {
                                     <tr>
                                         <td class="subject-code-col">@subject.SubjectCode</td>
