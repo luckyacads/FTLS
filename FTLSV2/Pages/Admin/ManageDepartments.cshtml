@@ -6,142 +6,375 @@
 }
 
 <style>
-    .form-group label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: 500;
-        font-size: 13px;
-        color: #333;
+    body {
+        background: #f5f7fa;
+        font-family: 'Segoe UI', system-ui, sans-serif;
     }
+
+    .container {
+        padding: 20px 40px;
+        width: 100%;
+        max-width: 100% !important;
+        margin: 0 !important;
+        box-sizing: border-box;
+    }
+
+    .page-header {
+        margin-bottom: 25px;
+    }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 26px;
+            font-weight: 700;
+            color: #07362d;
+        }
+
+        .page-header p {
+            margin-top: 6px;
+            font-size: 14px;
+            color: #777;
+        }
+
+    .card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+        margin-bottom: 25px;
+    }
+
+    .form-title {
+        margin-top: 0;
+        margin-bottom: 18px;
+        font-size: 18px;
+        color: #07362d;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+        }
 
     .input {
         width: 100%;
-        padding: 10px;
-        border-radius: 6px;
-        border: 1px solid #ddd;
+        padding: 10px 12px;
+        border-radius: 7px;
+        border: 1px solid #dcdcdc;
         box-sizing: border-box;
+        font-size: 14px;
     }
 
         .input:focus {
             border-color: #07362d;
             outline: none;
-            box-shadow: 0 0 0 2px rgba(7,54,45,0.1);
+            box-shadow: 0 0 0 2px rgba(7,54,45,0.12);
         }
 
-    .card {
-        background: white;
-        border-radius: 10px;
-        padding: 20px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        margin-bottom: 25px;
-    }
-
     .btn-primary {
-        background-color: #198754;
+        background: #07362d;
         color: white;
         border: none;
-        padding: 10px 20px;
-        border-radius: 6px;
+        padding: 10px 15px;
+        border-radius: 7px;
         cursor: pointer;
         font-weight: 600;
+        font-size: 14px;
+        transition: all 0.2s ease-in-out;
     }
 
         .btn-primary:hover {
-            background-color: #157347;
+            background: #0a4d40;
+            transform: translateY(-1px);
         }
+
+    .btn-add {
+        background: #07362d;
+        color: white;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 7px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.2s ease-in-out;
+        white-space: nowrap;
+    }
+
+        .btn-add:hover {
+            background: #0a4d40;
+            transform: translateY(-1px);
+        }
+
+    .alert {
+        padding: 14px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        background: #eafaf1;
+        border-left: 6px solid #2ecc71;
+        color: #155724;
+        font-weight: 500;
+    }
+
+    .alert-error {
+        padding: 14px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        background: #fdecea;
+        border-left: 6px solid #e74c3c;
+        color: #c0392b;
+        font-weight: 500;
+    }
+
+    .department-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        margin-bottom: 18px;
+    }
+
+        .department-toolbar h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #07362d;
+        }
+
+    .department-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .department-search {
+        width: 300px;
+        padding: 10px 12px;
+        border: 1px solid #dcdcdc;
+        border-radius: 8px;
+        font-size: 14px;
+        outline: none;
+        transition: all 0.2s ease-in-out;
+    }
+
+        .department-search:focus {
+            border-color: #07362d;
+            box-shadow: 0 0 0 2px rgba(7,54,45,0.12);
+        }
+
+    .department-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .department-table thead {
+            background: #f8f9fb;
+        }
+
+        .department-table th {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #888;
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        .department-table td {
+            padding: 13px 12px;
+            border-bottom: 1px solid #eeeeee;
+            font-size: 14px;
+        }
+
+        .department-table tr:hover {
+            background: #f6f9fc;
+        }
+
+    .code-badge {
+        display: inline-block;
+        background: #e1f5ee;
+        color: #0f6e56;
+        padding: 5px 9px;
+        border-radius: 7px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .no-results-row {
+        display: none;
+        text-align: center;
+        color: #888;
+        font-style: italic;
+    }
+
+    .add-department-section {
+        display: none;
+        margin-bottom: 25px;
+    }
+
+    .form-actions {
+        margin-top: 5px;
+        display: flex;
+        justify-content: flex-end;
+    }
 </style>
 
-<div class="page-container" style="padding: 20px;">
-    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-        <h1 style="margin: 0; color: #07362d;">Manage Departments</h1>
-        <button id="btnAdd" class="btn-primary" onclick="toggleForm()">+ Add Department</button>
-    </header>
+<div class="container">
+    <div class="page-header">
+        <h1>Manage Departments</h1>
+        <p>Add, view, and search department records by code, name, or school.</p>
+    </div>
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div id="success-alert" style="background-color: #d4edda; color: #155724; padding: 12px; margin-bottom: 20px; border-radius: 6px; border-left: 5px solid #28a745; font-weight: 500;">
-            ✓ @TempData["SuccessMessage"]
-        </div>
+        <div class="alert">✔ @TempData["SuccessMessage"]</div>
     }
 
-    <div id="addFormSection" class="card" style="display: none; border-top: 5px solid #07362d;">
-        <h3 style="margin-top: 0; margin-bottom: 20px; color: #07362d;">Add New Department</h3>
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert-error">✖ @TempData["ErrorMessage"]</div>
+    }
+
+    <section id="addDepartmentSection" class="card add-department-section">
+        <h3 class="form-title">Add New Department</h3>
 
         <form method="post" asp-page-handler="AddDepartment">
-            <div style="display: flex; gap: 15px; margin-bottom: 20px;">
-                <div class="form-group" style="flex: 1.5;">
-                    <label>Assign to School</label>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label asp-for="NewSchoolId">School</label>
                     <select asp-for="NewSchoolId" class="input" required>
-                        <option value="">-- Select a School --</option>
+                        <option value="">Select School</option>
                         @foreach (var school in Model.Schools)
                         {
                             <option value="@school.Id">@school.Name</option>
                         }
                     </select>
                 </div>
-                <div class="form-group" style="flex: 1;">
-                    <label>Department Code</label>
-                    <input type="text" asp-for="NewCode" class="input" required placeholder="e.g. CPE">
+
+                <div class="form-group">
+                    <label asp-for="NewCode">Department Code</label>
+                    <input asp-for="NewCode"
+                           class="input"
+                           placeholder="Example: CPE"
+                           maxlength="20"
+                           required />
                 </div>
-                <div class="form-group" style="flex: 2;">
-                    <label>Department Name</label>
-                    <input type="text" asp-for="NewName" class="input" required placeholder="e.g. Computer Engineering">
+
+                <div class="form-group" style="grid-column: span 2;">
+                    <label asp-for="NewName">Department Name</label>
+                    <input asp-for="NewName"
+                           class="input"
+                           placeholder="Example: Computer Engineering"
+                           maxlength="150"
+                           required />
                 </div>
             </div>
 
-            <div style="display: flex; gap: 10px;">
+            <div class="form-actions">
                 <button type="submit" class="btn-primary">Save Department</button>
-                <button type="button" onclick="toggleForm()" style="padding: 10px 20px; border: none; background: #eee; color: #333; cursor: pointer; border-radius: 6px; font-weight: 600;">Cancel</button>
             </div>
         </form>
-    </div>
+    </section>
 
     <section class="card">
-        <table style="width: 100%; border-collapse: collapse; text-align: left;">
-            <thead>
-                <tr style="border-bottom: 2px solid #eee;">
-                    <th style="padding: 12px;">ID</th>
-                    <th style="padding: 12px;">Code</th>
-                    <th style="padding: 12px;">Department Name</th>
-                 
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var dept in Model.Departments)
-                {
-                    <tr style="border-bottom: 1px solid #f5f5f5;">
-                        <td style="padding: 12px; color: #666;">@dept.Id</td>
-                        <td style="padding: 12px; font-weight: bold;">@dept.Code</td>
-                        <td style="padding: 12px;">@dept.Name</td>
-                     
+        <div class="department-toolbar">
+            <h3>Department List (@Model.Departments.Count)</h3>
+
+            <div class="department-actions">
+                <input type="text"
+                       id="departmentSearch"
+                       class="department-search"
+                       placeholder="Search department..."
+                       onkeyup="filterDepartments()" />
+
+                <button type="button" id="btnAddDepartment" class="btn-add" onclick="toggleAddDepartmentForm()">
+                    + Add New Department
+                </button>
+            </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="department-table">
+                <thead>
+                    <tr>
+                        <th style="width: 10%;">ID</th>
+                        <th style="width: 20%;">Code</th>
+                        <th style="width: 35%;">Department Name</th>
+                        <th style="width: 35%;">School</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+
+                <tbody>
+                    @foreach (var dept in Model.Departments)
+                    {
+                        var schoolName = Model.Schools.FirstOrDefault(s => s.Id == dept.SchoolId)?.Name ?? "N/A";
+
+                        <tr class="department-row"
+                            data-search="@($"{dept.Id} {dept.Code} {dept.Name} {schoolName}")">
+                            <td>@dept.Id</td>
+                            <td>
+                                <span class="code-badge">@dept.Code</span>
+                            </td>
+                            <td>@dept.Name</td>
+                            <td>@schoolName</td>
+                        </tr>
+                    }
+
+                    <tr id="noDepartmentResults" class="no-results-row">
+                        <td colspan="4">No matching departments found.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </section>
 </div>
 
 <script>
-    function toggleForm() {
-        var form = document.getElementById("addFormSection");
-        var btnAdd = document.getElementById("btnAdd");
+    function toggleAddDepartmentForm() {
+        const section = document.getElementById("addDepartmentSection");
+        const button = document.getElementById("btnAddDepartment");
 
-        if (form.style.display === "none" || form.style.display === "") {
-            form.style.display = "block";
-            btnAdd.style.display = "none";
+        if (section.style.display === "none" || section.style.display === "") {
+            section.style.display = "block";
+            button.innerText = "Close";
         } else {
-            form.style.display = "none";
-            btnAdd.style.display = "block";
+            section.style.display = "none";
+            button.innerText = "+ Add New Department";
         }
     }
 
-    window.onload = function() {
-        var alertBox = document.getElementById("success-alert");
-        if (alertBox) {
-            setTimeout(function() {
-                alertBox.style.opacity = "0";
-                setTimeout(function() { alertBox.style.display = "none"; }, 500);
-            }, 3000);
+    function filterDepartments() {
+        const searchValue = document.getElementById("departmentSearch").value.toLowerCase().trim();
+        const rows = document.querySelectorAll(".department-row");
+        const noResultsRow = document.getElementById("noDepartmentResults");
+
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const searchableText = row.getAttribute("data-search").toLowerCase();
+
+            if (searchableText.includes(searchValue)) {
+                row.style.display = "";
+                visibleCount++;
+            } else {
+                row.style.display = "none";
+            }
+        });
+
+        if (noResultsRow) {
+            noResultsRow.style.display = visibleCount === 0 ? "table-row" : "none";
         }
-    };
+    }
 </script>
