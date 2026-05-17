@@ -104,7 +104,7 @@ namespace FTLSV2.Pages
                 Password = Password,
 
                 // HARDCODED ROLE: Self-registered users default to Teacher
-                Role = "Teacher",
+                Role = "Faculty",
 
                 // SAVE THE CHOSEN DEPARTMENT
                 DepartmentId = DepartmentId,

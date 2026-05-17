@@ -288,7 +288,9 @@
 
                                         @if (user.Role != "Admin")
                                         {
-                                            <button onclick="openRoleModal('@user.FacultyId', '@(user.Role ?? "Teacher")')" class="dropdown-item-btn">
+                                            var currentRole = string.IsNullOrEmpty(user.Role) ? "Faculty" : user.Role;
+
+                                            <button onclick="openRoleModal('@user.FacultyId', '@currentRole')" class="dropdown-item-btn">
                                                 Change Role
                                             </button>
 
@@ -349,7 +351,7 @@
             <input type="hidden" name="facultyId" id="roleModalFacultyId" />
             <div class="form-group">
                 <select name="newRole" id="roleModalNewRole" class="input" required>
-                    <option value="Teacher">Teacher</option>
+                    <option value="Faculty">Faculty</option>
                     <option value="Chairman">Chairman</option>
                 </select>
             </div>

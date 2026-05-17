@@ -65,7 +65,7 @@ namespace FTLSV2.Pages
                 {
                     return RedirectToPage("/Chairman/ChairmanPage");
                 }
-                else if (dbUser.Role == "Teacher" || dbUser.Role == "Faculty")
+                else if (dbUser.Role == "Faculty" || dbUser.Role == "Faculty")
                 {
                     return RedirectToPage("/Teacher/TeacherPage");
                 }

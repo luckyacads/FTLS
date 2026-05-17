@@ -90,11 +90,11 @@ namespace FTLSV2.Pages.Admin
         // --- ASSIGN / UPDATE USER ROLE ---
         public IActionResult OnPostUpdateUserRole(string facultyId, string newRole)
         {
-            var allowedRoles = new[] { "Teacher", "Chairman" };
+            var allowedRoles = new[] { "Faculty", "Chairman" };
 
             if (string.IsNullOrWhiteSpace(newRole) || !allowedRoles.Contains(newRole))
             {
-                TempData["ErrorMessage"] = "Invalid role selected. Only Teacher and Chairman roles are allowed.";
+                TempData["ErrorMessage"] = "Invalid role selected. Only Faculty and Chairman roles are allowed.";
                 return RedirectToPage();
             }
 
