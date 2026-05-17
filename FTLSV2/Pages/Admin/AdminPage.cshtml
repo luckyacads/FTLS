@@ -161,8 +161,6 @@
         color: #b7950b;
     }
 
-    /* For pending registrations */
-
     .dashboard-grid {
         display: grid;
         grid-template-columns: 1fr;
@@ -219,110 +217,113 @@
         <div class="alert">✔ @TempData["SuccessMessage"]</div>
     }
 
-        <section class="card">
-            <h3 style="margin-top: 0; margin-bottom: 20px;">Registered Accounts (@Model.DbUsers.Count)</h3>
-            <div style="overflow-x: auto;">
-                <table class="admin-table">
-                    <thead>
+    <section class="card">
+        <h3 style="margin-top: 0; margin-bottom: 20px;">Registered Accounts (@Model.DbUsers.Count)</h3>
+        <div style="overflow-x: auto;">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">ID</th>
+                        <th style="width: 20%;">NAME</th>
+                        <th style="width: 20%;">EMAIL</th>
+                        <th style="width: 15%;">ROLE</th>
+                        <th style="width: 10%;">UNITS</th>
+                        <th style="width: 10%;">STATUS</th>
+                        <th style="width: 10%;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model.DbUsers)
+                    {
+                        var initials = $"{user.FirstName?[0]}{user.LastName?[0]}".ToUpper();
+
+                        // Status Logic for new registrations
+                        var statusText = string.IsNullOrEmpty(user.Status) ? "Pending" : user.Status;
+                        var statusClass = statusText == "Active" ? "green" : (statusText == "Pending" ? "yellow" : "red");
+
+                        // Check if this user has schedules based on the backend dictionary
+                        bool hasSched = Model.UserHasSchedules.ContainsKey(user.FacultyId) && Model.UserHasSchedules[user.FacultyId];
+
                         <tr>
-                            <th style="width: 15%;">ID</th>
-                            <th style="width: 20%;">NAME</th>
-                            <th style="width: 20%;">EMAIL</th>
-                            <th style="width: 15%;">ROLE</th>
-                            <th style="width: 10%;">UNITS</th>
-                            <th style="width: 10%;">STATUS</th>
-                            <th style="width: 10%;"></th>
+                            <td>@user.FacultyId</td>
+                            <td>
+                                <div style="display:flex; align-items:center;">
+                                    <div style="background: #eee; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 11px; font-weight: bold; color: #555;">
+                                        @initials
+                                    </div>
+                                    @user.FirstName @user.LastName
+                                </div>
+                            </td>
+                            <td>@user.Email</td>
+
+                            <td>
+                                @if (string.IsNullOrEmpty(user.Role))
+                                {
+                                    <span style="color: #b7950b; font-style: italic; font-size: 13px;">Unassigned</span>
+                                }
+                                else
+                                {
+                                    @user.Role
+                                }
+                            </td>
+
+                            <td>
+                                @if (user.Role == "Admin")
+                                {
+                                    <span style="color: #999; font-size: 12px;">N/A</span>
+                                }
+                                else
+                                {
+                                    <span class="badge green">@user.MaxUnits units</span>
+                                }
+                            </td>
+
+                            <td>
+                                <span class="badge @statusClass">@statusText</span>
+                            </td>
+
+                            <td style="text-align:right; position:relative;">
+                                <button onclick="toggleUserMenu('@user.FacultyId', event)" style="background:none; border:none; cursor:pointer; font-size:18px; padding: 5px;">⋮</button>
+
+                                <div id="menu-@user.FacultyId" class="dropdown-menu">
+
+                                    @if (user.Role != "Admin")
+                                    {
+                                        var currentRole = string.IsNullOrEmpty(user.Role) ? "Faculty" : user.Role;
+
+                                        <button onclick="openRoleModal('@user.FacultyId', '@currentRole')" class="dropdown-item-btn">
+                                            Change Role
+                                        </button>
+
+                                        <button onclick="openEditModal('@user.FacultyId', '@user.MaxUnits', @Model.InputMaxOverload)" class="dropdown-item-btn">
+                                            Edit Units
+                                        </button>
+                                    }
+
+                                    <form method="post" asp-page-handler="ToggleUserStatus" style="margin: 0;">
+                                        <input type="hidden" name="facultyId" value="@user.FacultyId" />
+                                        <button type="submit" class="dropdown-item-btn">
+                                            @(statusText == "Active" ? "Deactivate Account" : "Activate Account")
+                                        </button>
+                                    </form>
+
+                                    <form method="post" asp-page-handler="ResetPassword" style="margin: 0;">
+                                        <input type="hidden" name="facultyId" value="@user.FacultyId" />
+                                        <button type="submit" class="dropdown-item-btn">Reset Password</button>
+                                    </form>
+
+                                    <form id="deleteForm-@user.FacultyId" method="post" asp-page-handler="DeleteUser" style="margin: 0;">
+                                        <input type="hidden" name="facultyId" value="@user.FacultyId" />
+                                        <button type="button" class="dropdown-item-btn" style="color:red;" onclick="showDeleteModal('@user.FacultyId', @hasSched.ToString().ToLower())">Delete User</button>
+                                    </form>
+                                </div>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var user in Model.DbUsers)
-                        {
-                            var initials = $"{user.FirstName?[0]}{user.LastName?[0]}".ToUpper();
-
-                            // Status Logic for new registrations
-                            var statusText = string.IsNullOrEmpty(user.Status) ? "Pending" : user.Status;
-                            var statusClass = statusText == "Active" ? "green" : (statusText == "Pending" ? "yellow" : "red");
-
-                            <tr>
-                                <td>@user.FacultyId</td>
-                                <td>
-                                    <div style="display:flex; align-items:center;">
-                                        <div style="background: #eee; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 11px; font-weight: bold; color: #555;">
-                                            @initials
-                                        </div>
-                                        @user.FirstName @user.LastName
-                                    </div>
-                                </td>
-                                <td>@user.Email</td>
-
-                                <td>
-                                    @if (string.IsNullOrEmpty(user.Role))
-                                    {
-                                        <span style="color: #b7950b; font-style: italic; font-size: 13px;">Unassigned</span>
-                                    }
-                                    else
-                                    {
-                                        @user.Role
-                                    }
-                                </td>
-
-                                <td>
-                                    @if (user.Role == "Admin")
-                                    {
-                                        <span style="color: #999; font-size: 12px;">N/A</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge green">@user.MaxUnits units</span>
-                                    }
-                                </td>
-
-                                <td>
-                                    <span class="badge @statusClass">@statusText</span>
-                                </td>
-
-                                <td style="text-align:right; position:relative;">
-                                    <button onclick="toggleUserMenu('@user.FacultyId', event)" style="background:none; border:none; cursor:pointer; font-size:18px; padding: 5px;">⋮</button>
-
-                                    <div id="menu-@user.FacultyId" class="dropdown-menu">
-
-                                        @if (user.Role != "Admin")
-                                        {
-                                            var currentRole = string.IsNullOrEmpty(user.Role) ? "Faculty" : user.Role;
-
-                                            <button onclick="openRoleModal('@user.FacultyId', '@currentRole')" class="dropdown-item-btn">
-                                                Change Role
-                                            </button>
-
-                                            <button onclick="openEditModal('@user.FacultyId', '@user.MaxUnits', @Model.InputMaxOverload)" class="dropdown-item-btn">
-                                                Edit Units
-                                            </button>
-                                        }
-
-                                        <form method="post" asp-page-handler="ToggleUserStatus" style="margin: 0;">
-                                            <input type="hidden" name="facultyId" value="@user.FacultyId" />
-                                            <button type="submit" class="dropdown-item-btn">
-                                                @(statusText == "Active" ? "Deactivate Account" : "Activate Account")
-                                            </button>
-                                        </form>
-
-                                        <form method="post" asp-page-handler="ResetPassword" style="margin: 0;">
-                                            <input type="hidden" name="facultyId" value="@user.FacultyId" />
-                                            <button type="submit" class="dropdown-item-btn">Reset Password</button>
-                                        </form>
-
-                                        <form method="post" asp-page-handler="DeleteUser" style="margin: 0;" onsubmit="return confirm('Delete this account?');">
-                                            <input type="hidden" name="facultyId" value="@user.FacultyId" />
-                                            <button type="submit" class="dropdown-item-btn" style="color:red;">Delete User</button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </section>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
 </div>
 
 <div id="editUnitsModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
@@ -363,7 +364,42 @@
     </div>
 </div>
 
+<div id="deleteConfirmModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:1000; align-items:center; justify-content:center; backdrop-filter: blur(2px);">
+    <div class="card" style="width: 400px; position: relative; text-align: center; padding: 40px 30px; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);">
+
+        <h3 style="margin-top:0; color:#111827; font-size: 24px; font-weight: 700; margin-bottom: 12px;">Are you sure?</h3>
+
+        <p id="deleteModalMessage" style="font-size:14px; color:#4b5563; margin-bottom:30px; line-height: 1.5;"></p>
+
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <button type="button" style="background:#ffffff; color:#374151; border: 1px solid #d1d5db; padding: 10px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 130px; transition: all 0.2s;" onclick="closeModal('deleteConfirmModal')">Cancel</button>
+            <button type="button" id="confirmDeleteBtn" style="background:#f43f5e; color:white; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 130px; transition: background 0.2s;">Delete</button>
+        </div>
+    </div>
+</div>
 <script>
+    let formToSubmitId = '';
+
+    function showDeleteModal(facultyId, hasSchedule) {
+        formToSubmitId = 'deleteForm-' + facultyId;
+        var messageEl = document.getElementById('deleteModalMessage');
+
+        if (hasSchedule === true) {
+            messageEl.innerHTML = "This user has an existing schedule.<br><br>Deleting them will also remove all their assigned classes. Are you sure you want to delete this user?";
+        } else {
+            messageEl.innerHTML = "Are you sure you want to permanently delete this user?";
+        }
+
+        document.querySelectorAll('[id^="menu-"]').forEach(m => m.style.display = "none");
+        document.getElementById('deleteConfirmModal').style.display = "flex";
+    }
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+        if (formToSubmitId !== '') {
+            document.getElementById(formToSubmitId).submit();
+        }
+    });
+
     function toggleCreateForm() {
         var grid = document.getElementById('mainGrid');
         var formSection = document.getElementById('createUserSection');

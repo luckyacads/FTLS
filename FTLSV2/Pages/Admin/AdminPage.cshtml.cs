@@ -23,6 +23,9 @@ namespace FTLSV2.Pages.Admin
         public User LoggedInUser { get; set; }
         public IList<User> DbUsers { get; set; }
 
+        // Dictionary to tell the frontend if a user has schedules
+        public Dictionary<string, bool> UserHasSchedules { get; set; } = new();
+
         [BindProperty] public int InputMaxOverload { get; set; }
 
         public IActionResult OnGet()
@@ -40,8 +43,21 @@ namespace FTLSV2.Pages.Admin
             }
 
             DbUsers = _context.Users.OrderByDescending(u => u.CreatedAt).ToList();
-
             LoggedInUser = _context.Users.FirstOrDefault(u => u.FacultyId == activeId);
+
+            // Check every user to see if they have schedules
+            var userIds = DbUsers.Select(u => u.Id).ToList();
+            var facultiesWithSchedules = _context.Schedules
+                .Where(s => userIds.Contains(s.FacultyId))
+                .Select(s => s.FacultyId)
+                .Distinct()
+                .ToHashSet();
+
+            foreach (var user in DbUsers)
+            {
+                // Marks TRUE if they have 1 or more schedules, FALSE if 0
+                UserHasSchedules[user.FacultyId] = facultiesWithSchedules.Contains(user.Id);
+            }
 
             var settings = _context.SystemSettings.FirstOrDefault();
             if (settings == null)
@@ -164,8 +180,17 @@ namespace FTLSV2.Pages.Admin
             var dbUser = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
             if (dbUser != null)
             {
+                // 1. Delete their schedules first so the database doesn't crash!
+                var userSchedules = _context.Schedules.Where(s => s.FacultyId == dbUser.Id).ToList();
+                if (userSchedules.Any())
+                {
+                    _context.Schedules.RemoveRange(userSchedules);
+                }
+
+                // 2. Now delete the user
                 _context.Users.Remove(dbUser);
                 _context.SaveChanges();
+
                 TempData["SuccessMessage"] = $"Account for {dbUser.FirstName} {dbUser.LastName} has been permanently deleted.";
             }
 
