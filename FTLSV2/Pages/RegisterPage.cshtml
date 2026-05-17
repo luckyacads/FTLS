@@ -194,13 +194,18 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label" asp-for="Role">Register As</label>
-                <select class="form-select" asp-for="Role">
-                    <option value="">-- Select Role --</option>
-                    <option value="Teacher">Teacher</option>
-                    <option value="Chairman">Chairman</option>
+                <label class="form-label" asp-for="DepartmentId">Department</label>
+                <select class="form-select" asp-for="DepartmentId">
+                    <option value="">-- Select Department --</option>
+                    @if (Model.AvailableDepartments != null)
+                    {
+                        @foreach (var dept in Model.AvailableDepartments)
+                        {
+                            <option value="@dept.Id">@dept.Name (@dept.Code)</option>
+                        }
+                    }
                 </select>
-                <span class="validation-message" asp-validation-for="Role"></span>
+                <span class="validation-message" asp-validation-for="DepartmentId"></span>
             </div>
 
             <div class="form-group">

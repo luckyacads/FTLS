@@ -3,6 +3,8 @@ using FTLSV2.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace FTLSV2.Pages
 {
@@ -33,9 +35,10 @@ namespace FTLSV2.Pages
         [EmailAddress(ErrorMessage = "Enter a valid email address.")]
         public string Email { get; set; } = string.Empty;
 
+        // NEW: Changed from Role (string) to DepartmentId (int)
         [BindProperty]
-        [Required(ErrorMessage = "Role is required.")]
-        public string Role { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Department is required.")]
+        public int? DepartmentId { get; set; }
 
         [BindProperty]
         [Required(ErrorMessage = "Password is required.")]
@@ -48,8 +51,13 @@ namespace FTLSV2.Pages
         public string ErrorMessage { get; set; } = string.Empty;
         public string SuccessMessage { get; set; } = string.Empty;
 
+        // NEW: A list to hold the departments from the database
+        public List<Department> AvailableDepartments { get; set; } = new List<Department>();
+
         public void OnGet()
         {
+            // Fetch departments from database and sort them alphabetically by Name
+            AvailableDepartments = _context.Departments.OrderBy(d => d.Name).ToList();
         }
 
         public IActionResult OnPost()
@@ -58,16 +66,12 @@ namespace FTLSV2.Pages
             FirstName = FirstName?.Trim() ?? string.Empty;
             LastName = LastName?.Trim() ?? string.Empty;
             Email = Email?.Trim().ToLower() ?? string.Empty;
-            Role = Role?.Trim() ?? string.Empty;
+
+            // Re-fetch departments in case the page reloads due to an error
+            AvailableDepartments = _context.Departments.OrderBy(d => d.Name).ToList();
 
             if (!ModelState.IsValid)
             {
-                return Page();
-            }
-
-            if (Role != "Teacher" && Role != "Chairman")
-            {
-                ErrorMessage = "Invalid role selected.";
                 return Page();
             }
 
@@ -78,7 +82,6 @@ namespace FTLSV2.Pages
             }
 
             bool facultyIdExists = _context.Users.Any(u => u.FacultyId == FacultyId);
-
             if (facultyIdExists)
             {
                 ErrorMessage = "Faculty ID already exists.";
@@ -86,7 +89,6 @@ namespace FTLSV2.Pages
             }
 
             bool emailExists = _context.Users.Any(u => u.Email == Email);
-
             if (emailExists)
             {
                 ErrorMessage = "Email already exists.";
@@ -99,22 +101,20 @@ namespace FTLSV2.Pages
                 FirstName = FirstName,
                 LastName = LastName,
                 Email = Email,
-                Role = Role,
                 Password = Password,
 
-                // Better than instantly allowing access.
-                // Admin/Chairman should approve later.
-                Status = "Pending",
+                // HARDCODED ROLE: Self-registered users default to Teacher
+                Role = "Teacher",
 
+                // SAVE THE CHOSEN DEPARTMENT
+                DepartmentId = DepartmentId,
+
+                Status = "Pending",
                 MaxUnits = 24,
                 CurrentUnits = 0,
-
                 SchoolId = null,
-                DepartmentId = null,
-
                 CreatedBy = null,
                 CreatedByRole = "Self-Registration",
-
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -124,12 +124,11 @@ namespace FTLSV2.Pages
             SuccessMessage = "Registration submitted successfully. Please wait for account approval before logging in.";
 
             ModelState.Clear();
-
             FacultyId = string.Empty;
             FirstName = string.Empty;
             LastName = string.Empty;
             Email = string.Empty;
-            Role = string.Empty;
+            DepartmentId = null;
             Password = string.Empty;
             ConfirmPassword = string.Empty;
 
