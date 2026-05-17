@@ -19,17 +19,14 @@ namespace FTLSV2.Pages.Teacher
 
         // --- Properties for Filtering ---
         public List<string> AvailableYears { get; set; } = new();
-        public List<string> AvailableSemesters { get; set; } = new();
-        [BindProperty(SupportsGet = true)] public string SelectedYear { get; set; }
-        [BindProperty(SupportsGet = true)] public string SelectedSemester { get; set; }
-
+        [BindProperty(SupportsGet = true)] public string SelectedYear { get; set; } 
         public record ScheduleView(string TimeSlot, string SubjectCode, string SubjectTitle, string RoomName, string Units, int? OfferCode);
-        public record SubjectBySemester(string Semester, List<SubjectDetail> Subjects);
+        public record SubjectGroup(string HeaderName, List<SubjectDetail> Subjects);
         public record SubjectDetail(string SubjectCode, string SubjectTitle, string Units, int? OfferCode);
 
         public List<ScheduleView> MWFSchedules { get; set; } = new();
         public List<ScheduleView> TTHSchedules { get; set; } = new();
-        public List<SubjectBySemester> SubjectHistory { get; set; } = new();
+        public List<SubjectGroup> SubjectHistory { get; set; } = new();
         public int TotalUnits { get; set; }
         public int TotalClasses { get; set; }
         public string CurrentAcademicYear { get; set; }
@@ -50,7 +47,7 @@ namespace FTLSV2.Pages.Teacher
 
             // Populate filter dropdown data
             AvailableYears = allSchedules.Select(s => s.AcademicYear).Where(y => y != null).Distinct().OrderByDescending(y => y).ToList();
-            AvailableSemesters = allSchedules.Select(s => s.Subject.Semester).Where(s => s != null).Distinct().ToList();
+           
 
             // 1. Map Current View (Separate by Day)
             MWFSchedules = allSchedules.Where(s => s.TimeSlot != null && s.TimeSlot.StartsWith("MWF"))
@@ -61,13 +58,24 @@ namespace FTLSV2.Pages.Teacher
 
             // 2. Apply Filters for History Section
             var historyData = allSchedules;
-            if (!string.IsNullOrEmpty(SelectedYear)) historyData = historyData.Where(s => s.AcademicYear == SelectedYear).ToList();
-            if (!string.IsNullOrEmpty(SelectedSemester)) historyData = historyData.Where(s => s.Subject.Semester == SelectedSemester).ToList();
 
-            SubjectHistory = historyData.GroupBy(s => s.Subject.Semester ?? "N/A")
-                .Select(g => new SubjectBySemester(g.Key, g.Select(s => new SubjectDetail(s.Subject.Code, s.Subject.Title, s.AssignedUnits.ToString(), s.OfferCode)).DistinctBy(s => s.SubjectCode).ToList()))
+            // Only filter by Year now
+            if (!string.IsNullOrEmpty(SelectedYear))
+            {
+                historyData = historyData.Where(s => s.AcademicYear == SelectedYear).ToList();
+            }
+
+            // Group strictly by Academic Year (e.g., "Academic Year 2024-2025")
+            SubjectHistory = historyData
+                .GroupBy(s => $"Academic Year {s.AcademicYear ?? "TBA"}")
+                .Select(g => new SubjectGroup(
+                    g.Key,
+                    g.Select(s => new SubjectDetail(s.Subject.Code, s.Subject.Title, s.AssignedUnits.ToString(), s.OfferCode))
+                     .DistinctBy(s => s.SubjectCode)
+                     .ToList()
+                ))
+                .OrderByDescending(g => g.HeaderName) // Newest years at the top
                 .ToList();
-
             // 3. Populate Summary Stats
             TotalClasses = MWFSchedules.Count + TTHSchedules.Count;
             TotalUnits = allSchedules.Sum(s => s.AssignedUnits);

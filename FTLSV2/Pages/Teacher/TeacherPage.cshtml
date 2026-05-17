@@ -77,30 +77,23 @@
             @* The Red Highlighted Part: Filtering UI *@
             <form method="get" style="display: flex; gap: 10px; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 5px;">
-                    <label style="font-weight: 600; font-size: 14px;">Year:</label>
-                    <select asp-for="SelectedYear" onchange="this.form.submit()" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
+                    <label style="font-weight: 600; font-size: 14px;">Academic Year:</label>
+                    <select asp-for="SelectedYear" onchange="this.form.submit()" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc; min-width: 150px;">
                         <option value="">All Years</option>
-                        @foreach (var year in Model.AvailableYears) {
+                        @foreach (var year in Model.AvailableYears)
+                        {
                             <option value="@year">@year</option>
-                        }
-                    </select>
-                </div>
-                <div style="display: flex; align-items: center; gap: 5px;">
-                    <label style="font-weight: 600; font-size: 14px;">Semester:</label>
-                    <select asp-for="SelectedSemester" onchange="this.form.submit()" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
-                        <option value="">All Semesters</option>
-                        @foreach (var sem in Model.AvailableSemesters) {
-                            <option value="@sem">@sem</option>
                         }
                     </select>
                 </div>
             </form>
         </div>
 
-        @foreach (var semesterGroup in Model.SubjectHistory) {
+        @foreach (var historyGroup in Model.SubjectHistory)
+        {
             <div class="semester-section" style="margin-bottom: 10px;">
                 <div class="semester-header" onclick="toggleSemester(this)" style="background: #f1c40f; padding: 12px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between;">
-                    <h4 style="margin: 0; color: #07362d;">@semesterGroup.Semester</h4>
+                    <h4 style="margin: 0; color: #07362d;">@historyGroup.HeaderName</h4>
                     <span>▼</span>
                 </div>
                 <div class="semester-content" style="padding-top: 10px;">
@@ -114,7 +107,8 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var subject in semesterGroup.Subjects) {
+                            @foreach (var subject in historyGroup.Subjects)
+                            {
                                 <tr style="border-bottom: 1px solid #eee;">
                                     <td style="padding: 10px;">@subject.SubjectCode</td>
                                     <td style="padding: 10px;">@subject.SubjectTitle</td>
