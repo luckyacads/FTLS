@@ -90,11 +90,26 @@ namespace FTLSV2.Pages.Admin
         // --- ASSIGN / UPDATE USER ROLE ---
         public IActionResult OnPostUpdateUserRole(string facultyId, string newRole)
         {
+            var allowedRoles = new[] { "Teacher", "Chairman" };
+
+            if (string.IsNullOrWhiteSpace(newRole) || !allowedRoles.Contains(newRole))
+            {
+                TempData["ErrorMessage"] = "Invalid role selected. Only Teacher and Chairman roles are allowed.";
+                return RedirectToPage();
+            }
+
             var user = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
+
             if (user != null)
             {
                 try
                 {
+                    if (user.Role == "Admin")
+                    {
+                        TempData["ErrorMessage"] = "Administrator accounts cannot be modified from this role assignment option.";
+                        return RedirectToPage();
+                    }
+
                     user.Role = newRole;
 
                     AddAuditEntryToContext($"Assigned role '{newRole}' to {user.FirstName} {user.LastName}");
