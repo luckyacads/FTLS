@@ -7,19 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Controllers\**" />
     <Compile Remove="Pages\Chairman\Admin\**" />
     <Compile Remove="Services\**" />
     <Compile Remove="ViewModels\**" />
-    <Content Remove="Controllers\**" />
     <Content Remove="Pages\Chairman\Admin\**" />
     <Content Remove="Services\**" />
     <Content Remove="ViewModels\**" />
-    <EmbeddedResource Remove="Controllers\**" />
     <EmbeddedResource Remove="Pages\Chairman\Admin\**" />
     <EmbeddedResource Remove="Services\**" />
     <EmbeddedResource Remove="ViewModels\**" />
-    <None Remove="Controllers\**" />
     <None Remove="Pages\Chairman\Admin\**" />
     <None Remove="Services\**" />
     <None Remove="ViewModels\**" />
@@ -30,8 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.2">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.8">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
