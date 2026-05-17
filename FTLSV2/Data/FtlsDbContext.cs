@@ -30,9 +30,6 @@ namespace FTLSV2.Data
         // For Settings Variable
         public DbSet<SystemSettings> SystemSettings { get; set; }
 
-        // Audit logs table
-        public DbSet<AuditLog> AuditLogs { get; set; }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -53,7 +50,7 @@ namespace FTLSV2.Data
                 entity.Property(e => e.Name).HasColumnName("room_name").HasMaxLength(200);
                 entity.Property(e => e.Type).HasColumnName("type").HasMaxLength(100);
                 entity.Property(e => e.Capacity).HasColumnName("capacity");
-               
+
             });
 
             // Map Subject entity to the subject table 
@@ -77,30 +74,9 @@ namespace FTLSV2.Data
             });
 
             // Map FacultyLoadSummary entity to the faculty_load_summary table/view
-            /*modelBuilder.Entity<FacultyLoadSummary>(entity =>
-            {
-                entity.ToTable("faculty_load_summary");
-                entity.HasNoKey(); // The summary is a view without a stable primary key
-                entity.Property(e => e.FirstName).HasColumnName("first_name").HasMaxLength(200);
-                entity.Property(e => e.LastName).HasColumnName("last_name").HasMaxLength(200);
-                entity.Property(e => e.TotalLoad).HasColumnName("total_load");
-                entity.Property(e => e.Email).HasColumnName("email").HasMaxLength(200);
-            });*/
-
             modelBuilder.Entity<FacultyLoadSummary>()
                 .HasNoKey()
                 .ToView("faculty_load_summary"); // EXACT name in PostgreSQL
-
-            // Map AuditLog entity to the audit_logs table
-            modelBuilder.Entity<AuditLog>(entity =>
-            {
-                entity.ToTable("audit_logs");
-                entity.HasKey(e => e.LogId);
-                entity.Property(e => e.LogId).HasColumnName("log_id");
-                entity.Property(e => e.Timestamp).HasColumnName("timestamp");
-                entity.Property(e => e.UserId).HasColumnName("user_id");
-                entity.Property(e => e.Action).HasColumnName("action");
-            });
         }
     }
 }

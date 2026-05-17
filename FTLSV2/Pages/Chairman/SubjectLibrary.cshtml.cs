@@ -18,30 +18,26 @@ namespace FTLSV2.Pages.Admin
             _db = db;
         }
 
-        // Subjects loaded from the database
         public List<Subject> Subjects { get; set; } = new List<Subject>();
 
-        // --- PROPERTIES FOR ADDING A SUBJECT ---
         [BindProperty] public string NewSubjectCode { get; set; }
         [BindProperty] public string NewSubjectTitle { get; set; }
         [BindProperty] public int NewSubjectUnits { get; set; }
         [BindProperty] public string NewSubjectDepartment { get; set; }
-        [BindProperty] public string NewSubjectSemester { get; set; } // <-- NEW
+        [BindProperty] public string NewSubjectSemester { get; set; }
 
-        // --- PROPERTIES FOR EDITING A SUBJECT ---
         [BindProperty] public int EditSubjectId { get; set; }
         [BindProperty] public string EditSubjectCode { get; set; }
         [BindProperty] public string EditSubjectTitle { get; set; }
         [BindProperty] public int EditSubjectUnits { get; set; }
         [BindProperty] public string EditSubjectDepartment { get; set; }
-        [BindProperty] public string EditSubjectSemester { get; set; } // <-- NEW
+        [BindProperty] public string EditSubjectSemester { get; set; }
 
         public void OnGet()
         {
             Subjects = _db.Subjects.OrderBy(s => s.Title).ToList();
         }
 
-        // 2. Add Subject Method
         public IActionResult OnPostAddSubject()
         {
             if (!string.IsNullOrEmpty(NewSubjectCode) && !string.IsNullOrEmpty(NewSubjectTitle))
@@ -52,13 +48,12 @@ namespace FTLSV2.Pages.Admin
                     Title = NewSubjectTitle,
                     Units = NewSubjectUnits,
                     Department = NewSubjectDepartment,
-                    Semester = NewSubjectSemester // <-- Save to DB
+                    Semester = NewSubjectSemester
                 };
 
                 try
                 {
                     _db.Subjects.Add(subject);
-                    AddAuditEntryToContext($"Created subject: {NewSubjectCode} - {NewSubjectTitle}");
                     _db.SaveChanges();
                     TempData["SuccessMessage"] = "Subject successfully added!";
                 }
@@ -76,7 +71,6 @@ namespace FTLSV2.Pages.Admin
             return RedirectToPage();
         }
 
-        // 3. Edit Subject Method
         public IActionResult OnPostEditSubject()
         {
             var subjectToEdit = _db.Subjects.FirstOrDefault(s => s.SubjectId == EditSubjectId);
@@ -86,11 +80,10 @@ namespace FTLSV2.Pages.Admin
                 subjectToEdit.Title = EditSubjectTitle;
                 subjectToEdit.Units = EditSubjectUnits;
                 subjectToEdit.Department = EditSubjectDepartment;
-                subjectToEdit.Semester = EditSubjectSemester; // <-- Save to DB
+                subjectToEdit.Semester = EditSubjectSemester;
 
                 try
                 {
-                    AddAuditEntryToContext($"Updated subject: {EditSubjectCode} - {EditSubjectTitle}");
                     _db.SaveChanges();
                     TempData["SuccessMessage"] = "Subject successfully updated!";
                 }
@@ -104,7 +97,6 @@ namespace FTLSV2.Pages.Admin
             return RedirectToPage();
         }
 
-        // 4. Delete Subject Method
         public IActionResult OnPostDeleteSubject(int subjectId)
         {
             var subject = _db.Subjects.FirstOrDefault(s => s.SubjectId == subjectId);
@@ -113,7 +105,6 @@ namespace FTLSV2.Pages.Admin
                 try
                 {
                     _db.Subjects.Remove(subject);
-                    AddAuditEntryToContext($"Deleted subject: {subject.Code} - {subject.Title}");
                     _db.SaveChanges();
                     TempData["SuccessMessage"] = "Subject successfully deleted!";
                 }
@@ -125,34 +116,6 @@ namespace FTLSV2.Pages.Admin
                 }
             }
             return RedirectToPage();
-        }
-
-        private void AddAuditEntryToContext(string action)
-        {
-            // Get the currently logged-in user's FacultyId from session
-            var facultyId = HttpContext.Session.GetString("ActiveUser");
-            int? userId = null;
-
-            if (!string.IsNullOrEmpty(facultyId))
-            {
-                // Look up the user ID from the database using FacultyId
-                var user = _db.Users.FirstOrDefault(u => u.FacultyId == facultyId);
-                if (user != null)
-                {
-                    userId = user.Id;
-                }
-            }
-
-            var auditLog = new AuditLog
-            {
-                // Use UTC to match PostgreSQL 'timestamp with time zone' requirements
-                Timestamp = DateTime.UtcNow,
-                UserId = userId,
-                Action = action
-            };
-
-            // Add to context but do NOT call SaveChanges here. Caller will persist.
-            _db.AuditLogs.Add(auditLog);
         }
     }
 }

@@ -45,23 +45,18 @@ namespace FTLSV2.Pages.Admin
 
             foreach (var room in allRooms)
             {
-                // FIX 1: Filter schedules by checking for null then casting to int
                 var roomSchedules = allSchedules
                     .Where(s => s.RoomId != null && (int)s.RoomId == room.RoomId && !string.IsNullOrEmpty(s.TimeSlot))
                     .ToList();
 
-                // 1. Group schedules by MWF and TTh
                 var mwfSchedules = roomSchedules.Where(s => s.TimeSlot.StartsWith("MWF")).Select(s => ExtractTimeSpan(s.TimeSlot)).Where(t => t.HasValue).Select(t => t.Value).OrderBy(t => t.Start).ToList();
                 var tthSchedules = roomSchedules.Where(s => s.TimeSlot.StartsWith("TTh") || s.TimeSlot.StartsWith("TTH")).Select(s => ExtractTimeSpan(s.TimeSlot)).Where(t => t.HasValue).Select(t => t.Value).OrderBy(t => t.Start).ToList();
 
-                // 2. Calculate gaps for each group
                 string mwfAvailability = CalculateAvailability(mwfSchedules);
                 string tthAvailability = CalculateAvailability(tthSchedules);
 
-                // 3. Format the final string for the table
                 Rooms.Add(new RoomDisplay
                 {
-                    // FIX 2: Explicitly ensure room.RoomId is treated as int
                     RoomId = room.RoomId,
                     Name = room.Name,
                     Type = room.Type,
@@ -141,7 +136,6 @@ namespace FTLSV2.Pages.Admin
                 {
                     _db.Rooms.Add(room);
                     _db.SaveChanges();
-                    AddAuditEntryToContext($"Created room: {NewRoomName}");
                     TempData["SuccessMessage"] = "Room successfully added!";
                 }
                 catch (Exception ex) { TempData["ErrorMessage"] = $"Error: {ex.Message}"; }
@@ -158,7 +152,6 @@ namespace FTLSV2.Pages.Admin
                 {
                     _db.Rooms.Remove(room);
                     _db.SaveChanges();
-                    AddAuditEntryToContext($"Deleted room: {room.Name}");
                     TempData["SuccessMessage"] = "Room successfully deleted!";
                 }
                 catch (Exception ex) { TempData["ErrorMessage"] = $"Error: {ex.Message}"; }
@@ -177,27 +170,11 @@ namespace FTLSV2.Pages.Admin
                 try
                 {
                     _db.SaveChanges();
-                    AddAuditEntryToContext($"Updated room: {room.Name}");
                     TempData["SuccessMessage"] = "Room successfully updated!";
                 }
                 catch (Exception ex) { TempData["ErrorMessage"] = $"Error: {ex.Message}"; }
             }
             return RedirectToPage();
-        }
-
-        private void AddAuditEntryToContext(string action)
-        {
-            var facultyId = HttpContext.Session.GetString("ActiveUser");
-            int? userId = null;
-
-            if (!string.IsNullOrEmpty(facultyId))
-            {
-                var user = _db.Users.FirstOrDefault(u => u.FacultyId == facultyId);
-                if (user != null) userId = user.Id;
-            }
-
-            _db.AuditLogs.Add(new AuditLog { Timestamp = DateTime.UtcNow, UserId = userId, Action = action });
-            _db.SaveChanges();
         }
     }
 }

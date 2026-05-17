@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 
 namespace FTLSV2.Pages.Admin
 {
@@ -62,8 +63,6 @@ namespace FTLSV2.Pages.Admin
             {
                 try
                 {
-                    // If they are Active, make them Inactive.
-                    // Otherwise, activate them.
                     if (dbUser.Status == "Active" || string.IsNullOrEmpty(dbUser.Status))
                     {
                         dbUser.Status = "Inactive";
@@ -73,9 +72,7 @@ namespace FTLSV2.Pages.Admin
                         dbUser.Status = "Active";
                     }
 
-                    AddAuditEntryToContext($"Changed status for {dbUser.FirstName} {dbUser.LastName} to {dbUser.Status}");
                     _context.SaveChanges();
-
                     TempData["SuccessMessage"] = $"{dbUser.FirstName}'s account is now {dbUser.Status}!";
                 }
                 catch (Exception ex)
@@ -111,10 +108,7 @@ namespace FTLSV2.Pages.Admin
                     }
 
                     user.Role = newRole;
-
-                    AddAuditEntryToContext($"Assigned role '{newRole}' to {user.FirstName} {user.LastName}");
                     _context.SaveChanges();
-
                     TempData["SuccessMessage"] = $"Role for {user.FirstName} updated to {newRole}.";
                 }
                 catch (Exception ex)
@@ -157,10 +151,7 @@ namespace FTLSV2.Pages.Admin
             if (dbUser != null)
             {
                 dbUser.Password = "usjr1234";
-
-                AddAuditEntryToContext($"Reset password for {dbUser.FirstName} {dbUser.LastName}");
                 _context.SaveChanges();
-
                 TempData["SuccessMessage"] = $"Password for {dbUser.FirstName} has been reset to 'usjr1234'.";
             }
 
@@ -174,41 +165,11 @@ namespace FTLSV2.Pages.Admin
             if (dbUser != null)
             {
                 _context.Users.Remove(dbUser);
-
-                AddAuditEntryToContext($"Deleted user: {dbUser.FirstName} {dbUser.LastName}");
                 _context.SaveChanges();
-
                 TempData["SuccessMessage"] = $"Account for {dbUser.FirstName} {dbUser.LastName} has been permanently deleted.";
             }
 
             return RedirectToPage();
-        }
-
-        private void AddAuditEntryToContext(string action)
-        {
-            var facultyId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                ?? HttpContext.Session.GetString("ActiveUser");
-
-            int? userId = null;
-
-            if (!string.IsNullOrEmpty(facultyId))
-            {
-                var user = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
-
-                if (user != null)
-                {
-                    userId = user.Id;
-                }
-            }
-
-            var auditLog = new AuditLog
-            {
-                Timestamp = DateTime.UtcNow,
-                UserId = userId,
-                Action = action
-            };
-
-            _context.AuditLogs.Add(auditLog);
         }
     }
 }
