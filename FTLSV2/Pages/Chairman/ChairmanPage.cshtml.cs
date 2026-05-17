@@ -9,7 +9,6 @@ using System.Linq;
 
 namespace FTLSV2.Pages.Chairman
 {
-    
     public class ChairmanPageModel : PageModel
     {
         private readonly FtlsDbContext _context;
@@ -20,7 +19,7 @@ namespace FTLSV2.Pages.Chairman
         }
 
         // --- DROPDOWN LISTS ---
-        public IList<User> ActiveTeachers { get; set; }
+        public IList<User> ActiveFaculty { get; set; }
         public IList<Subject> ActiveSubjects { get; set; }
         public IList<Room> AllRooms { get; set; }
         public IList<string> AvailableAcademicYears { get; set; }
@@ -30,12 +29,12 @@ namespace FTLSV2.Pages.Chairman
         [BindProperty] public int SelectedSubjectId { get; set; }
         [BindProperty] public int SelectedRoomId { get; set; }
 
-        // --- NEW SEPARATE TIME INPUTS ---
+        // --- SEPARATE TIME INPUTS ---
         [BindProperty] public string SelectedDays { get; set; }
         [BindProperty] public TimeSpan StartTime { get; set; }
         [BindProperty] public TimeSpan EndTime { get; set; }
 
-        // --- NEW OFFER CODE AND ACADEMIC YEAR INPUTS ---
+        // --- OFFER CODE AND ACADEMIC YEAR INPUTS ---
         [BindProperty] public int? SelectedOfferCode { get; set; }
         [BindProperty] public string SelectedAcademicYear { get; set; }
 
@@ -46,8 +45,8 @@ namespace FTLSV2.Pages.Chairman
 
         public IActionResult OnGet()
         {
-            // --- ADDED: SESSION CHECK ---
             var activeUser = HttpContext.Session.GetString("ActiveUser");
+
             if (string.IsNullOrEmpty(activeUser))
             {
                 return RedirectToPage("/LoginPage");
@@ -56,12 +55,12 @@ namespace FTLSV2.Pages.Chairman
             LoadPageData();
             return Page();
         }
+
         public IActionResult OnPost()
         {
-            // Validate against the new inputs
             if (SelectedFacultyId != 0 && !string.IsNullOrEmpty(SelectedDays) && SelectedSubjectId != 0)
             {
-                // 1. --- NEW RESTRICTION: ROOM DOUBLE-BOOKING CHECK ---
+                // --- ROOM DOUBLE-BOOKING CHECK ---
                 if (SelectedRoomId > 0)
                 {
                     var existingRoomSchedules = _context.Schedules
@@ -73,9 +72,9 @@ namespace FTLSV2.Pages.Chairman
                         if (HasScheduleConflict(existingSchedule.TimeSlot, SelectedDays, StartTime, EndTime))
                         {
                             var room = _context.Rooms.FirstOrDefault(r => r.RoomId == SelectedRoomId);
+
                             TempData["ErrorMessage"] = $"Room Conflict: {room?.Name} is already booked during this time ({existingSchedule.TimeSlot}).";
 
-                            // FIX: Load dropdowns and return the Page to keep form data!
                             LoadPageData();
                             return Page();
                         }
@@ -88,23 +87,24 @@ namespace FTLSV2.Pages.Chairman
                 {
                     int officialSubjectUnits = targetSubject.Units;
 
-                    var currentSchedules = _context.Schedules.Where(s => s.FacultyId == SelectedFacultyId).ToList();
+                    var currentSchedules = _context.Schedules
+                        .Where(s => s.FacultyId == SelectedFacultyId)
+                        .ToList();
+
                     int currentTotalUnits = currentSchedules.Sum(s => s.AssignedUnits);
 
                     var settings = _context.SystemSettings.FirstOrDefault();
                     int globalMaxLimit = settings?.MaxOverload ?? 21;
 
-                    // 2. --- TEACHER OVERLOAD CHECK ---
+                    // --- FACULTY OVERLOAD CHECK ---
                     if ((currentTotalUnits + officialSubjectUnits) > globalMaxLimit)
                     {
-                        TempData["ErrorMessage"] = $"Assignment Blocked: Adding {officialSubjectUnits} units for {targetSubject.Code} pushes this teacher over the Max Overload limit of {globalMaxLimit} units.";
+                        TempData["ErrorMessage"] = $"Assignment Blocked: Adding {officialSubjectUnits} units for {targetSubject.Code} pushes this faculty member over the Max Overload limit of {globalMaxLimit} units.";
 
-                        // FIX: Load dropdowns and return the Page to keep form data!
                         LoadPageData();
                         return Page();
                     }
 
-                    // *** THE MAGIC TRICK ***
                     string formattedTimeSlot = $"{SelectedDays} {DateTime.Today.Add(StartTime):h:mm tt} - {DateTime.Today.Add(EndTime):h:mm tt}";
 
                     var newSchedule = new Schedule
@@ -120,56 +120,61 @@ namespace FTLSV2.Pages.Chairman
 
                     _context.Schedules.Add(newSchedule);
                     _context.SaveChanges();
+
                     TempData["SuccessMessage"] = $"Schedule successfully assigned! ({officialSubjectUnits} units automatically added to load)";
                 }
             }
             else
             {
                 TempData["ErrorMessage"] = "Please fill in all the schedule fields.";
-                // FIX: Load dropdowns and return the Page to keep form data!
+
                 LoadPageData();
                 return Page();
             }
 
-            // IF SUCCESSFUL, redirect to clear the form out.
             return RedirectToPage();
         }
 
-        // --- HELPER METHOD TO PARSE STRINGS AND CHECK OVERLAPS ---
         private bool HasScheduleConflict(string existingTimeSlot, string newDays, TimeSpan newStartTime, TimeSpan newEndTime)
         {
-            if (string.IsNullOrEmpty(existingTimeSlot)) return false;
+            if (string.IsNullOrEmpty(existingTimeSlot))
+            {
+                return false;
+            }
 
-            // Example existing format: "MWF 8:00 AM - 9:30 AM"
             var parts = existingTimeSlot.Split(' ');
-            if (parts.Length < 6) return false;
+
+            if (parts.Length < 6)
+            {
+                return false;
+            }
 
             string existingDays = parts[0];
 
-            // 1. Check if the Days overlap (e.g. "MWF" and "TTh" do NOT overlap. "MWF" and "M" DO overlap)
             bool daysOverlap = newDays.Any(day => existingDays.Contains(day));
-            if (!daysOverlap) return false;
+
+            if (!daysOverlap)
+            {
+                return false;
+            }
 
             try
             {
-                // 2. Parse the existing Start and End times
-                // parts[1] = "8:00", parts[2] = "AM", parts[4] = "9:30", parts[5] = "AM"
                 string existStartStr = $"{parts[1]} {parts[2]}";
                 string existEndStr = $"{parts[4]} {parts[5]}";
 
                 TimeSpan existStart = DateTime.Parse(existStartStr).TimeOfDay;
                 TimeSpan existEnd = DateTime.Parse(existEndStr).TimeOfDay;
 
-                // 3. Mathematical Overlap Check: (Start A < End B) AND (End A > Start B)
                 if (newStartTime < existEnd && newEndTime > existStart)
                 {
-                    return true; // CONFLICT FOUND!
+                    return true;
                 }
             }
             catch
             {
-                // If parsing fails for some reason, fallback to an exact string match
                 string formattedNewTime = $"{newDays} {DateTime.Today.Add(newStartTime):h:mm tt} - {DateTime.Today.Add(newEndTime):h:mm tt}";
+
                 return existingTimeSlot == formattedNewTime;
             }
 
@@ -181,26 +186,38 @@ namespace FTLSV2.Pages.Chairman
             var settings = _context.SystemSettings.FirstOrDefault();
             GlobalMaxLimit = settings?.MaxOverload ?? 21;
 
-            // Get all active teachers
-            var teachers = _context.Users.Where(u => u.Role == "Teacher" && (u.Status == "Active" || string.IsNullOrEmpty(u.Status))).ToList();
+            // Get all active faculty users
+            var facultyMembers = _context.Users
+                .Where(u => u.Role == "Faculty" && (u.Status == "Active" || string.IsNullOrEmpty(u.Status)))
+                .ToList();
 
             // Get the current chairman from session and add them to the dropdown
             var currentUserFacultyId = HttpContext.Session.GetString("ActiveUser");
+
             if (!string.IsNullOrEmpty(currentUserFacultyId))
             {
-                var chairman = _context.Users.FirstOrDefault(u => u.FacultyId == currentUserFacultyId && u.Role == "Chairman");
-                if (chairman != null && !teachers.Any(t => t.Id == chairman.Id))
+                var chairman = _context.Users
+                    .FirstOrDefault(u => u.FacultyId == currentUserFacultyId && u.Role == "Chairman");
+
+                if (chairman != null && !facultyMembers.Any(f => f.Id == chairman.Id))
                 {
-                    teachers.Add(chairman);
+                    facultyMembers.Add(chairman);
                 }
             }
 
-            // Sort the list by name
-            ActiveTeachers = teachers.OrderBy(t => t.LastName).ThenBy(t => t.FirstName).ToList();
-            ActiveSubjects = _context.Subjects.OrderBy(s => s.Code).ToList();
-            AllRooms = _context.Rooms.OrderBy(r => r.Name).ToList();
+            ActiveFaculty = facultyMembers
+                .OrderBy(f => f.LastName)
+                .ThenBy(f => f.FirstName)
+                .ToList();
 
-            // Get all available academic years from the database
+            ActiveSubjects = _context.Subjects
+                .OrderBy(s => s.Code)
+                .ToList();
+
+            AllRooms = _context.Rooms
+                .OrderBy(r => r.Name)
+                .ToList();
+
             AvailableAcademicYears = _context.Schedules
                 .Where(s => s.AcademicYear != null)
                 .Select(s => s.AcademicYear)
@@ -223,25 +240,28 @@ namespace FTLSV2.Pages.Chairman
                                 }).ToList();
         }
 
-        // --- NEW: AJAX HANDLER FOR DYNAMIC ROOM FILTERING ---
+        // --- AJAX HANDLER FOR DYNAMIC ROOM FILTERING ---
         public JsonResult OnGetAvailableRooms(string days, string startTime, string endTime)
         {
-            // If the user hasn't filled out all 3 time fields yet, return all rooms
             if (string.IsNullOrEmpty(days) || string.IsNullOrEmpty(startTime) || string.IsNullOrEmpty(endTime))
             {
-                var allRoomsFallback = _context.Rooms.OrderBy(r => r.Name)
-                                             .Select(r => new { roomId = r.RoomId, name = r.Name })
-                                             .ToList();
+                var allRoomsFallback = _context.Rooms
+                    .OrderBy(r => r.Name)
+                    .Select(r => new { roomId = r.RoomId, name = r.Name })
+                    .ToList();
+
                 return new JsonResult(allRoomsFallback);
             }
 
             try
             {
-                // Convert the HTML string times into C# TimeSpans
                 TimeSpan start = TimeSpan.Parse(startTime);
                 TimeSpan end = TimeSpan.Parse(endTime);
 
-                var allRooms = _context.Rooms.OrderBy(r => r.Name).ToList();
+                var allRooms = _context.Rooms
+                    .OrderBy(r => r.Name)
+                    .ToList();
+
                 var availableRooms = new List<object>();
 
                 foreach (var room in allRooms)
@@ -251,6 +271,7 @@ namespace FTLSV2.Pages.Chairman
                         .ToList();
 
                     bool hasConflict = false;
+
                     foreach (var schedule in existingRoomSchedules)
                     {
                         if (HasScheduleConflict(schedule.TimeSlot, days, start, end))
@@ -260,7 +281,6 @@ namespace FTLSV2.Pages.Chairman
                         }
                     }
 
-                    // Only add if no conflicts were found
                     if (!hasConflict)
                     {
                         availableRooms.Add(new { roomId = room.RoomId, name = room.Name });
@@ -271,7 +291,6 @@ namespace FTLSV2.Pages.Chairman
             }
             catch
             {
-                // Failsafe: if parsing breaks, return an empty list
                 return new JsonResult(new List<object>());
             }
         }

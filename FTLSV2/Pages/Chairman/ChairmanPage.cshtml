@@ -12,7 +12,7 @@
 <div style="display: flex; gap: 20px; margin-bottom: 25px;">
     <div class="chairman-card" style="flex: 1; border-left: 5px solid #2ecc71; padding: 12px 20px;">
         <p style="color: #7f8c8d; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-bottom: 2px;">Total Faculty</p>
-        <h2 style="margin: 0; color: #07362d; font-size: 24px;">@Model.ActiveTeachers?.Count</h2>
+        <h2 style="margin: 0; color: #07362d; font-size: 24px;">@Model.ActiveFaculty?.Count</h2>
     </div>
 
     <div class="chairman-card" style="flex: 1; border-left: 5px solid #2ecc71; padding: 12px 20px;">
@@ -34,6 +34,7 @@
                 ⚠ @TempData["ErrorMessage"]
             </div>
         }
+
         @if (TempData["SuccessMessage"] != null)
         {
             <div style="background-color: #d4edda; color: #155724; padding: 12px; margin-bottom: 20px; border-radius: 6px; border-left: 5px solid #28a745; font-weight: bold;">
@@ -46,21 +47,26 @@
             <div style="display: flex; gap: 15px; margin-bottom: 15px;">
                 <div class="form-group" style="flex: 1;">
                     <label>Faculty Member</label>
+
                     <select asp-for="SelectedFacultyId" required>
-                        <option value="0">-- Select a Teacher --</option>
-                        @if (Model.ActiveTeachers != null)
+                        <option value="0">-- Select Faculty --</option>
+
+                        @if (Model.ActiveFaculty != null)
                         {
-                            @foreach (var teacher in Model.ActiveTeachers)
+                            @foreach (var faculty in Model.ActiveFaculty)
                             {
-                                <option value="@teacher.Id">Engr. @teacher.FirstName @teacher.LastName</option>
+                                <option value="@faculty.Id">Engr. @faculty.FirstName @faculty.LastName</option>
                             }
                         }
                     </select>
                 </div>
+
                 <div class="form-group" style="flex: 1;">
                     <label>Course Selection</label>
+
                     <select asp-for="SelectedSubjectId" required>
                         <option value="">-- Select a Course --</option>
+
                         @if (Model.ActiveSubjects != null)
                         {
                             @foreach (var subject in Model.ActiveSubjects)
@@ -74,13 +80,11 @@
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
 
-                <!-- THE NEW 3-PART TIME SLOT (CLASSIC & RESPONSIVE) -->
                 <div class="form-group" style="margin-bottom: 20px; width: 100%;">
                     <label style="display: block; font-weight: bold; color: #07362d; margin-bottom: 8px;">Time Slot</label>
 
                     <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
 
-                        <!-- Day Selector -->
                         <select asp-for="SelectedDays" required style="flex: 1.2; min-width: 0; height: 40px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; color: #333; cursor: pointer; background-color: #fff;">
                             <option value="" disabled selected>-- Day --</option>
                             <option value="MWF">MWF</option>
@@ -93,22 +97,21 @@
                             <option value="S">Saturday</option>
                         </select>
 
-                        <!-- Start Time -->
                         <input type="time" asp-for="StartTime" required onclick="this.showPicker()" style="flex: 1; min-width: 0; height: 40px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; color: #333; cursor: pointer; background-color: #fff;" />
 
-                        <!-- Separator -->
                         <span style="font-weight: bold; color: #555; font-size: 13px;">to</span>
 
-                        <!-- End Time -->
                         <input type="time" asp-for="EndTime" required onclick="this.showPicker()" style="flex: 1; min-width: 0; height: 40px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; color: #333; cursor: pointer; background-color: #fff;" />
 
                     </div>
                 </div>
-                <!-- ASSIGNED ROOM DROPDOWN (RESTORED!) -->
+
                 <div class="form-group">
                     <label>Assigned Room</label>
+
                     <select asp-for="SelectedRoomId" required style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
                         <option value="">-- Select a Room --</option>
+
                         @if (Model.AllRooms != null)
                         {
                             @foreach (var room in Model.AllRooms)
@@ -119,17 +122,22 @@
                     </select>
                 </div>
 
-                <!-- NEW: OFFER CODE INPUT -->
                 <div class="form-group">
                     <label>Offer Code</label>
-                    <input type="number" asp-for="SelectedOfferCode" required style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" placeholder="Enter offer code" />
+
+                    <input type="number"
+                           asp-for="SelectedOfferCode"
+                           required
+                           style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;"
+                           placeholder="Enter offer code" />
                 </div>
 
-                <!-- NEW: ACADEMIC YEAR DROPDOWN -->
                 <div class="form-group">
                     <label>Academic Year</label>
+
                     <select asp-for="SelectedAcademicYear" required style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
                         <option value="">-- Select Academic Year --</option>
+
                         @if (Model.AvailableAcademicYears != null)
                         {
                             @foreach (var year in Model.AvailableAcademicYears)
@@ -148,9 +156,9 @@
 
 </div>
 
-<!-- ASSIGNED TEACHING LOADS TABLE (RESTORED TO FULL WIDTH BOTTOM!) -->
 <div class="chairman-card" style="margin-top: 20px; width: 100%;">
     <h3>Assigned Teaching Loads (Current Semester)</h3>
+
     <table class="table-light" style="width: 100%;">
         <thead>
             <tr>
@@ -163,6 +171,7 @@
                 <th>Load Status</th>
             </tr>
         </thead>
+
         <tbody>
             @if (Model.CurrentSchedules != null)
             {
@@ -183,7 +192,6 @@
     </table>
 </div>
 
-<!-- SCRIPTS FOR DYNAMIC ROOM FILTERING -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const daysInput = document.getElementById("SelectedDays");
@@ -191,7 +199,6 @@
         const endInput = document.getElementById("EndTime");
         const roomDropdown = document.getElementById("SelectedRoomId");
 
-        // Listen for changes
         daysInput.addEventListener("change", fetchAvailableRooms);
         startInput.addEventListener("change", fetchAvailableRooms);
         endInput.addEventListener("change", fetchAvailableRooms);
@@ -202,20 +209,18 @@
             const end = endInput.value;
 
             if (days && start && end) {
-                // Show loading state
                 roomDropdown.innerHTML = '<option value="">Searching for available rooms...</option>';
 
-                // Fetch data from C# handler
                 fetch(`?handler=AvailableRooms&days=${days}&startTime=${start}&endTime=${end}`)
                     .then(response => response.json())
                     .then(data => {
-                        roomDropdown.innerHTML = ''; // Clear dropdown
+                        roomDropdown.innerHTML = '';
 
                         if (data.length === 0) {
                             roomDropdown.innerHTML = '<option value="">-- No Rooms Available at this Time! --</option>';
                         } else {
                             roomDropdown.innerHTML = '<option value="">-- Select an Available Room --</option>';
-                            // Populate dropdown
+
                             data.forEach(room => {
                                 const option = document.createElement("option");
                                 option.value = room.roomId;
