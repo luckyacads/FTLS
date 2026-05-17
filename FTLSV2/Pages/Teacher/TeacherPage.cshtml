@@ -39,10 +39,20 @@
             margin: 0;
         }
 
-        /* --- 2. LAYOUT ENHANCEMENTS (SINGLE COLUMN) --- */
+        /* --- 2. LAYOUT ENHANCEMENTS (SINGLE COLUMN & ALIGNMENT FIX) --- */
         .schedule-container {
             display: block;
             width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* 🔥 THE ALIGNMENT FIX: Forces the white cards to perfectly match the green cards above */
+        .schedule-card {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
         }
 
         .schedule-cards-grid {
@@ -190,7 +200,7 @@
 </div>
 
 <div class="schedule-container" id="printableArea">
-    <div class="schedule-card" style="background: #fdfdfd; padding: 25px; border-radius: 12px; border: 1px solid #e5e7eb; width: 100%;">
+    <div class="schedule-card" style="background: #fdfdfd; padding: 25px; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
         <h3 style="color: #111827; margin-top: 0; font-size: 20px; border-bottom: 2px solid #f3f4f6; padding-bottom: 10px;">Current Schedule</h3>
 
         @if (Model.MWFSchedules.Any())
@@ -264,6 +274,13 @@
                         </div>
                     </div>
                 }
+            </div>
+        }
+
+        @if (!Model.MWFSchedules.Any() && !Model.TTHSchedules.Any())
+        {
+            <div style="text-align: center; padding: 40px 20px; color: #6b7280; background: #f9fafb; border-radius: 8px; margin-top: 15px;">
+                <p style="margin: 0; font-size: 15px; font-weight: 500;">No classes scheduled for the current semester.</p>
             </div>
         }
     </div>
