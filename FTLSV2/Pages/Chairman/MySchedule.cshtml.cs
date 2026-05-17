@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using FTLSV2.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System; // Added for DateTime formatting
 
 namespace FTLSV2.Pages.Chairman
 {
@@ -19,14 +20,13 @@ namespace FTLSV2.Pages.Chairman
 
         public record ScheduleView(string TimeSlot, string SubjectCode, string SubjectTitle, string RoomName, string Units, int? OfferCode);
 
-        // UPGRADED TO MATCH TEACHER PORTAL
+        // MATCHING TEACHER PORTAL
         public record SubjectGroup(string HeaderName, List<SubjectDetail> Subjects);
         public record SubjectDetail(string SubjectCode, string SubjectTitle, string Units, int? OfferCode);
 
         public List<ScheduleView> MWFSchedules { get; set; } = new();
         public List<ScheduleView> TTHSchedules { get; set; } = new();
 
-        // UPGRADED TO MATCH TEACHER PORTAL
         public List<SubjectGroup> SubjectHistory { get; set; } = new();
         public List<string> AvailableYears { get; set; } = new();
 
@@ -40,7 +40,6 @@ namespace FTLSV2.Pages.Chairman
 
         public void OnGet()
         {
-            // Get the currently logged-in chairman's faculty ID from session
             var chairmanFacultyId = HttpContext.Session.GetString("ActiveUser");
 
             if (string.IsNullOrEmpty(chairmanFacultyId))
@@ -48,14 +47,12 @@ namespace FTLSV2.Pages.Chairman
                 return;
             }
 
-            // Look up the user record to get their integer ID
             var user = _db.Users.FirstOrDefault(u => u.FacultyId == chairmanFacultyId);
             if (user == null)
             {
                 return;
             }
 
-            // Get all schedules for this faculty member using their integer ID
             var schedules = _db.Schedules
                 .Where(s => s.FacultyId == user.Id)
                 .AsNoTracking()
@@ -66,7 +63,7 @@ namespace FTLSV2.Pages.Chairman
                 return;
             }
 
-            // --- Handling Nullable RoomId ---
+            // Handling Nullable RoomId
             var roomIds = schedules
                 .Where(s => s.RoomId.HasValue)
                 .Select(s => s.RoomId.Value)
@@ -85,7 +82,7 @@ namespace FTLSV2.Pages.Chairman
                 .AsNoTracking()
                 .ToDictionary(s => s.SubjectId);
 
-            // Separate schedules by day
+            // Separate schedules by day AND SORT BY TIME
             MWFSchedules = schedules
                 .Where(s => !string.IsNullOrEmpty(s.TimeSlot) && s.TimeSlot.StartsWith("MWF"))
                 .Select(s => new ScheduleView(
@@ -96,7 +93,7 @@ namespace FTLSV2.Pages.Chairman
                     s.AssignedUnits.ToString(),
                     s.OfferCode
                 ))
-                .OrderBy(s => s.TimeSlot)
+                .OrderBy(s => ParseStartTime(s.TimeSlot)) // Sorting applied here
                 .ToList();
 
             TTHSchedules = schedules
@@ -109,17 +106,15 @@ namespace FTLSV2.Pages.Chairman
                     s.AssignedUnits.ToString(),
                     s.OfferCode
                 ))
-                .OrderBy(s => s.TimeSlot)
+                .OrderBy(s => ParseStartTime(s.TimeSlot)) // Sorting applied here
                 .ToList();
 
-            // Get all schedules and subjects assigned to this faculty member with semester info
             var allSchedulesWithSubjects = _db.Schedules
                 .Where(s => s.FacultyId == user.Id)
                 .Join(_db.Subjects, s => s.SubjectId, sub => sub.SubjectId, (s, sub) => new { Schedule = s, Subject = sub })
                 .AsNoTracking()
                 .ToList();
 
-            // Extract all available years from the AcademicYear column in Schedule
             AvailableYears = allSchedulesWithSubjects
                 .Select(ps => ps.Schedule.AcademicYear ?? "N/A")
                 .Where(year => year != "N/A")
@@ -127,7 +122,6 @@ namespace FTLSV2.Pages.Chairman
                 .OrderByDescending(y => y)
                 .ToList();
 
-            // Filter by selected year
             var filteredSubjects = allSchedulesWithSubjects;
             if (!string.IsNullOrEmpty(SelectedYear) && SelectedYear != "All")
             {
@@ -136,7 +130,7 @@ namespace FTLSV2.Pages.Chairman
                     .ToList();
             }
 
-            // UPGRADED GROUPING: Group strictly by Academic Year (e.g., "Academic Year 2024-2025")
+            // Group strictly by Academic Year
             SubjectHistory = filteredSubjects
                 .GroupBy(ps => $"Academic Year {ps.Schedule.AcademicYear ?? "TBA"}")
                 .Select(g => new SubjectGroup(
@@ -151,13 +145,32 @@ namespace FTLSV2.Pages.Chairman
                     .OrderBy(s => s.SubjectCode)
                     .ToList()
                 ))
-                .OrderByDescending(g => g.HeaderName) // Newest years at the top
+                .OrderByDescending(g => g.HeaderName)
                 .ToList();
 
-            // Calculate summary statistics
             TotalClasses = MWFSchedules.Count + TTHSchedules.Count;
             TotalUnits = MWFSchedules.Sum(s => int.Parse(s.Units ?? "0")) + TTHSchedules.Sum(s => int.Parse(s.Units ?? "0"));
             CurrentAcademicYear = schedules.FirstOrDefault()?.AcademicYear ?? "N/A";
+        }
+
+        // --- HELPER METHOD TO EXTRACT AND SORT REAL CLOCK TIME ---
+        private DateTime ParseStartTime(string timeSlot)
+        {
+            if (string.IsNullOrWhiteSpace(timeSlot)) return DateTime.MaxValue;
+
+            try
+            {
+                var startPart = timeSlot.Split('-')[0].Trim();
+                var timeString = new string(startPart.SkipWhile(c => !char.IsDigit(c)).ToArray());
+
+                if (DateTime.TryParse(timeString, out DateTime parsedTime))
+                {
+                    return parsedTime;
+                }
+            }
+            catch { }
+
+            return DateTime.MaxValue;
         }
     }
 }
