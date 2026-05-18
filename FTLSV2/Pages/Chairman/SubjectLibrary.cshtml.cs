@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
+using Microsoft.EntityFrameworkCore; // Required for .Include()
 using FTLSV2.Data;
 using FTLSV2.Models;
 
@@ -19,6 +19,7 @@ namespace FTLSV2.Pages.Admin
         }
 
         public List<Subject> Subjects { get; set; } = new List<Subject>();
+        public List<Department> Departments { get; set; } = new List<Department>();
 
         [BindProperty] public string NewSubjectCode { get; set; }
         [BindProperty] public string NewSubjectTitle { get; set; }
@@ -35,19 +36,34 @@ namespace FTLSV2.Pages.Admin
 
         public void OnGet()
         {
-            Subjects = _db.Subjects.OrderBy(s => s.Title).ToList();
+            Subjects = _db.Subjects
+                .Include(s => s.Department)
+                .OrderBy(s => s.Title)
+                .ToList();
+
+            Departments = _db.Departments.OrderBy(d => d.Name).ToList();
         }
 
         public IActionResult OnPostAddSubject()
         {
-            if (!string.IsNullOrEmpty(NewSubjectCode) && !string.IsNullOrEmpty(NewSubjectTitle))
+            if (!string.IsNullOrEmpty(NewSubjectCode) && !string.IsNullOrEmpty(NewSubjectTitle) && !string.IsNullOrEmpty(NewSubjectDepartment))
             {
+                string deptName = NewSubjectDepartment.Trim();
+                var dept = _db.Departments.FirstOrDefault(d => d.Name.ToLower() == deptName.ToLower());
+
+                if (dept == null)
+                {
+                    dept = new Department { Name = deptName };
+                    _db.Departments.Add(dept);
+                    _db.SaveChanges();
+                }
+
                 var subject = new Subject
                 {
                     Code = NewSubjectCode,
                     Title = NewSubjectTitle,
                     Units = NewSubjectUnits,
-                    Department = NewSubjectDepartment,
+                    DepartmentId = dept.Id, // LINE 69: Changed from dept.DepartmentId to dept.Id
                     Semester = NewSubjectSemester
                 };
 
@@ -74,12 +90,22 @@ namespace FTLSV2.Pages.Admin
         public IActionResult OnPostEditSubject()
         {
             var subjectToEdit = _db.Subjects.FirstOrDefault(s => s.SubjectId == EditSubjectId);
-            if (subjectToEdit != null)
+            if (subjectToEdit != null && !string.IsNullOrEmpty(EditSubjectDepartment))
             {
+                string deptName = EditSubjectDepartment.Trim();
+                var dept = _db.Departments.FirstOrDefault(d => d.Name.ToLower() == deptName.ToLower());
+
+                if (dept == null)
+                {
+                    dept = new Department { Name = deptName };
+                    _db.Departments.Add(dept);
+                    _db.SaveChanges();
+                }
+
                 subjectToEdit.Code = EditSubjectCode;
                 subjectToEdit.Title = EditSubjectTitle;
                 subjectToEdit.Units = EditSubjectUnits;
-                subjectToEdit.Department = EditSubjectDepartment;
+                subjectToEdit.DepartmentId = dept.Id; // LINE 111: Changed from dept.DepartmentId to dept.Id
                 subjectToEdit.Semester = EditSubjectSemester;
 
                 try
@@ -104,20 +130,9 @@ namespace FTLSV2.Pages.Admin
             {
                 try
                 {
-                    // 1. Find ALL schedules that are currently using this subject
-                    var activeSchedules = _db.Schedules.Where(s => s.SubjectId == subject.SubjectId).ToList();
-
-                    // 2. If there are any active schedules, delete them FIRST so the database doesn't crash
-                    if (activeSchedules.Any())
-                    {
-                        _db.Schedules.RemoveRange(activeSchedules);
-                    }
-
-                    // 3. Now that the schedules are gone, it is safe to delete the subject!
                     _db.Subjects.Remove(subject);
                     _db.SaveChanges();
-
-                    TempData["SuccessMessage"] = "Subject and its associated schedules successfully deleted!";
+                    TempData["SuccessMessage"] = "Subject successfully deleted!";
                 }
                 catch (Exception ex)
                 {

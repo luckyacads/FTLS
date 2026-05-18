@@ -34,10 +34,10 @@ namespace FTLSV2.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // ---> NEW: Map User entity to the users table & max_units column <---
+            // ---> Map User entity to the users table & max_units column <---
             modelBuilder.Entity<User>(entity =>
             {
-                entity.ToTable("users"); // Ensure it connects to your users table
+                entity.ToTable("users");
                 entity.Property(e => e.MaxUnits).HasColumnName("max_units");
             });
 
@@ -50,7 +50,18 @@ namespace FTLSV2.Data
                 entity.Property(e => e.Name).HasColumnName("room_name").HasMaxLength(200);
                 entity.Property(e => e.Type).HasColumnName("type").HasMaxLength(100);
                 entity.Property(e => e.Capacity).HasColumnName("capacity");
+            });
 
+            // Map Department entity to the departments table
+            modelBuilder.Entity<Department>(entity =>
+            {
+                // FIXED: Changed from "department" to "departments" to match PostgreSQL plural table conventions
+                entity.ToTable("departments");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.SchoolId).HasColumnName("school_id");
+                entity.Property(e => e.Code).HasColumnName("code").HasMaxLength(50);
+                entity.Property(e => e.Name).HasColumnName("department").HasMaxLength(200);
             });
 
             // Map Subject entity to the subject table 
@@ -62,8 +73,15 @@ namespace FTLSV2.Data
                 entity.Property(e => e.Code).HasColumnName("subject_code").HasMaxLength(50);
                 entity.Property(e => e.Title).HasColumnName("subject_title").HasMaxLength(300);
                 entity.Property(e => e.Units).HasColumnName("units");
-                entity.Property(e => e.Department).HasColumnName("department").HasMaxLength(200);
                 entity.Property(e => e.Semester).HasColumnName("semester").HasMaxLength(50);
+
+                // Map the actual integer foreign key column correctly
+                entity.Property(e => e.DepartmentId).HasColumnName("department_id");
+
+                // Explicitly define the relationship blueprint for EF Core
+                entity.HasOne(s => s.Department)
+                      .WithMany(d => d.Subjects)
+                      .HasForeignKey(s => s.DepartmentId);
             });
 
             // Map Schedule entity to the schedule table & assigned_units column 
@@ -76,7 +94,7 @@ namespace FTLSV2.Data
             // Map FacultyLoadSummary entity to the faculty_load_summary table/view
             modelBuilder.Entity<FacultyLoadSummary>()
                 .HasNoKey()
-                .ToView("faculty_load_summary"); // EXACT name in PostgreSQL
+                .ToView("faculty_load_summary");
         }
     }
 }
