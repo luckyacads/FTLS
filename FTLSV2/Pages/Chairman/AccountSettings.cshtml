@@ -1,0 +1,198 @@
+﻿@page
+@model FTLSV2.Pages.Chairman.AccountSettingsModel
+@{
+    ViewData["Title"] = "Account Settings";
+    Layout = "_ChairmanLayout";
+}
+
+@section Styles {
+    <style>
+        /* NEW WRAPPER TO CENTER EVERYTHING */
+        .account-wrapper {
+            max-width: 900px;
+            margin: 0 auto; /* This is the magic rule that centers it in the middle! */
+            width: 100%;
+            padding-top: 10px;
+        }
+
+        .account-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+        }
+
+            .card h3 {
+                margin-top: 0;
+                color: #111827;
+                font-size: 18px;
+                border-bottom: 2px solid #f3f4f6;
+                padding-bottom: 12px;
+                margin-bottom: 20px;
+            }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+            .form-group.full {
+                grid-column: span 2;
+            }
+
+        label {
+            font-weight: 600;
+            font-size: 13px;
+            color: #4b5563;
+        }
+
+        .input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+            box-sizing: border-box;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+            .input:focus {
+                outline: none;
+                border-color: #07362d;
+                box-shadow: 0 0 0 2px rgba(7, 54, 45, 0.1);
+            }
+
+            .input:disabled {
+                background: #f9fafb;
+                color: #6b7280;
+                cursor: not-allowed;
+            }
+
+        .btn-primary {
+            background: #07362d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: background 0.2s;
+        }
+
+            .btn-primary:hover {
+                background: #0a4d40;
+            }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-top: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+            .alert.error {
+                background: #fee2e2;
+                color: #991b1b;
+                border-left: 4px solid #ef4444;
+            }
+
+            .alert.success {
+                background: #d1fae5;
+                color: #065f46;
+                border-left: 4px solid #10b981;
+            }
+
+        /* Responsive Fixes */
+        @@media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full {
+                grid-column: span 1;
+            }
+        }
+    </style>
+}
+
+<div class="account-wrapper">
+    <header style="margin-bottom: 25px;">
+        <h1 style="color: #07362d; margin: 0;">Account Settings</h1>
+    </header>
+
+    <div class="account-grid">
+
+        <section class="card">
+            <h3>Profile Information</h3>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input class="input" value="@Model.LoggedInUser.FirstName" disabled />
+                </div>
+
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input class="input" value="@Model.LoggedInUser.LastName" disabled />
+                </div>
+
+                <div class="form-group full">
+                    <label>Email</label>
+                    <input class="input" value="@Model.LoggedInUser.Email" disabled />
+                </div>
+
+                <div class="form-group full">
+                    <label>Faculty ID</label>
+                    <input class="input" value="@Model.LoggedInUser.FacultyId" disabled />
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h3>Change Password</h3>
+
+            <form method="post" asp-page-handler="ChangePassword">
+                <div class="form-grid">
+                    <div class="form-group full">
+                        <label>Current Password</label>
+                        <input type="password" class="input" asp-for="CurrentPassword" required />
+                    </div>
+
+                    <div class="form-group full">
+                        <label>New Password</label>
+                        <input type="password" class="input" asp-for="NewPassword" required />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary">Update Password</button>
+            </form>
+
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert error">@Model.ErrorMessage</div>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+            {
+                <div class="alert success">@Model.SuccessMessage</div>
+            }
+        </section>
+
+    </div>
+</div>

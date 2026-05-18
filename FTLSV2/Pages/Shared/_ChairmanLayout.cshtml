@@ -45,19 +45,8 @@
 
         <aside class="sidebar">
 
-            <div style="
-                padding:16px 12px;
-                text-align:center;
-                background: rgba(255,255,255,0.08);
-                border-bottom: 1px solid rgba(255,255,255,0.1);
-                ">
-                <h2 style="
-                    margin:0;
-                    font-size:18px;
-                    font-weight:600;
-                    color:#ffffff;
-                    letter-spacing:0.5px;
-                    ">
+            <div style="padding:16px 12px; text-align:center; background: rgba(255,255,255,0.08); border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <h2 style="margin:0; font-size:18px; font-weight:600; color:#ffffff; letter-spacing:0.5px;">
                     Chairman Portal
                 </h2>
             </div>
@@ -70,89 +59,58 @@
 
             @if (!string.IsNullOrEmpty(id))
             {
-                <div style="
-                        width:70px;
-                        height:70px;
-                        border-radius:50%;
-                        background:#f1c40f;
-                        color:#07362d;
-                        display:flex;
-                        align-items:center;
-                        justify-content:center;
-                        font-weight:700;
-                        font-size:22px;
-                        margin: 15px auto 10px auto;
-                        ">
+                <div style="width:70px; height:70px; border-radius:50%; background:#f1c40f; color:#07362d; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:22px; margin: 15px auto 10px auto;">
                     @(name?[0])@(name?.Split(' ').LastOrDefault()?[0])
                 </div>
 
-                <div style="
-                        text-align:center;
-                        margin-bottom: 25px;
-                        color:#f1c40f;
-                        ">
+                <div style="text-align:center; margin-bottom: 25px; color:#f1c40f;">
                     <div style="font-size:18px; font-weight:600; line-height:1.2;">
                         @name
                     </div>
-
                     <div style="font-size:15px; margin-top:6px; font-weight:500;">
                         ID: @id
                     </div>
-
                     <div style="font-size:14px; margin-top:4px; opacity:0.9;">
                         @email
                     </div>
-
-                    <div style="
-                        height:1px;
-                        width:80%;
-                        margin: 10px auto 20px auto;
-                        background: rgba(255,255,255,0.15);
-                        "></div>
+                    <div style="height:1px; width:80%; margin: 10px auto 20px auto; background: rgba(255,255,255,0.15);"></div>
                 </div>
             }
 
             <nav>
-
-                <a href="/ChairmanPage"
-                   class="@(Context.Request.Path == "/ChairmanPage" ? "active" : "")">
+                <a href="/ChairmanPage" class="@(Context.Request.Path == "/ChairmanPage" ? "active" : "")">
                     Dashboard Overview
                 </a>
 
-                <a href="/Chairman/FacultyProfiles"
-                   class="@(Context.Request.Path.StartsWithSegments("/Chairman/FacultyProfiles") ? "active" : "")">
+                <a href="/Chairman/FacultyProfiles" class="@(Context.Request.Path.StartsWithSegments("/Chairman/FacultyProfiles") ? "active" : "")">
                     Faculty Profiles
                 </a>
 
-                <a href="/Chairman/SubjectLibrary"
-                   class="@(Context.Request.Path.StartsWithSegments("/Chairman/SubjectLibrary") ? "active" : "")">
+                <a href="/Chairman/SubjectLibrary" class="@(Context.Request.Path.StartsWithSegments("/Chairman/SubjectLibrary") ? "active" : "")">
                     Subject Library
                 </a>
 
-                <a href="/Chairman/RoomUtilization"
-                   class="@(Context.Request.Path.StartsWithSegments("/Chairman/RoomUtilization") ? "active" : "")">
+                <a href="/Chairman/RoomUtilization" class="@(Context.Request.Path.StartsWithSegments("/Chairman/RoomUtilization") ? "active" : "")">
                     Room Utilization
                 </a>
 
-                <a href="/Chairman/MySchedule"
-                   class="@(Context.Request.Path.StartsWithSegments("/Chairman/MySchedule") ? "active" : "")">
+                <a href="/Chairman/MySchedule" class="@(Context.Request.Path.StartsWithSegments("/Chairman/MySchedule") ? "active" : "")">
                     My Schedule
                 </a>
 
-                <a href="/LoginPage?handler=Logout"
-                   class="logout"
-                   style="margin-top:auto;">
-                    Logout
+                <a href="/Chairman/AccountSettings" class="@(Context.Request.Path.StartsWithSegments("/Chairman/AccountSettings") ? "active" : "")">
+                    Account Settings
                 </a>
 
+                <a href="/LoginPage?handler=Logout" class="logout" style="margin-top:auto;">
+                    Logout
+                </a>
             </nav>
 
         </aside>
 
         <main class="main-content">
-
             @RenderBody()
-
         </main>
     </div>
 
