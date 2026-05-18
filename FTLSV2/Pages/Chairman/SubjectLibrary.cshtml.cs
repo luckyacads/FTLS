@@ -104,9 +104,20 @@ namespace FTLSV2.Pages.Admin
             {
                 try
                 {
+                    // 1. Find ALL schedules that are currently using this subject
+                    var activeSchedules = _db.Schedules.Where(s => s.SubjectId == subject.SubjectId).ToList();
+
+                    // 2. If there are any active schedules, delete them FIRST so the database doesn't crash
+                    if (activeSchedules.Any())
+                    {
+                        _db.Schedules.RemoveRange(activeSchedules);
+                    }
+
+                    // 3. Now that the schedules are gone, it is safe to delete the subject!
                     _db.Subjects.Remove(subject);
                     _db.SaveChanges();
-                    TempData["SuccessMessage"] = "Subject successfully deleted!";
+
+                    TempData["SuccessMessage"] = "Subject and its associated schedules successfully deleted!";
                 }
                 catch (Exception ex)
                 {
