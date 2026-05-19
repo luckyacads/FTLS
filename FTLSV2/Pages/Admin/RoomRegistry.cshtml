@@ -9,221 +9,551 @@
     <link rel="stylesheet" href="~/css/RoomRegistry.css" />
 }
 
+<style>
+    body {
+        background: #f5f7fa;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    .page-container {
+        padding: 20px 40px;
+        width: 100%;
+        max-width: 100% !important;
+        margin: 0 !important;
+        box-sizing: border-box;
+    }
+
+    .page-header {
+        margin-bottom: 18px;
+    }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 26px;
+            font-weight: 700;
+            color: #07362d;
+        }
+
+        .page-header p {
+            margin-top: 6px;
+            font-size: 14px;
+            color: #0f6e56;
+            font-weight: 600;
+        }
+
+    .card {
+        background: white;
+        border-radius: 12px;
+        padding: 18px 20px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+        margin-bottom: 18px;
+    }
+
+    .form-title {
+        margin-top: 0;
+        margin-bottom: 16px;
+        font-size: 18px;
+        color: #07362d;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 14px;
+        margin-bottom: 14px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #555;
+    }
+
+    .input {
+        width: 100%;
+        padding: 9px 11px;
+        border-radius: 7px;
+        border: 1px solid #dcdcdc;
+        box-sizing: border-box;
+        font-size: 14px;
+    }
+
+        .input:focus {
+            border-color: #07362d;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(7,54,45,0.12);
+        }
+
+    .btn-primary,
+    .btn-add {
+        background: #07362d;
+        color: white;
+        border: none;
+        padding: 9px 14px;
+        border-radius: 7px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.2s ease-in-out;
+        white-space: nowrap;
+    }
+
+        .btn-primary:hover,
+        .btn-add:hover {
+            background: #0a4d40;
+            transform: translateY(-1px);
+        }
+
+    .btn-ghost {
+        padding: 9px 14px;
+        border: none;
+        background: #eeeeee;
+        color: #333;
+        border-radius: 7px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+        .btn-ghost:hover {
+            background: #dddddd;
+        }
+
+    .btn-edit {
+        padding: 6px 10px;
+        border: 1px solid #dcdcdc;
+        background: white;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+    }
+
+        .btn-edit:hover {
+            background: #f3f6f5;
+            border-color: #07362d;
+        }
+
+    .btn-delete {
+        padding: 6px 10px;
+        border: 1px solid red;
+        background: white;
+        color: red;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+    }
+
+        .btn-delete:hover {
+            background: #fff1f1;
+        }
+
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        padding: 12px;
+        margin-bottom: 16px;
+        border-radius: 8px;
+        border-left: 6px solid #28a745;
+        font-weight: 500;
+        transition: opacity 1s ease-out;
+        opacity: 1;
+    }
+
+    .alert-error {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 12px;
+        margin-bottom: 16px;
+        border-radius: 8px;
+        border-left: 6px solid #f5c6cb;
+        font-weight: 500;
+    }
+
+    .add-room-section,
+    .edit-room-section {
+        display: none;
+        margin-bottom: 18px;
+    }
+
+    .add-room-section {
+        border-left: 5px solid #07362d;
+    }
+
+    .edit-room-section {
+        border-left: 5px solid #17a2b8;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .room-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        margin-bottom: 14px;
+    }
+
+        .room-toolbar h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #07362d;
+        }
+
+    .room-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .room-search {
+        width: 300px;
+        padding: 9px 11px;
+        border: 1px solid #dcdcdc;
+        border-radius: 8px;
+        font-size: 14px;
+        outline: none;
+        transition: all 0.2s ease-in-out;
+    }
+
+        .room-search:focus {
+            border-color: #07362d;
+            box-shadow: 0 0 0 2px rgba(7,54,45,0.12);
+        }
+
+    .room-table-wrapper {
+        overflow-x: auto;
+        overflow-y: auto;
+        max-height: calc(100vh - 285px);
+        border-radius: 8px;
+    }
+
+    .room-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 760px;
+    }
+
+        .room-table thead {
+            background: #f8f9fb;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        .room-table th {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #888;
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #eeeeee;
+            letter-spacing: 0.3px;
+        }
+
+        .room-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #eeeeee;
+            font-size: 14px;
+            color: #111827;
+            vertical-align: middle;
+        }
+
+        .room-table tr:hover {
+            background: #f6f9fc;
+        }
+
+    .room-type-badge {
+        display: inline-block;
+        background: #e1f5ee;
+        color: #0f6e56;
+        padding: 4px 8px;
+        border-radius: 7px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .room-row-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .no-results-row {
+        display: none;
+        text-align: center;
+        color: #888;
+        font-style: italic;
+    }
+
+    @@media (max-width: 900px) {
+        .page-container {
+            padding: 18px 20px;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .room-toolbar {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .room-actions {
+            width: 100%;
+        }
+
+        .room-search {
+            width: 100%;
+        }
+    }
+</style>
+
 <div class="page-container">
-    <header class="page-header">
-        <div>
-            <h1>Room Registry</h1>
+    <div class="page-header">
+        <h1>Room Registry</h1>
 
-            <p id="roomFilterSummary"
-                   style="display: none; margin: 6px 0 0 0; font-size: 14px; color: #0f6e56; font-weight: 600;">
-            </p>
-        </div>
-
-        <button class="btn-primary" onclick="toggleAddRoomForm()">+ Add Room</button>
-    </header>
+        <p id="roomFilterSummary" style="display: none;"></p>
+    </div>
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div id="success-alert" style="background-color: #d4edda; color: #155724; padding: 12px; margin-bottom: 20px; border-radius: 6px; border-left: 5px solid #28a745; font-weight: 500; transition: opacity 1s ease-out; opacity: 1;">
+        <div id="success-alert" class="alert-success">
             ✓ @TempData["SuccessMessage"]
         </div>
     }
 
     @if (TempData["ErrorMessage"] != null)
     {
-        <div id="error-alert" style="background-color: #f8d7da; color: #721c24; padding: 12px; margin-bottom: 20px; border-radius: 6px; border-left: 5px solid #f5c6cb; font-weight: 500;">
+        <div id="error-alert" class="alert-error">
             ✗ @TempData["ErrorMessage"]
         </div>
     }
 
-    <div id="addRoomSection" class="card" style="display: none; margin-bottom: 20px; border-left: 5px solid #07362d;">
-        <h3>Add New Room</h3>
+    <section id="addRoomSection" class="card add-room-section">
+        <h3 class="form-title">Add New Room</h3>
 
         <form method="post" asp-page-handler="AddRoom" id="addRoomForm">
-            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-                <div style="flex: 1;">
-                    <label>Room Name</label>
-                    <input type="text"
-                           asp-for="NewRoomName"
+            <div class="form-grid">
+                <div class="form-group">
+                    <label asp-for="NewRoomName">Room Name</label>
+                    <input asp-for="NewRoomName"
+                           class="input"
                            required
-                           style="width: 100%; padding: 8px;"
-                           placeholder="e.g. Room 101">
+                           placeholder="Example: Room 101" />
                 </div>
 
-                <div style="flex: 1;">
-                    <label>Type</label>
-                    <select asp-for="NewRoomType"
-                            required
-                            style="width: 100%; padding: 8px;">
+                <div class="form-group">
+                    <label asp-for="NewRoomType">Type</label>
+                    <select asp-for="NewRoomType" class="input" required>
                         <option value="">Select Type</option>
                         <option value="Lecture">Lecture</option>
                         <option value="Lab">Lab</option>
                     </select>
                 </div>
 
-                <div style="flex: 1;">
-                    <label>Capacity</label>
-                    <input type="number"
-                           asp-for="NewRoomCapacity"
+                <div class="form-group">
+                    <label asp-for="NewRoomCapacity">Capacity</label>
+                    <input asp-for="NewRoomCapacity"
+                           type="number"
+                           class="input"
                            required
-                           style="width: 100%; padding: 8px;"
                            value="30"
-                           min="1">
+                           min="1" />
                 </div>
             </div>
 
-            <button type="submit" class="btn-primary" id="saveRoomBtn">Save Room</button>
+            <div class="form-actions">
+                <button type="button" class="btn-ghost" onclick="toggleAddRoomForm()">
+                    Cancel
+                </button>
 
-            <button type="button"
-                    class="btn-ghost"
-                    onclick="toggleAddRoomForm()"
-                    style="margin-left: 10px; padding: 10px; border: none; background: #eee; cursor: pointer;">
-                Cancel
-            </button>
+                <button type="submit" class="btn-primary" id="saveRoomBtn">
+                    Save Room
+                </button>
+            </div>
         </form>
-    </div>
+    </section>
 
-    <div id="editRoomSection" class="card" style="display: none; margin-bottom: 20px; border-left: 5px solid #17a2b8;">
-        <h3>Edit Room</h3>
+    <section id="editRoomSection" class="card edit-room-section">
+        <h3 class="form-title">Edit Room</h3>
 
         <form method="post" asp-page-handler="EditRoom">
             <input type="hidden" name="EditRoomId" id="editRoomId" />
 
-            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-                <div style="flex: 1;">
-                    <label>Room Name</label>
-                    <input type="text"
-                           asp-for="EditRoomName"
+            <div class="form-grid">
+                <div class="form-group">
+                    <label asp-for="EditRoomName">Room Name</label>
+                    <input asp-for="EditRoomName"
                            id="editRoomName"
-                           required
-                           style="width: 100%; padding: 8px;">
+                           class="input"
+                           required />
                 </div>
 
-                <div style="flex: 1;">
-                    <label>Type</label>
-                    <select asp-for="EditRoomType"
-                            id="editRoomType"
-                            style="width: 100%; padding: 8px;">
+                <div class="form-group">
+                    <label asp-for="EditRoomType">Type</label>
+                    <select asp-for="EditRoomType" id="editRoomType" class="input">
                         <option value="Lecture">Lecture</option>
                         <option value="Lab">Lab</option>
                     </select>
                 </div>
 
-                <div style="flex: 1;">
-                    <label>Capacity</label>
-                    <input type="number"
-                           asp-for="EditRoomCapacity"
+                <div class="form-group">
+                    <label asp-for="EditRoomCapacity">Capacity</label>
+                    <input asp-for="EditRoomCapacity"
+                           type="number"
                            id="editRoomCapacity"
+                           class="input"
                            required
-                           min="1"
-                           style="width: 100%; padding: 8px;">
+                           min="1" />
                 </div>
             </div>
 
-            <button type="submit" class="btn-primary" style="background-color: #17a2b8;">Update Room</button>
+            <div class="form-actions">
+                <button type="button" class="btn-ghost" onclick="hideEditForm()">
+                    Cancel
+                </button>
 
-            <button type="button"
-                    class="btn-ghost"
-                    onclick="hideEditForm()"
-                    style="margin-left: 10px; padding: 10px; border: none; background: #eee; cursor: pointer;">
-                Cancel
-            </button>
+                <button type="submit" class="btn-primary" style="background-color: #17a2b8;">
+                    Update Room
+                </button>
+            </div>
         </form>
-    </div>
+    </section>
 
     <section class="card">
-        <div class="room-toolbar" style="display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 18px;">
-            <h3 style="margin: 0;">Registered Rooms (@Model.Rooms.Count)</h3>
+        <div class="room-toolbar">
+            <h3>Registered Rooms (@Model.Rooms.Count)</h3>
 
-            <input type="text"
-                   id="roomSearch"
-                   class="room-search"
-                   placeholder="Search room..."
-                   oninput="filterRooms()"
-                   style="width: 300px; padding: 10px 12px; border: 1px solid #dcdcdc; border-radius: 8px; font-size: 14px; outline: none;" />
+            <div class="room-actions">
+                <input type="text"
+                       id="roomSearch"
+                       class="room-search"
+                       placeholder="Search room..."
+                       oninput="filterRooms()" />
+
+                <button type="button"
+                        id="btnAddRoom"
+                        class="btn-add"
+                        onclick="toggleAddRoomForm()">
+                    + Add New Room
+                </button>
+            </div>
         </div>
 
-        <table class="room-table">
-            <thead>
-                <tr>
-                    <th>Room Name</th>
-                    <th>Type</th>
-                    <th>Capacity</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
+        <div class="room-table-wrapper">
+            <table class="room-table">
+                <thead>
+                    <tr>
+                        <th style="width: 35%;">Room Name</th>
+                        <th style="width: 25%;">Type</th>
+                        <th style="width: 20%;">Capacity</th>
+                        <th style="width: 20%;">Actions</th>
+                    </tr>
+                </thead>
 
-            <tbody>
-                @if (Model.Rooms.Any())
-                {
-                    @foreach (var room in Model.Rooms)
+                <tbody>
+                    @if (Model.Rooms.Any())
                     {
-                        <tr class="room-row"
-                            data-search="@($"{room.RoomId} {room.Name} {room.Type} {room.Capacity}")"
-                            data-type="@((room.Type ?? "").ToLower())">
-                            <td>@room.Name</td>
-                            <td>@room.Type</td>
-                            <td>@room.Capacity</td>
-                            <td>
-                                <div style="display: flex; gap: 5px;">
-                                    <button class="btn-edit"
-                                            onclick='showEditForm(@room.RoomId, @Html.Raw(System.Text.Json.JsonSerializer.Serialize(room.Name)), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(room.Type)), @room.Capacity)'>
-                                        Edit
-                                    </button>
-
-                                    <form method="post"
-                                          asp-page-handler="DeleteRoom"
-                                          style="margin: 0;"
-                                          onsubmit="return confirm('Are you sure you want to delete @room.Name?');">
-                                        <input type="hidden" name="roomId" value="@room.RoomId" />
-
-                                        <button type="submit" class="btn-delete" style="color: red; border-color: red;">
-                                            Delete
+                        @foreach (var room in Model.Rooms)
+                        {
+                            <tr class="room-row"
+                                data-search="@($"{room.RoomId} {room.Name} {room.Type} {room.Capacity}")"
+                                data-type="@((room.Type ?? "").ToLower())">
+                                <td>@room.Name</td>
+                                <td>
+                                    <span class="room-type-badge">@room.Type</span>
+                                </td>
+                                <td>@room.Capacity</td>
+                                <td>
+                                    <div class="room-row-actions">
+                                        <button type="button"
+                                                class="btn-edit"
+                                                onclick='showEditForm(@room.RoomId, @Html.Raw(System.Text.Json.JsonSerializer.Serialize(room.Name)), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(room.Type)), @room.Capacity)'>
+                                            Edit
                                         </button>
-                                    </form>
-                                </div>
+
+                                        <form method="post"
+                                              asp-page-handler="DeleteRoom"
+                                              style="margin: 0;"
+                                              onsubmit="return confirm('Are you sure you want to delete @room.Name?');">
+                                            <input type="hidden" name="roomId" value="@room.RoomId" />
+
+                                            <button type="submit" class="btn-delete">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+
+                        <tr id="noRoomResults" class="no-results-row">
+                            <td colspan="4" style="padding: 18px;">
+                                No matching rooms found.
                             </td>
                         </tr>
                     }
-
-                    <tr id="noRoomResults" style="display: none; text-align: center; color: #888; font-style: italic;">
-                        <td colspan="4" style="padding: 20px;">No matching rooms found.</td>
-                    </tr>
-                }
-                else
-                {
-                    <tr>
-                        <td colspan="4" style="text-align: center; padding: 20px; color: #777;">
-                            No rooms registered.
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 18px; color: #777;">
+                                No rooms registered.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </section>
 </div>
 
 <script>
     function toggleAddRoomForm() {
-        var form = document.getElementById("addRoomSection");
-        document.getElementById("editRoomSection").style.display = "none";
+        const form = document.getElementById("addRoomSection");
+        const editForm = document.getElementById("editRoomSection");
+        const button = document.getElementById("btnAddRoom");
+
+        editForm.style.display = "none";
 
         if (form.style.display === "none" || form.style.display === "") {
             form.style.display = "block";
+
+            if (button) {
+                button.innerText = "Close";
+            }
         } else {
             form.style.display = "none";
+
+            if (button) {
+                button.innerText = "+ Add New Room";
+            }
         }
     }
 
     function showEditForm(id, name, type, capacity) {
-        document.getElementById("addRoomSection").style.display = "none";
+        const addForm = document.getElementById("addRoomSection");
+        const editForm = document.getElementById("editRoomSection");
+        const button = document.getElementById("btnAddRoom");
+
+        addForm.style.display = "none";
+
+        if (button) {
+            button.innerText = "+ Add New Room";
+        }
 
         document.getElementById("editRoomId").value = id;
         document.getElementById("editRoomName").value = name;
         document.getElementById("editRoomType").value = type;
         document.getElementById("editRoomCapacity").value = capacity;
 
-        document.getElementById("editRoomSection").style.display = "block";
+        editForm.style.display = "block";
     }
 
     function hideEditForm() {
@@ -300,7 +630,7 @@
     }
 
     window.onload = function () {
-        var alertBox = document.getElementById("success-alert");
+        const alertBox = document.getElementById("success-alert");
 
         if (alertBox) {
             setTimeout(function () {
