@@ -31,92 +31,153 @@
 
     <div id="addRoomSection" class="card" style="display: none; margin-bottom: 20px; border-left: 5px solid #07362d;">
         <h3>Add New Room</h3>
+
         <form method="post" asp-page-handler="AddRoom" id="addRoomForm">
             <div style="display: flex; gap: 15px; margin-bottom: 15px;">
                 <div style="flex: 1;">
                     <label>Room Name</label>
-                    <input type="text" asp-for="NewRoomName" required style="width: 100%; padding: 8px;" placeholder="e.g. Room 101">
+                    <input type="text"
+                           asp-for="NewRoomName"
+                           required
+                           style="width: 100%; padding: 8px;"
+                           placeholder="e.g. Room 101">
                 </div>
+
                 <div style="flex: 1;">
                     <label>Type</label>
-                    <select asp-for="NewRoomType" required style="width: 100%; padding: 8px;">
+                    <select asp-for="NewRoomType"
+                            required
+                            style="width: 100%; padding: 8px;">
                         <option value="">Select Type</option>
                         <option value="Lecture">Lecture</option>
                         <option value="Lab">Lab</option>
                     </select>
                 </div>
+
                 <div style="flex: 1;">
                     <label>Capacity</label>
-                    <input type="number" asp-for="NewRoomCapacity" required style="width: 100%; padding: 8px;" value="30" min="1">
+                    <input type="number"
+                           asp-for="NewRoomCapacity"
+                           required
+                           style="width: 100%; padding: 8px;"
+                           value="30"
+                           min="1">
                 </div>
             </div>
+
             <button type="submit" class="btn-primary" id="saveRoomBtn">Save Room</button>
-            <button type="button" class="btn-ghost" onclick="toggleAddRoomForm()" style="margin-left: 10px; padding: 10px; border: none; background: #eee; cursor: pointer;">Cancel</button>
+            <button type="button" class="btn-ghost" onclick="toggleAddRoomForm()" style="margin-left: 10px; padding: 10px; border: none; background: #eee; cursor: pointer;">
+                Cancel
+            </button>
         </form>
     </div>
 
     <div id="editRoomSection" class="card" style="display: none; margin-bottom: 20px; border-left: 5px solid #17a2b8;">
         <h3>Edit Room</h3>
+
         <form method="post" asp-page-handler="EditRoom">
             <input type="hidden" name="EditRoomId" id="editRoomId" />
 
             <div style="display: flex; gap: 15px; margin-bottom: 15px;">
                 <div style="flex: 1;">
                     <label>Room Name</label>
-                    <input type="text" asp-for="EditRoomName" id="editRoomName" required style="width: 100%; padding: 8px;">
+                    <input type="text"
+                           asp-for="EditRoomName"
+                           id="editRoomName"
+                           required
+                           style="width: 100%; padding: 8px;">
                 </div>
+
                 <div style="flex: 1;">
                     <label>Type</label>
-                    <select asp-for="EditRoomType" id="editRoomType" style="width: 100%; padding: 8px;">
+                    <select asp-for="EditRoomType"
+                            id="editRoomType"
+                            style="width: 100%; padding: 8px;">
                         <option value="Lecture">Lecture</option>
                         <option value="Lab">Lab</option>
                     </select>
                 </div>
+
                 <div style="flex: 1;">
                     <label>Capacity</label>
-                    <input type="number" asp-for="EditRoomCapacity" id="editRoomCapacity" required style="width: 100%; padding: 8px;">
+                    <input type="number"
+                           asp-for="EditRoomCapacity"
+                           id="editRoomCapacity"
+                           required
+                           min="1"
+                           style="width: 100%; padding: 8px;">
                 </div>
-                <!-- Availability Edit Field Removed -->
             </div>
+
             <button type="submit" class="btn-primary" style="background-color: #17a2b8;">Update Room</button>
-            <button type="button" class="btn-ghost" onclick="hideEditForm()" style="margin-left: 10px; padding: 10px; border: none; background: #eee; cursor: pointer;">Cancel</button>
+            <button type="button" class="btn-ghost" onclick="hideEditForm()" style="margin-left: 10px; padding: 10px; border: none; background: #eee; cursor: pointer;">
+                Cancel
+            </button>
         </form>
     </div>
 
     <section class="card">
-        <h3>Registered Rooms</h3>
+        <div class="room-toolbar" style="display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 18px;">
+            <h3 style="margin: 0;">Registered Rooms (@Model.Rooms.Count)</h3>
+
+            <input type="text"
+                   id="roomSearch"
+                   class="room-search"
+                   placeholder="Search room..."
+                   onkeyup="filterRooms()"
+                   style="width: 300px; padding: 10px 12px; border: 1px solid #dcdcdc; border-radius: 8px; font-size: 14px; outline: none;" />
+        </div>
+
         <table class="room-table">
             <thead>
                 <tr>
                     <th>Room Name</th>
                     <th>Type</th>
                     <th>Capacity</th>
-                    <th>Availability</th>
                     <th>Actions</th>
                 </tr>
             </thead>
+
             <tbody>
-                @foreach (var room in Model.Rooms)
+                @if (Model.Rooms.Any())
+                {
+                    @foreach (var room in Model.Rooms)
+                    {
+                        <tr class="room-row"
+                            data-search="@($"{room.RoomId} {room.Name} {room.Type} {room.Capacity}")">
+                            <td>@room.Name</td>
+                            <td>@room.Type</td>
+                            <td>@room.Capacity</td>
+                            <td>
+                                <div style="display: flex; gap: 5px;">
+                                    <button class="btn-edit"
+                                            onclick='showEditForm(@room.RoomId, @Html.Raw(System.Text.Json.JsonSerializer.Serialize(room.Name)), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(room.Type)), @room.Capacity)'>
+                                        Edit
+                                    </button>
+
+                                    <form method="post"
+                                          asp-page-handler="DeleteRoom"
+                                          style="margin: 0;"
+                                          onsubmit="return confirm('Are you sure you want to delete @room.Name?');">
+                                        <input type="hidden" name="roomId" value="@room.RoomId" />
+                                        <button type="submit" class="btn-delete" style="color: red; border-color: red;">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+
+                    <tr id="noRoomResults" style="display: none; text-align: center; color: #888; font-style: italic;">
+                        <td colspan="4" style="padding: 20px;">No matching rooms found.</td>
+                    </tr>
+                }
+                else
                 {
                     <tr>
-                        <td>@room.Name</td>
-                        <td>@room.Type</td>
-                        <td>@room.Capacity</td>
-                        <td>
-                            <span class="status-available" style="color: #0f6e56; font-weight: 600; font-size: 13px;">
-                                @room.Availability
-                            </span>
-                        </td>
-                        <td>
-                            <div style="display: flex; gap: 5px;">
-                                <!-- Removed availability argument from JS call -->
-                                <button class="btn-edit" onclick="showEditForm(@room.RoomId, '@room.Name', '@room.Type', @room.Capacity)">Edit</button>
-
-                                <form method="post" asp-page-handler="DeleteRoom" style="margin: 0;" onsubmit="return confirm('Are you sure you want to delete @room.RoomId?');">
-                                    <input type="hidden" name="roomId" value="@room.RoomId" />
-                                    <button type="submit" class="btn-delete" style="color: red; border-color: red;">Delete</button>
-                                </form>
-                            </div>
+                        <td colspan="4" style="text-align: center; padding: 20px; color: #777;">
+                            No rooms registered.
                         </td>
                     </tr>
                 }
@@ -126,10 +187,9 @@
 </div>
 
 <script>
-    // Show/Hide Add Form
     function toggleAddRoomForm() {
         var form = document.getElementById("addRoomSection");
-        document.getElementById("editRoomSection").style.display = "none"; // Hide edit if open
+        document.getElementById("editRoomSection").style.display = "none";
 
         if (form.style.display === "none" || form.style.display === "") {
             form.style.display = "block";
@@ -138,33 +198,57 @@
         }
     }
 
-    // Populate and Show Edit Form
     function showEditForm(id, name, type, capacity) {
-        document.getElementById("addRoomSection").style.display = "none"; // Hide add form
+        document.getElementById("addRoomSection").style.display = "none";
 
-        // Fill the textboxes with the room's current data
         document.getElementById("editRoomId").value = id;
         document.getElementById("editRoomName").value = name;
         document.getElementById("editRoomType").value = type;
         document.getElementById("editRoomCapacity").value = capacity;
-        // Removed editRoomAvailability
 
-        // Show the edit form
         document.getElementById("editRoomSection").style.display = "block";
     }
 
-    // Hide Edit Form
     function hideEditForm() {
         document.getElementById("editRoomSection").style.display = "none";
     }
 
-    // Fade out the success message
-    window.onload = function() {
+    function filterRooms() {
+        const searchInput = document.getElementById("roomSearch");
+        const rows = document.querySelectorAll(".room-row");
+        const noResultsRow = document.getElementById("noRoomResults");
+
+        if (!searchInput) {
+            return;
+        }
+
+        const searchValue = searchInput.value.toLowerCase().trim();
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const searchableText = row.getAttribute("data-search").toLowerCase();
+
+            if (searchableText.includes(searchValue)) {
+                row.style.display = "";
+                visibleCount++;
+            } else {
+                row.style.display = "none";
+            }
+        });
+
+        if (noResultsRow) {
+            noResultsRow.style.display = visibleCount === 0 ? "table-row" : "none";
+        }
+    }
+
+    window.onload = function () {
         var alertBox = document.getElementById("success-alert");
+
         if (alertBox) {
-            setTimeout(function() {
+            setTimeout(function () {
                 alertBox.style.opacity = "0";
-                setTimeout(function() {
+
+                setTimeout(function () {
                     alertBox.style.display = "none";
                 }, 1000);
             }, 3000);

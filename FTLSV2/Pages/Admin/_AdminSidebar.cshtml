@@ -46,6 +46,15 @@
             background: #f1c40f !important;
             color: #07362d !important;
         }
+
+        .custom-footer {
+        margin-top: 40px;
+        padding: 16px 0;
+        text-align: center;
+        font-size: 13px;
+        color: #6b7280;
+        border-top: 1px solid #e5e7eb;
+}
     </style>
 
 
@@ -195,11 +204,14 @@
         </div>
     }
 
-    <footer class="footer text-muted">
-        <div class="container">
-            &copy; 2026 - FTLSV2 - <a asp-area="" asp-page="/Privacy">Privacy</a>
-        </div>
-    </footer>
+    @if (!Context.Request.Path.StartsWithSegments("/Admin", System.StringComparison.OrdinalIgnoreCase))
+    {
+        <footer class="footer text-muted custom-footer">
+            <div class="container">
+                &copy; 2026 Faculty Task Load Scheduler
+            </div>
+        </footer>
+    }
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

@@ -3,9 +3,6 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Http;
-using FTLSV2.Models;
 
 namespace FTLSV2.Pages.Admin
 {
@@ -24,7 +21,6 @@ namespace FTLSV2.Pages.Admin
             public string Name { get; set; }
             public string Type { get; set; }
             public int Capacity { get; set; }
-            public string Availability { get; set; }
         }
 
         public List<RoomDisplay> Rooms { get; set; } = new List<RoomDisplay>();
@@ -40,140 +36,111 @@ namespace FTLSV2.Pages.Admin
 
         public void OnGet()
         {
-            var allRooms = _db.Rooms.OrderBy(r => r.Name).ToList();
-            var allSchedules = _db.Schedules.ToList();
-
-            foreach (var room in allRooms)
-            {
-                var roomSchedules = allSchedules
-                    .Where(s => s.RoomId != null && (int)s.RoomId == room.RoomId && !string.IsNullOrEmpty(s.TimeSlot))
-                    .ToList();
-
-                var mwfSchedules = roomSchedules.Where(s => s.TimeSlot.StartsWith("MWF")).Select(s => ExtractTimeSpan(s.TimeSlot)).Where(t => t.HasValue).Select(t => t.Value).OrderBy(t => t.Start).ToList();
-                var tthSchedules = roomSchedules.Where(s => s.TimeSlot.StartsWith("TTh") || s.TimeSlot.StartsWith("TTH")).Select(s => ExtractTimeSpan(s.TimeSlot)).Where(t => t.HasValue).Select(t => t.Value).OrderBy(t => t.Start).ToList();
-
-                string mwfAvailability = CalculateAvailability(mwfSchedules);
-                string tthAvailability = CalculateAvailability(tthSchedules);
-
-                Rooms.Add(new RoomDisplay
+            Rooms = _db.Rooms
+                .OrderBy(r => r.Name)
+                .Select(r => new RoomDisplay
                 {
-                    RoomId = room.RoomId,
-                    Name = room.Name,
-                    Type = room.Type,
-                    Capacity = room.Capacity,
-                    Availability = $"MWF: {mwfAvailability} | TTh: {tthAvailability}"
-                });
-            }
-        }
-
-        private bool IsScheduledToday(string timeSlot, DayOfWeek today)
-        {
-            string daysPart = timeSlot.Split(' ')[0];
-            return today switch
-            {
-                DayOfWeek.Monday => daysPart.Contains("M"),
-                DayOfWeek.Tuesday => daysPart.Replace("Th", "").Contains("T"),
-                DayOfWeek.Wednesday => daysPart.Contains("W"),
-                DayOfWeek.Thursday => daysPart.Contains("Th"),
-                DayOfWeek.Friday => daysPart.Contains("F"),
-                DayOfWeek.Saturday => daysPart.Contains("S"),
-                _ => false
-            };
-        }
-
-        private (TimeSpan Start, TimeSpan End)? ExtractTimeSpan(string timeSlot)
-        {
-            var match = Regex.Match(timeSlot, @"(\d{1,2}:\d{2}\s*[aApP][mM])\s*-\s*(\d{1,2}:\d{2}\s*[aApP][mM])", RegexOptions.IgnoreCase);
-            if (match.Success)
-            {
-                if (DateTime.TryParse(match.Groups[1].Value, out DateTime startTime) &&
-                    DateTime.TryParse(match.Groups[2].Value, out DateTime endTime))
-                {
-                    return (startTime.TimeOfDay, endTime.TimeOfDay);
-                }
-            }
-            return null;
-        }
-
-        private string CalculateAvailability(List<(TimeSpan Start, TimeSpan End)> schedules)
-        {
-            TimeSpan dayStart = new TimeSpan(7, 0, 0);
-            TimeSpan dayEnd = new TimeSpan(21, 0, 0);
-            TimeSpan currentTime = dayStart;
-            List<string> availableSlots = new List<string>();
-
-            foreach (var s in schedules)
-            {
-                if (currentTime < s.Start)
-                {
-                    availableSlots.Add($"{FormatTime(currentTime)} - {FormatTime(s.Start)}");
-                }
-                if (currentTime < s.End)
-                {
-                    currentTime = s.End;
-                }
-            }
-
-            if (currentTime < dayEnd)
-            {
-                availableSlots.Add($"{FormatTime(currentTime)} - {FormatTime(dayEnd)}");
-            }
-
-            return availableSlots.Count == 0 ? "Fully Booked" : string.Join(", ", availableSlots);
-        }
-
-        private string FormatTime(TimeSpan time)
-        {
-            return DateTime.Today.Add(time).ToString("h:mm tt");
+                    RoomId = r.RoomId,
+                    Name = r.Name,
+                    Type = r.Type,
+                    Capacity = r.Capacity
+                })
+                .ToList();
         }
 
         public IActionResult OnPostAddRoom()
         {
-            if (!string.IsNullOrEmpty(NewRoomName) && !string.IsNullOrEmpty(NewRoomType) && NewRoomCapacity > 0)
+            if (!string.IsNullOrWhiteSpace(NewRoomName) &&
+                !string.IsNullOrWhiteSpace(NewRoomType) &&
+                NewRoomCapacity > 0)
             {
-                var room = new Models.Room { Name = NewRoomName, Type = NewRoomType, Capacity = NewRoomCapacity };
+                var room = new Models.Room
+                {
+                    Name = NewRoomName.Trim(),
+                    Type = NewRoomType.Trim(),
+                    Capacity = NewRoomCapacity
+                };
+
                 try
                 {
                     _db.Rooms.Add(room);
                     _db.SaveChanges();
+
                     TempData["SuccessMessage"] = "Room successfully added!";
                 }
-                catch (Exception ex) { TempData["ErrorMessage"] = $"Error: {ex.Message}"; }
+                catch (Exception ex)
+                {
+                    TempData["ErrorMessage"] = $"Error: {ex.Message}";
+                }
             }
+            else
+            {
+                TempData["ErrorMessage"] = "Please provide a valid room name, type, and capacity.";
+            }
+
             return RedirectToPage();
         }
 
         public IActionResult OnPostDeleteRoom(int roomId)
         {
             var room = _db.Rooms.FirstOrDefault(r => r.RoomId == roomId);
+
             if (room != null)
             {
                 try
                 {
                     _db.Rooms.Remove(room);
                     _db.SaveChanges();
+
                     TempData["SuccessMessage"] = "Room successfully deleted!";
                 }
-                catch (Exception ex) { TempData["ErrorMessage"] = $"Error: {ex.Message}"; }
+                catch (Exception ex)
+                {
+                    TempData["ErrorMessage"] = $"Error: {ex.Message}";
+                }
             }
+            else
+            {
+                TempData["ErrorMessage"] = "Room not found.";
+            }
+
             return RedirectToPage();
         }
 
         public IActionResult OnPostEditRoom()
         {
             var room = _db.Rooms.FirstOrDefault(r => r.RoomId == EditRoomId);
+
             if (room != null)
             {
-                room.Name = EditRoomName;
-                room.Type = EditRoomType;
+                if (string.IsNullOrWhiteSpace(EditRoomName) ||
+                    string.IsNullOrWhiteSpace(EditRoomType) ||
+                    EditRoomCapacity <= 0)
+                {
+                    TempData["ErrorMessage"] = "Please provide a valid room name, type, and capacity.";
+                    return RedirectToPage();
+                }
+
+                room.Name = EditRoomName.Trim();
+                room.Type = EditRoomType.Trim();
                 room.Capacity = EditRoomCapacity;
+
                 try
                 {
                     _db.SaveChanges();
+
                     TempData["SuccessMessage"] = "Room successfully updated!";
                 }
-                catch (Exception ex) { TempData["ErrorMessage"] = $"Error: {ex.Message}"; }
+                catch (Exception ex)
+                {
+                    TempData["ErrorMessage"] = $"Error: {ex.Message}";
+                }
             }
+            else
+            {
+                TempData["ErrorMessage"] = "Room not found.";
+            }
+
             return RedirectToPage();
         }
     }
