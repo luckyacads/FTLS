@@ -171,18 +171,10 @@
         font-weight: 500;
     }
 
-    .add-room-section,
-    .edit-room-section {
+    .add-room-section {
         display: none;
         margin-bottom: 18px;
-    }
-
-    .add-room-section {
         border-left: 5px solid #07362d;
-    }
-
-    .edit-room-section {
-        border-left: 5px solid #17a2b8;
     }
 
     .form-actions {
@@ -291,6 +283,60 @@
         font-style: italic;
     }
 
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.4);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(2px);
+    }
+
+    .edit-modal-card {
+        width: 760px;
+        max-width: calc(100% - 40px);
+        position: relative;
+        padding: 28px 30px;
+        border-radius: 16px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        border-left: 6px solid #17a2b8;
+        margin-bottom: 0;
+    }
+
+    .edit-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        margin-bottom: 18px;
+    }
+
+        .edit-modal-header h3 {
+            margin: 0;
+            color: #111827;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+    .modal-close-x {
+        border: none;
+        background: transparent;
+        color: #6b7280;
+        cursor: pointer;
+        font-size: 24px;
+        line-height: 1;
+        padding: 0;
+    }
+
+        .modal-close-x:hover {
+            color: #111827;
+        }
+
     @@media (max-width: 900px) {
         .page-container {
             padding: 18px 20px;
@@ -312,13 +358,17 @@
         .room-search {
             width: 100%;
         }
+
+        .edit-modal-card {
+            width: calc(100% - 30px);
+            padding: 24px 20px;
+        }
     }
 </style>
 
 <div class="page-container">
     <div class="page-header">
         <h1>Room Registry</h1>
-
         <p id="roomFilterSummary" style="display: none;"></p>
     </div>
 
@@ -381,52 +431,6 @@
         </form>
     </section>
 
-    <section id="editRoomSection" class="card edit-room-section">
-        <h3 class="form-title">Edit Room</h3>
-
-        <form method="post" asp-page-handler="EditRoom">
-            <input type="hidden" name="EditRoomId" id="editRoomId" />
-
-            <div class="form-grid">
-                <div class="form-group">
-                    <label asp-for="EditRoomName">Room Name</label>
-                    <input asp-for="EditRoomName"
-                           id="editRoomName"
-                           class="input"
-                           required />
-                </div>
-
-                <div class="form-group">
-                    <label asp-for="EditRoomType">Type</label>
-                    <select asp-for="EditRoomType" id="editRoomType" class="input">
-                        <option value="Lecture">Lecture</option>
-                        <option value="Lab">Lab</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label asp-for="EditRoomCapacity">Capacity</label>
-                    <input asp-for="EditRoomCapacity"
-                           type="number"
-                           id="editRoomCapacity"
-                           class="input"
-                           required
-                           min="1" />
-                </div>
-            </div>
-
-            <div class="form-actions">
-                <button type="button" class="btn-ghost" onclick="hideEditForm()">
-                    Cancel
-                </button>
-
-                <button type="submit" class="btn-primary" style="background-color: #17a2b8;">
-                    Update Room
-                </button>
-            </div>
-        </form>
-    </section>
-
     <section class="card">
         <div class="room-toolbar">
             <h3>Registered Rooms (@Model.Rooms.Count)</h3>
@@ -475,20 +479,15 @@
                                     <div class="room-row-actions">
                                         <button type="button"
                                                 class="btn-edit"
-                                                onclick='showEditForm(@room.RoomId, @Html.Raw(System.Text.Json.JsonSerializer.Serialize(room.Name)), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(room.Type)), @room.Capacity)'>
+                                                onclick='openEditModal(@room.RoomId, @Html.Raw(System.Text.Json.JsonSerializer.Serialize(room.Name)), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(room.Type)), @room.Capacity)'>
                                             Edit
                                         </button>
 
-                                        <form method="post"
-                                              asp-page-handler="DeleteRoom"
-                                              style="margin: 0;"
-                                              onsubmit="return confirm('Are you sure you want to delete @room.Name?');">
-                                            <input type="hidden" name="roomId" value="@room.RoomId" />
-
-                                            <button type="submit" class="btn-delete">
-                                                Delete
-                                            </button>
-                                        </form>
+                                        <button type="button"
+                                                class="btn-delete"
+                                                onclick='openDeleteModal(@room.RoomId, @Html.Raw(System.Text.Json.JsonSerializer.Serialize(room.Name)))'>
+                                            Delete
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -514,13 +513,96 @@
     </section>
 </div>
 
+<!-- EDIT ROOM MODAL -->
+<div id="editRoomModal" class="modal-overlay">
+    <div class="card edit-modal-card">
+        <div class="edit-modal-header">
+            <h3>Edit Room</h3>
+            <button type="button" class="modal-close-x" onclick="closeModal('editRoomModal')">
+                &times;
+            </button>
+        </div>
+
+        <form method="post" asp-page-handler="EditRoom">
+            <input type="hidden" name="EditRoomId" id="editRoomId" />
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label asp-for="EditRoomName">Room Name</label>
+                    <input asp-for="EditRoomName"
+                           id="editRoomName"
+                           class="input"
+                           required />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="EditRoomType">Type</label>
+                    <select asp-for="EditRoomType" id="editRoomType" class="input">
+                        <option value="Lecture">Lecture</option>
+                        <option value="Lab">Lab</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="EditRoomCapacity">Capacity</label>
+                    <input asp-for="EditRoomCapacity"
+                           type="number"
+                           id="editRoomCapacity"
+                           class="input"
+                           required
+                           min="1" />
+                </div>
+            </div>
+
+            <div class="form-actions" style="margin-top: 16px;">
+                <button type="button" class="btn-ghost" onclick="closeModal('editRoomModal')">
+                    Cancel
+                </button>
+
+                <button type="submit" class="btn-primary" style="background-color: #17a2b8;">
+                    Update Room
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- HIDDEN DELETE FORM -->
+<form method="post" asp-page-handler="DeleteRoom" id="deleteRoomForm" style="display:none;">
+    <input type="hidden" name="roomId" id="deleteRoomId" />
+</form>
+
+<!-- DELETE CONFIRMATION MODAL -->
+<div id="deleteConfirmModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:1000; align-items:center; justify-content:center; backdrop-filter: blur(2px);">
+    <div class="card" style="width: 400px; position: relative; text-align: center; padding: 40px 30px; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); margin-bottom: 0;">
+
+        <h3 style="margin-top:0; color:#111827; font-size: 24px; font-weight: 700; margin-bottom: 12px;">Are you sure?</h3>
+
+        <p id="deleteModalMessage" style="font-size:14px; color:#4b5563; margin-bottom:30px; line-height: 1.5;"></p>
+
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <button type="button"
+                    style="background:#ffffff; color:#374151; border: 1px solid #d1d5db; padding: 10px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 130px; transition: all 0.2s;"
+                    onclick="closeModal('deleteConfirmModal')">
+                Cancel
+            </button>
+
+            <button type="button"
+                    id="confirmDeleteBtn"
+                    style="background:#f43f5e; color:white; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 130px; transition: background 0.2s;"
+                    onclick="submitDeleteRoom()">
+                Delete
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
     function toggleAddRoomForm() {
         const form = document.getElementById("addRoomSection");
-        const editForm = document.getElementById("editRoomSection");
         const button = document.getElementById("btnAddRoom");
 
-        editForm.style.display = "none";
+        closeModal("editRoomModal");
 
         if (form.style.display === "none" || form.style.display === "") {
             form.style.display = "block";
@@ -537,12 +619,13 @@
         }
     }
 
-    function showEditForm(id, name, type, capacity) {
+    function openEditModal(id, name, type, capacity) {
         const addForm = document.getElementById("addRoomSection");
-        const editForm = document.getElementById("editRoomSection");
         const button = document.getElementById("btnAddRoom");
 
-        addForm.style.display = "none";
+        if (addForm) {
+            addForm.style.display = "none";
+        }
 
         if (button) {
             button.innerText = "+ Add New Room";
@@ -553,11 +636,40 @@
         document.getElementById("editRoomType").value = type;
         document.getElementById("editRoomCapacity").value = capacity;
 
-        editForm.style.display = "block";
+        openModal("editRoomModal");
     }
 
-    function hideEditForm() {
-        document.getElementById("editRoomSection").style.display = "none";
+    function openDeleteModal(roomId, roomName) {
+        document.getElementById("deleteRoomId").value = roomId;
+
+        const message = document.getElementById("deleteModalMessage");
+        message.innerText = `This will permanently delete "${roomName}" from the room registry. This action cannot be undone.`;
+
+        openModal("deleteConfirmModal");
+    }
+
+    function submitDeleteRoom() {
+        const form = document.getElementById("deleteRoomForm");
+
+        if (form) {
+            form.submit();
+        }
+    }
+
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+
+        if (modal) {
+            modal.style.display = "flex";
+        }
+    }
+
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+
+        if (modal) {
+            modal.style.display = "none";
+        }
     }
 
     function filterRooms() {
@@ -642,4 +754,11 @@
             }, 3000);
         }
     };
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeModal("editRoomModal");
+            closeModal("deleteConfirmModal");
+        }
+    });
 </script>
