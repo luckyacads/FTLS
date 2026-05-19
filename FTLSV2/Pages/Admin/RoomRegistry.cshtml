@@ -11,7 +11,14 @@
 
 <div class="page-container">
     <header class="page-header">
-        <h1>Room Registry</h1>
+        <div>
+            <h1>Room Registry</h1>
+
+            <p id="roomFilterSummary"
+                   style="display: none; margin: 6px 0 0 0; font-size: 14px; color: #0f6e56; font-weight: 600;">
+            </p>
+        </div>
+
         <button class="btn-primary" onclick="toggleAddRoomForm()">+ Add Room</button>
     </header>
 
@@ -66,7 +73,11 @@
             </div>
 
             <button type="submit" class="btn-primary" id="saveRoomBtn">Save Room</button>
-            <button type="button" class="btn-ghost" onclick="toggleAddRoomForm()" style="margin-left: 10px; padding: 10px; border: none; background: #eee; cursor: pointer;">
+
+            <button type="button"
+                    class="btn-ghost"
+                    onclick="toggleAddRoomForm()"
+                    style="margin-left: 10px; padding: 10px; border: none; background: #eee; cursor: pointer;">
                 Cancel
             </button>
         </form>
@@ -110,7 +121,11 @@
             </div>
 
             <button type="submit" class="btn-primary" style="background-color: #17a2b8;">Update Room</button>
-            <button type="button" class="btn-ghost" onclick="hideEditForm()" style="margin-left: 10px; padding: 10px; border: none; background: #eee; cursor: pointer;">
+
+            <button type="button"
+                    class="btn-ghost"
+                    onclick="hideEditForm()"
+                    style="margin-left: 10px; padding: 10px; border: none; background: #eee; cursor: pointer;">
                 Cancel
             </button>
         </form>
@@ -124,7 +139,7 @@
                    id="roomSearch"
                    class="room-search"
                    placeholder="Search room..."
-                   onkeyup="filterRooms()"
+                   oninput="filterRooms()"
                    style="width: 300px; padding: 10px 12px; border: 1px solid #dcdcdc; border-radius: 8px; font-size: 14px; outline: none;" />
         </div>
 
@@ -144,7 +159,8 @@
                     @foreach (var room in Model.Rooms)
                     {
                         <tr class="room-row"
-                            data-search="@($"{room.RoomId} {room.Name} {room.Type} {room.Capacity}")">
+                            data-search="@($"{room.RoomId} {room.Name} {room.Type} {room.Capacity}")"
+                            data-type="@((room.Type ?? "").ToLower())">
                             <td>@room.Name</td>
                             <td>@room.Type</td>
                             <td>@room.Capacity</td>
@@ -160,6 +176,7 @@
                                           style="margin: 0;"
                                           onsubmit="return confirm('Are you sure you want to delete @room.Name?');">
                                         <input type="hidden" name="roomId" value="@room.RoomId" />
+
                                         <button type="submit" class="btn-delete" style="color: red; border-color: red;">
                                             Delete
                                         </button>
@@ -217,18 +234,40 @@
         const searchInput = document.getElementById("roomSearch");
         const rows = document.querySelectorAll(".room-row");
         const noResultsRow = document.getElementById("noRoomResults");
+        const summary = document.getElementById("roomFilterSummary");
 
         if (!searchInput) {
             return;
         }
 
-        const searchValue = searchInput.value.toLowerCase().trim();
+        const originalSearchValue = searchInput.value.trim();
+        const searchValue = originalSearchValue.toLowerCase();
+
         let visibleCount = 0;
 
         rows.forEach(row => {
-            const searchableText = row.getAttribute("data-search").toLowerCase();
+            const searchableText = (row.getAttribute("data-search") || "").toLowerCase();
+            const roomType = (row.getAttribute("data-type") || "").toLowerCase();
 
-            if (searchableText.includes(searchValue)) {
+            let isMatch = false;
+
+            if (searchValue === "") {
+                isMatch = true;
+            }
+            else if (searchValue === "lab") {
+                isMatch = roomType === "lab";
+            }
+            else if (searchValue === "lecture") {
+                isMatch = roomType === "lecture";
+            }
+            else if (searchValue === "laboratory") {
+                isMatch = roomType === "lab";
+            }
+            else {
+                isMatch = searchableText.includes(searchValue);
+            }
+
+            if (isMatch) {
                 row.style.display = "";
                 visibleCount++;
             } else {
@@ -238,6 +277,25 @@
 
         if (noResultsRow) {
             noResultsRow.style.display = visibleCount === 0 ? "table-row" : "none";
+        }
+
+        if (summary) {
+            if (searchValue === "") {
+                summary.style.display = "none";
+                summary.innerText = "";
+            }
+            else if (searchValue === "lab" || searchValue === "laboratory") {
+                summary.style.display = "block";
+                summary.innerText = `Number of rooms with 'Lab': ${visibleCount}`;
+            }
+            else if (searchValue === "lecture") {
+                summary.style.display = "block";
+                summary.innerText = `Number of rooms with 'Lecture': ${visibleCount}`;
+            }
+            else {
+                summary.style.display = "block";
+                summary.innerText = `Matching rooms for '${originalSearchValue}': ${visibleCount}`;
+            }
         }
     }
 
