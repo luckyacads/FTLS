@@ -29,6 +29,7 @@ namespace FTLSV2.Data
 
         // For Settings Variable
         public DbSet<SystemSettings> SystemSettings { get; set; }
+        public DbSet<Curriculum> Curriculums { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -95,6 +96,25 @@ namespace FTLSV2.Data
             modelBuilder.Entity<FacultyLoadSummary>()
                 .HasNoKey()
                 .ToView("faculty_load_summary");
+            // Map Curriculum entity to the curriculum table
+            modelBuilder.Entity<Curriculum>(entity =>
+            {
+                entity.ToTable("curriculum");
+                entity.HasKey(e => e.CurriculumId);
+                entity.Property(e => e.CurriculumId).HasColumnName("curriculum_id");
+                entity.Property(e => e.SubjectId).HasColumnName("subject_id");
+                entity.Property(e => e.DepartmentId).HasColumnName("department_id");
+                entity.Property(e => e.YearLevel).HasColumnName("year_level");
+                entity.Property(e => e.Semester).HasColumnName("semester");
+
+                // Explicitly tell EF Core that Department is a linked table
+                entity.HasOne(c => c.Department)
+                      .WithMany()
+                      .HasForeignKey(c => c.DepartmentId);
+
+                // Explicitly tell EF Core to completely ignore Subject in the database constraints
+                entity.Ignore(c => c.Subject);
+            });
         }
     }
 }
