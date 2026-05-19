@@ -36,6 +36,9 @@ namespace FTLSV2.Models
         [Column("academic_year")]
         public string? AcademicYear { get; set; }
 
+        [Column("semester")]
+        public string? Semester { get; set; }
+
         // Navigation properties
         [ForeignKey(nameof(FacultyId))]
         public User Faculty { get; set; }

@@ -121,29 +121,28 @@
         <tbody>
             @if (Model.MySubjects != null && Model.MySubjects.Any())
             {
-                @foreach (var subject in Model.MySubjects)
+                @foreach (var schedule in Model.MySubjects)
                 {
-                    <tr class="subject-row" data-semester="@subject.Semester" data-department="@subject.Department?.Name">
-                        <td style="font-weight: bold; color: #07362d;">@subject.Code</td>
-                        <td>@subject.Title</td>
-                        <td>@subject.Units</td>
+                    // Fixed property access paths to map through the schedule entity layer safely
+                    <tr class="subject-row" data-semester="@schedule.Semester" data-department="@schedule.Subject?.Department?.Name">
+                        <td style="font-weight: bold; color: #07362d;">@schedule.Subject?.Code</td>
+                        <td>@schedule.Subject?.Title</td>
+                        <td>@schedule.Subject?.Units</td>
 
                         <td>
-                            @if (!string.IsNullOrEmpty(subject.Semester) && subject.Semester.Contains(" - "))
+                            @if (!string.IsNullOrEmpty(schedule.Semester) && schedule.Semester.Contains(" - "))
                             {
-                                // Splits "1st Year - 1st Sem" into two pieces so we can style them differently!
-                                var parts = subject.Semester.Split(" - ");
+                                var parts = schedule.Semester.Split(" - ");
                                 <span class="curriculum-badge badge-year">@parts[0]</span>
                                 <span class="curriculum-badge badge-sem">@parts[1]</span>
                             }
                             else
                             {
-                                // Fallback just in case a subject is formatted weirdly in the database
-                                <span class="curriculum-badge badge-year">@subject.Semester</span>
+                                <span class="curriculum-badge badge-year">@schedule.Semester</span>
                             }
                         </td>
 
-                        <td style="color: #7f8c8d;">@subject.Department?.Name</td>
+                        <td style="color: #7f8c8d;">@schedule.Subject?.Department?.Name</td>
                     </tr>
                 }
             }
@@ -192,6 +191,7 @@
             });
         }
 
+        // Fixed element mapping logic here to handle full screen state changes cleanly
         function resetFilters() {
             document.getElementById("schoolFilter").value = "All";
             document.getElementById("departmentFilter").value = "All";

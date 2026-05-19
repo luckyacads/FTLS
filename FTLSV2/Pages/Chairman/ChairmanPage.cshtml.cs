@@ -72,9 +72,7 @@ namespace FTLSV2.Pages.Chairman
                         if (HasScheduleConflict(existingSchedule.TimeSlot, SelectedDays, StartTime, EndTime))
                         {
                             var room = _context.Rooms.FirstOrDefault(r => r.RoomId == SelectedRoomId);
-
                             TempData["ErrorMessage"] = $"Room Conflict: {room?.Name} is already booked during this time ({existingSchedule.TimeSlot}).";
-
                             LoadPageData();
                             return Page();
                         }
@@ -100,12 +98,14 @@ namespace FTLSV2.Pages.Chairman
                     if ((currentTotalUnits + officialSubjectUnits) > globalMaxLimit)
                     {
                         TempData["ErrorMessage"] = $"Assignment Blocked: Adding {officialSubjectUnits} units for {targetSubject.Code} pushes this faculty member over the Max Overload limit of {globalMaxLimit} units.";
-
                         LoadPageData();
                         return Page();
                     }
 
                     string formattedTimeSlot = $"{SelectedDays} {DateTime.Today.Add(StartTime):h:mm tt} - {DateTime.Today.Add(EndTime):h:mm tt}";
+
+                    // AUTOMATION: Grabs the precise updated semester string sequence automatically
+                    string autoAssignedSemester = GetDefaultSemesterForSubject(targetSubject.Code);
 
                     var newSchedule = new Schedule
                     {
@@ -115,19 +115,19 @@ namespace FTLSV2.Pages.Chairman
                         TimeSlot = formattedTimeSlot,
                         AssignedUnits = officialSubjectUnits,
                         OfferCode = SelectedOfferCode,
-                        AcademicYear = SelectedAcademicYear
+                        AcademicYear = SelectedAcademicYear,
+                        Semester = autoAssignedSemester // Saves customized semester string layout
                     };
 
                     _context.Schedules.Add(newSchedule);
                     _context.SaveChanges();
 
-                    TempData["SuccessMessage"] = $"Schedule successfully assigned! ({officialSubjectUnits} units automatically added to load)";
+                    TempData["SuccessMessage"] = $"Schedule successfully assigned! Automatically recorded as {autoAssignedSemester}.";
                 }
             }
             else
             {
                 TempData["ErrorMessage"] = "Please fill in all the schedule fields.";
-
                 LoadPageData();
                 return Page();
             }
@@ -135,28 +135,43 @@ namespace FTLSV2.Pages.Chairman
             return RedirectToPage();
         }
 
+        // --- AUTOMATION MAPPING METHOD ---
+        private string GetDefaultSemesterForSubject(string courseCode)
+        {
+            if (string.IsNullOrEmpty(courseCode)) return "1st Sem";
+
+            // Updated with your customized semester tracking requirements
+            return courseCode.ToUpper().Trim() switch
+            {
+                "CS101" => "1st Sem",
+                "CS105" => "1st Sem",
+                "PHY101" => "2nd Sem", // Fixed typo variant from 2st to 2nd Sem
+                "CS102" => "2nd Sem",
+                "CS201" => "3rd Sem",
+                "CPE212" => "3rd Sem",
+                "CPE221" => "4th Sem",
+                "CPE222" => "4th Sem",
+                "ENT101" => "1st Sem",
+                "CPE311" => "1st Sem",
+                "CPE312" => "1st Sem",
+                "CPE321" => "2nd Sem",
+                "CPE322" => "2nd Sem",
+                "CPE626" => "2nd Sem", // Added support for your new row registry check item
+                _ => "1st Sem"   // Fallback default
+            };
+        }
+
         private bool HasScheduleConflict(string existingTimeSlot, string newDays, TimeSpan newStartTime, TimeSpan newEndTime)
         {
-            if (string.IsNullOrEmpty(existingTimeSlot))
-            {
-                return false;
-            }
+            if (string.IsNullOrEmpty(existingTimeSlot)) return false;
 
             var parts = existingTimeSlot.Split(' ');
-
-            if (parts.Length < 6)
-            {
-                return false;
-            }
+            if (parts.Length < 6) return false;
 
             string existingDays = parts[0];
-
             bool daysOverlap = newDays.Any(day => existingDays.Contains(day));
 
-            if (!daysOverlap)
-            {
-                return false;
-            }
+            if (!daysOverlap) return false;
 
             try
             {
@@ -166,15 +181,11 @@ namespace FTLSV2.Pages.Chairman
                 TimeSpan existStart = DateTime.Parse(existStartStr).TimeOfDay;
                 TimeSpan existEnd = DateTime.Parse(existEndStr).TimeOfDay;
 
-                if (newStartTime < existEnd && newEndTime > existStart)
-                {
-                    return true;
-                }
+                if (newStartTime < existEnd && newEndTime > existStart) return true;
             }
             catch
             {
                 string formattedNewTime = $"{newDays} {DateTime.Today.Add(newStartTime):h:mm tt} - {DateTime.Today.Add(newEndTime):h:mm tt}";
-
                 return existingTimeSlot == formattedNewTime;
             }
 
@@ -186,12 +197,10 @@ namespace FTLSV2.Pages.Chairman
             var settings = _context.SystemSettings.FirstOrDefault();
             GlobalMaxLimit = settings?.MaxOverload ?? 21;
 
-            // Get all active faculty users
             var facultyMembers = _context.Users
                 .Where(u => u.Role == "Faculty" && (u.Status == "Active" || string.IsNullOrEmpty(u.Status)))
                 .ToList();
 
-            // Get the current chairman from session and add them to the dropdown
             var currentUserFacultyId = HttpContext.Session.GetString("ActiveUser");
 
             if (!string.IsNullOrEmpty(currentUserFacultyId))
@@ -236,11 +245,11 @@ namespace FTLSV2.Pages.Chairman
                                     Schedule = s.TimeSlot,
                                     RoomName = r.Name,
                                     OfferCode = s.OfferCode,
-                                    AcademicYear = s.AcademicYear
+                                    AcademicYear = s.AcademicYear,
+                                    Semester = s.Semester
                                 }).ToList();
         }
 
-        // --- AJAX HANDLER FOR DYNAMIC ROOM FILTERING ---
         public JsonResult OnGetAvailableRooms(string days, string startTime, string endTime)
         {
             if (string.IsNullOrEmpty(days) || string.IsNullOrEmpty(startTime) || string.IsNullOrEmpty(endTime))
@@ -303,6 +312,7 @@ namespace FTLSV2.Pages.Chairman
             public string RoomName { get; set; }
             public int? OfferCode { get; set; }
             public string AcademicYear { get; set; }
+            public string Semester { get; set; }
         }
     }
 }

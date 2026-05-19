@@ -18,8 +18,7 @@ namespace FTLSV2.Models
         [Column("units")]
         public int Units { get; set; }
 
-        [Column("semester")]
-        public string Semester { get; set; }
+        // REMOVED: [Column("semester")] public string Semester { get; set; }
 
         [Column("department_id")]
         public int DepartmentId { get; set; }

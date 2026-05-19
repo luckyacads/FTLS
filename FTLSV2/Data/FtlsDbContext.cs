@@ -73,7 +73,7 @@ namespace FTLSV2.Data
                 entity.Property(e => e.Code).HasColumnName("subject_code").HasMaxLength(50);
                 entity.Property(e => e.Title).HasColumnName("subject_title").HasMaxLength(300);
                 entity.Property(e => e.Units).HasColumnName("units");
-                entity.Property(e => e.Semester).HasColumnName("semester").HasMaxLength(50);
+                
 
                 // Map the actual integer foreign key column correctly
                 entity.Property(e => e.DepartmentId).HasColumnName("department_id");

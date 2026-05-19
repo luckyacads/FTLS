@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.EntityFrameworkCore; // Required for .Include()
+using Microsoft.EntityFrameworkCore;
 using FTLSV2.Data;
 using FTLSV2.Models;
 
@@ -25,14 +25,12 @@ namespace FTLSV2.Pages.Admin
         [BindProperty] public string NewSubjectTitle { get; set; }
         [BindProperty] public int NewSubjectUnits { get; set; }
         [BindProperty] public string NewSubjectDepartment { get; set; }
-        [BindProperty] public string NewSubjectSemester { get; set; }
 
         [BindProperty] public int EditSubjectId { get; set; }
         [BindProperty] public string EditSubjectCode { get; set; }
         [BindProperty] public string EditSubjectTitle { get; set; }
         [BindProperty] public int EditSubjectUnits { get; set; }
         [BindProperty] public string EditSubjectDepartment { get; set; }
-        [BindProperty] public string EditSubjectSemester { get; set; }
 
         public void OnGet()
         {
@@ -63,8 +61,7 @@ namespace FTLSV2.Pages.Admin
                     Code = NewSubjectCode,
                     Title = NewSubjectTitle,
                     Units = NewSubjectUnits,
-                    DepartmentId = dept.Id, // LINE 69: Changed from dept.DepartmentId to dept.Id
-                    Semester = NewSubjectSemester
+                    DepartmentId = dept.Id
                 };
 
                 try
@@ -105,8 +102,7 @@ namespace FTLSV2.Pages.Admin
                 subjectToEdit.Code = EditSubjectCode;
                 subjectToEdit.Title = EditSubjectTitle;
                 subjectToEdit.Units = EditSubjectUnits;
-                subjectToEdit.DepartmentId = dept.Id; // LINE 111: Changed from dept.DepartmentId to dept.Id
-                subjectToEdit.Semester = EditSubjectSemester;
+                subjectToEdit.DepartmentId = dept.Id;
 
                 try
                 {
