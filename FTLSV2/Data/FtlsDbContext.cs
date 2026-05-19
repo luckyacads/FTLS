@@ -11,7 +11,6 @@ namespace FTLSV2.Data
 
         // This tells Entity Framework to link the User model to the 'users' table
         public DbSet<User> Users { get; set; }
-
         public DbSet<School> Schools { get; set; }
         public DbSet<Department> Departments { get; set; }
 
@@ -56,7 +55,6 @@ namespace FTLSV2.Data
             // Map Department entity to the departments table
             modelBuilder.Entity<Department>(entity =>
             {
-                // FIXED: Changed from "department" to "departments" to match PostgreSQL plural table conventions
                 entity.ToTable("departments");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Id).HasColumnName("id");
@@ -74,7 +72,6 @@ namespace FTLSV2.Data
                 entity.Property(e => e.Code).HasColumnName("subject_code").HasMaxLength(50);
                 entity.Property(e => e.Title).HasColumnName("subject_title").HasMaxLength(300);
                 entity.Property(e => e.Units).HasColumnName("units");
-                
 
                 // Map the actual integer foreign key column correctly
                 entity.Property(e => e.DepartmentId).HasColumnName("department_id");
@@ -96,6 +93,7 @@ namespace FTLSV2.Data
             modelBuilder.Entity<FacultyLoadSummary>()
                 .HasNoKey()
                 .ToView("faculty_load_summary");
+
             // Map Curriculum entity to the curriculum table
             modelBuilder.Entity<Curriculum>(entity =>
             {
@@ -106,6 +104,9 @@ namespace FTLSV2.Data
                 entity.Property(e => e.DepartmentId).HasColumnName("department_id");
                 entity.Property(e => e.YearLevel).HasColumnName("year_level");
                 entity.Property(e => e.Semester).HasColumnName("semester");
+
+                entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+                entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
 
                 // Explicitly tell EF Core that Department is a linked table
                 entity.HasOne(c => c.Department)
