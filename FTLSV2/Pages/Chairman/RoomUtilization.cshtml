@@ -7,163 +7,380 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/chairman.css" />
+
     <style>
-        /* Top Filters */
-        .filter-bar {
+        .room-utilization-page {
+            padding: 22px 28px;
+        }
+
+        .room-utilization-header {
             display: flex;
-            gap: 20px;
+            justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            font-weight: bold;
-            color: #800000;
-        }
-        .filter-bar select {
-            padding: 5px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            font-weight: bold;
-            color: #333;
+            gap: 16px;
+            margin-bottom: 18px;
         }
 
-        /* Yellow Accordion Boxes */
-        details.room-accordion {
-            margin-bottom: 20px;
-            background-color: transparent;
-        }
-        details.room-accordion summary {
-            background-color: #ffe600; /* Yellow */
-            padding: 15px;
-            border-radius: 25px;
-            font-weight: bold;
-            color: #800000;
-            cursor: pointer;
-            list-style: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        details.room-accordion summary::-webkit-details-marker { display: none; }
-        details.room-accordion summary::after {
-            content: '▼';
-            position: absolute;
-            right: 25px; 
-            font-size: 1.2em;
-        }
-        details[open].room-accordion summary::after { content: '▲'; }
-
-        /* The Vertical Visual Graph Layout */
-        .schedule-layout {
-            display: flex;
-            padding: 20px 10px;
-            width: 90%;
-            margin: 0 auto;
+        .room-utilization-title {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 800;
+            color: #07362d;
         }
 
-        /* Time Column (Left Side) */
-        .time-scale {
-            width: 80px;
-            display: flex;
-            flex-direction: column;
-        }
-        .time-label {
-            /* 1 hour = 90px tall (1.5px per minute) */
-            height: 90px; 
-            text-align: right;
-            padding-right: 15px;
+        .room-utilization-subtitle {
+            margin-top: 6px;
             font-size: 14px;
-            color: #333;
-            position: relative;
-            top: -10px; /* Shifts text up to align perfectly with block borders */
+            color: #6b7280;
         }
 
-        /* Colored Blocks Column (Right Side) */
-        .blocks-container {
-            flex-grow: 1;
+        .calendar-legend {
             display: flex;
-            flex-direction: column;
-            border-left: 2px solid #eee; /* Light divider line */
-            padding-left: 15px;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
         }
-        .time-block {
-            width: 100%;
-            /* Thick white border acts as the "gap" between blocks without breaking the height math */
-            border: 5px solid white; 
-            box-sizing: border-box;
-            border-radius: 25px;
+
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #374151;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 999px;
+            padding: 7px 11px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.04);
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            display: inline-block;
+        }
+
+        .legend-occupied {
+            background: #c9f7df;
+            border: 1px solid #8ee6b8;
+        }
+
+        .chairman-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 22px rgba(0,0,0,0.06);
+        }
+
+        .room-accordion {
+            margin-bottom: 18px;
+            background: transparent;
+        }
+
+            .room-accordion summary {
+                background: #ffe600;
+                padding: 15px 18px;
+                border-radius: 22px;
+                font-weight: 800;
+                color: #800000;
+                cursor: pointer;
+                list-style: none;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.10);
+            }
+
+                .room-accordion summary::-webkit-details-marker {
+                    display: none;
+                }
+
+                .room-accordion summary::after {
+                    content: '▼';
+                    font-size: 1.1em;
+                    margin-left: 12px;
+                }
+
+            .room-accordion[open] summary::after {
+                content: '▲';
+            }
+
+        .room-summary-left {
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            padding-left: 30px;
-            color: white;
-            font-weight: bold;
+            gap: 3px;
+        }
+
+        .room-name {
+            font-size: 16px;
+        }
+
+        .room-meta {
+            font-size: 12px;
+            font-weight: 700;
+            color: #5f1b1b;
+            opacity: 0.85;
+        }
+
+        .calendar-wrapper {
+            margin-top: 14px;
+            overflow-x: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            background: #ffffff;
+        }
+
+        .calendar-grid {
+            min-width: 1040px;
+            border-radius: 14px;
             overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        .block-occupied { background-color: #800000; } /* Maroon */
-        .block-vacant { background-color: #28a745; } /* Green */
+        .calendar-header {
+            display: grid;
+            grid-template-columns: 88px repeat(6, 1fr);
+            border-bottom: 1px solid #e5e7eb;
+            background: #ffffff;
+        }
 
-        .block-time-text {
-            font-size: 0.8em;
-            font-weight: normal;
-            opacity: 0.9;
+        .time-header {
+            padding: 13px 12px;
+            font-size: 13px;
+            font-weight: 800;
+            color: #374151;
+            border-right: 1px solid #e5e7eb;
+        }
+
+        .day-header {
+            padding: 11px 12px;
+            text-align: center;
+            border-right: 1px solid #e5e7eb;
+        }
+
+            .day-header:last-child {
+                border-right: none;
+            }
+
+        .day-short {
+            display: block;
+            font-size: 11px;
+            font-weight: 800;
+            color: #6b7280;
+            letter-spacing: 0.5px;
+        }
+
+        .day-full {
+            display: block;
+            margin-top: 3px;
+            font-size: 13px;
+            font-weight: 800;
+            color: #111827;
+        }
+
+        .calendar-body {
+            display: grid;
+            grid-template-columns: 88px repeat(6, 1fr);
+        }
+
+        .time-column {
+            height: var(--calendar-height);
+            position: relative;
+            border-right: 1px solid #e5e7eb;
+            background: #fbfbfc;
+        }
+
+        .time-marker {
+            position: absolute;
+            right: 12px;
+            transform: translateY(-50%);
+            font-size: 12px;
+            color: #4b5563;
+            white-space: nowrap;
+        }
+
+        .day-column {
+            height: var(--calendar-height);
+            position: relative;
+            border-right: 1px solid #e5e7eb;
+            background-color: #ffffff;
+            background-image: linear-gradient(to bottom, #eef0f3 1px, transparent 1px);
+            background-size: 100% var(--half-hour-height);
+        }
+
+            .day-column:last-child {
+                border-right: none;
+            }
+
+        .schedule-card {
+            position: absolute;
+            left: 10px;
+            right: 10px;
+            background: #d5f8e6;
+            border: 1px solid #a7ebc7;
+            border-left: 5px solid #21a366;
+            border-radius: 10px;
+            padding: 11px 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.10);
+            overflow: hidden;
+            color: #064e3b;
+            box-sizing: border-box;
+        }
+
+        .schedule-card-header {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+            min-width: 0;
+            margin-bottom: 7px;
+        }
+
+        .schedule-title {
+            display: block;
+            width: 100%;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.25;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: unset;
+            word-break: normal;
+            overflow-wrap: break-word;
+        }
+
+        .schedule-status {
+            display: inline-block;
+            font-size: 8px;
+            font-weight: 800;
+            color: #047857;
+            background: rgba(255,255,255,0.75);
+            border-radius: 999px;
+            padding: 3px 7px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .schedule-time {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: #065f46;
+            line-height: 1.35;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: unset;
+        }
+
+        .empty-room-note {
+            padding: 16px;
+            color: #6b7280;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        @@media (max-width: 900px) {
+            .room-utilization-page {
+                padding: 18px 16px;
+            }
+
+            .room-utilization-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .room-utilization-title {
+                font-size: 24px;
+            }
         }
     </style>
 }
 
-<h1 class="chairman-title">Room Registry</h1>
-<div class="chairman-card">
-    
-    <form method="get" id="filterForm">
-        <div class="filter-bar">
-            <span>Day:</span>
-            <select asp-for="SelectedDay" onchange="document.getElementById('filterForm').submit();">
-                <option value="Monday">Monday</option>
-                <option value="Tuesday">Tuesday</option>
-                <option value="Wednesday">Wednesday</option>
-                <option value="Thursday">Thursday</option>
-                <option value="Friday">Friday</option>
-                <option value="Saturday">Saturday</option>
-            </select>
-
-            <span>Academic Year:</span>
-            <select asp-for="SelectedYear" onchange="document.getElementById('filterForm').submit();">
-                <option value="2024-2025">2024-2025</option>
-                <option value="2025-2026">2025-2026</option>
-            </select>
-        </div>
-    </form>
-
-    @foreach(var room in Model.Rooms)
-    {
-        <details class="room-accordion">
-            <summary>@room.RoomName</summary>
-            
-            <div class="schedule-layout">
-                <div class="time-scale">
-                    @for(int i = 7; i <= 21; i++) {
-                        var displayHour = i > 12 ? i - 12 : i;
-                        var ampm = i >= 12 ? "pm" : "am";
-                        if (i == 12) { ampm = "pm"; }
-                        
-                        <div class="time-label">@displayHour:00 @ampm</div>
-                    }
-                </div>
-
-                <div class="blocks-container">
-                    @foreach(var block in room.Timeline)
-                    {
-                        <div class="time-block @(block.IsOccupied ? "block-occupied" : "block-vacant")" 
-                             style="height: @(block.DurationMinutes * 1.5)px;">
-                            
-                            <span>@block.Label</span>
-                            <span class="block-time-text">@block.StartTime - @block.EndTime</span>
-                        </div>
-                    }
-                </div>
+<div class="room-utilization-page">
+    <div class="room-utilization-header">
+        <div>
+            <h1 class="room-utilization-title">Room Utilization</h1>
+            <div class="room-utilization-subtitle">
+                Weekly calendar view of room schedules. Empty spaces indicate available time slots.
             </div>
-        </details>
-    }
+        </div>
+
+        <div class="calendar-legend">
+            <span class="legend-item">
+                <span class="legend-dot legend-occupied"></span>
+                Occupied
+            </span>
+        </div>
+    </div>
+
+    <div class="chairman-card">
+        @if (Model.Rooms.Any())
+        {
+            @foreach (var room in Model.Rooms)
+            {
+                <details class="room-accordion">
+                    <summary>
+                        <span class="room-summary-left">
+                            <span class="room-name">@room.RoomName</span>
+                            <span class="room-meta">Capacity: @room.Capacity | Scheduled classes: @room.TotalEvents</span>
+                        </span>
+                    </summary>
+
+                    <div class="calendar-wrapper">
+                        <div class="calendar-grid"
+                             style="--calendar-height: @(Model.CalendarHeightPixels)px; --half-hour-height: @(Model.HalfHourHeightPixels)px;">
+                            <div class="calendar-header">
+                                <div class="time-header">Time</div>
+
+                                @foreach (var day in room.WeekDays)
+                                {
+                                    <div class="day-header">
+                                        <span class="day-short">@day.ShortLabel</span>
+                                        <span class="day-full">@day.Label</span>
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="calendar-body">
+                                <div class="time-column">
+                                    @foreach (var marker in Model.TimeMarkers)
+                                    {
+                                        <div class="time-marker" style="top: @(marker.TopPixels)px;">
+                                            @marker.Label
+                                        </div>
+                                    }
+                                </div>
+
+                                @foreach (var day in room.WeekDays)
+                                {
+                                    <div class="day-column">
+                                        @foreach (var schedule in day.Events)
+                                        {
+                                            <div class="schedule-card"
+                                                 title="@schedule.Title (@schedule.StartTimeText - @schedule.EndTimeText)"
+                                                 style="top: @(schedule.TopPixels)px; height: @(schedule.HeightPixels)px;">
+                                                <div class="schedule-card-header">
+                                                    <span class="schedule-title">@schedule.Title</span>
+                                                    <span class="schedule-status">Occupied</span>
+                                                </div>
+
+                                                <span class="schedule-time">@schedule.StartTimeText - @schedule.EndTimeText</span>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </details>
+            }
+        }
+        else
+        {
+            <div class="empty-room-note">
+                No rooms found in the room registry.
+            </div>
+        }
+    </div>
 </div>

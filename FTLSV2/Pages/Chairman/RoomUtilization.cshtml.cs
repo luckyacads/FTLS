@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.Collections.Generic;
@@ -12,140 +11,355 @@ namespace FTLSV2.Pages.Chairman
     {
         private readonly FtlsDbContext _db;
 
+        private readonly TimeSpan CalendarStart = TimeSpan.FromHours(7);   // 7:00 AM
+        private readonly TimeSpan CalendarEnd = TimeSpan.FromHours(21);    // 9:00 PM
+
+        private const double PixelsPerMinute = 1.8;
+        private const double MinimumEventHeightPixels = 90;
+
         public RoomUtilizationModel(FtlsDbContext db)
         {
             _db = db;
         }
 
-        [BindProperty(SupportsGet = true)]
-        public string SelectedDay { get; set; } = "Monday";
+        public double CalendarHeightPixels { get; set; }
 
-        [BindProperty(SupportsGet = true)]
-        public string SelectedYear { get; set; } = "2024-2025";
+        public double HalfHourHeightPixels { get; set; }
 
-        public class TimeBlock
+        public List<TimeMarker> TimeMarkers { get; set; } = new List<TimeMarker>();
+
+        public List<CalendarDayHeader> CalendarDays { get; set; } = new List<CalendarDayHeader>();
+
+        public List<RoomDisplay> Rooms { get; set; } = new List<RoomDisplay>();
+
+        public class CalendarDayHeader
+        {
+            public string Key { get; set; }
+            public string ShortLabel { get; set; }
+            public string Label { get; set; }
+        }
+
+        public class TimeMarker
         {
             public string Label { get; set; }
-            public string StartTime { get; set; }
-            public string EndTime { get; set; }
-            public bool IsOccupied { get; set; }
-            public double DurationMinutes { get; set; }
+            public double TopPixels { get; set; }
+        }
+
+        public class ScheduleEvent
+        {
+            public string DayKey { get; set; }
+            public string Title { get; set; }
+            public string StartTimeText { get; set; }
+            public string EndTimeText { get; set; }
+            public double TopPixels { get; set; }
+            public double HeightPixels { get; set; }
+        }
+
+        public class CalendarDayColumn
+        {
+            public string Key { get; set; }
+            public string ShortLabel { get; set; }
+            public string Label { get; set; }
+            public List<ScheduleEvent> Events { get; set; } = new List<ScheduleEvent>();
         }
 
         public class RoomDisplay
         {
             public string RoomName { get; set; }
             public int Capacity { get; set; }
-            public List<TimeBlock> Timeline { get; set; } = new List<TimeBlock>();
+            public int TotalEvents { get; set; }
+            public List<CalendarDayColumn> WeekDays { get; set; } = new List<CalendarDayColumn>();
         }
-
-        public List<RoomDisplay> Rooms { get; set; } = new List<RoomDisplay>();
 
         public void OnGet()
         {
-            var allRooms = _db.Rooms.OrderBy(r => r.Name).ToList();
-            var allSchedules = _db.Schedules.ToList();
+            CalendarDays = GetCalendarDays();
+            TimeMarkers = GenerateTimeMarkers();
 
-            // ---> NEW: We load the subjects so we can cross-reference the SubjectId <---
-            var allSubjects = _db.Subjects.ToList();
+            CalendarHeightPixels = (CalendarEnd - CalendarStart).TotalMinutes * PixelsPerMinute;
+            HalfHourHeightPixels = 30 * PixelsPerMinute;
+
+            var allRooms = _db.Rooms
+                .OrderBy(r => r.Name)
+                .ToList();
+
+            var allSchedules = _db.Schedules
+                .ToList();
+
+            var allSubjects = _db.Subjects
+                .ToList();
 
             foreach (var room in allRooms)
             {
-                var roomSchedulesForDay = allSchedules
-                    .Where(s => s.RoomId == room.RoomId && IsScheduledToday(s.TimeSlot, SelectedDay))
-                    .Select(s => new
+                var weekDays = CalendarDays
+                    .Select(day => new CalendarDayColumn
                     {
-                        // ---> NEW: Find the matching subject title using the SubjectId <---
-                        Title = allSubjects.FirstOrDefault(sub => sub.SubjectId == s.SubjectId)?.Title ?? "Occupied",
-                        Time = ExtractTimeSpan(s.TimeSlot)
+                        Key = day.Key,
+                        ShortLabel = day.ShortLabel,
+                        Label = day.Label,
+                        Events = new List<ScheduleEvent>()
                     })
-                    .Where(s => s.Time.HasValue)
-                    .Select(s => new { s.Title, Start = s.Time.Value.Start, End = s.Time.Value.End })
-                    .OrderBy(s => s.Start)
                     .ToList();
+
+                var roomSchedules = allSchedules
+                    .Where(schedule => schedule.RoomId == room.RoomId)
+                    .ToList();
+
+                foreach (var schedule in roomSchedules)
+                {
+                    var timeRange = ExtractTimeSpan(schedule.TimeSlot);
+
+                    if (!timeRange.HasValue)
+                    {
+                        continue;
+                    }
+
+                    var scheduledDays = ExtractScheduledDays(schedule.TimeSlot);
+
+                    if (!scheduledDays.Any())
+                    {
+                        continue;
+                    }
+
+                    var subjectTitle = allSubjects
+                        .FirstOrDefault(subject => subject.SubjectId == schedule.SubjectId)
+                        ?.Title ?? "Occupied";
+
+                    foreach (var dayKey in scheduledDays)
+                    {
+                        var dayColumn = weekDays.FirstOrDefault(day => day.Key == dayKey);
+
+                        if (dayColumn == null)
+                        {
+                            continue;
+                        }
+
+                        var scheduleEvent = CreateScheduleEvent(
+                            dayKey,
+                            subjectTitle,
+                            timeRange.Value.Start,
+                            timeRange.Value.End
+                        );
+
+                        dayColumn.Events.Add(scheduleEvent);
+                    }
+                }
+
+                foreach (var day in weekDays)
+                {
+                    day.Events = day.Events
+                        .OrderBy(e => e.TopPixels)
+                        .ToList();
+                }
 
                 Rooms.Add(new RoomDisplay
                 {
                     RoomName = room.Name,
                     Capacity = room.Capacity,
-                    Timeline = GenerateTimelineBlocks(roomSchedulesForDay)
+                    TotalEvents = weekDays.Sum(day => day.Events.Count),
+                    WeekDays = weekDays
                 });
             }
         }
 
-        private bool IsScheduledToday(string timeSlot, string selectedDay)
+        private List<CalendarDayHeader> GetCalendarDays()
         {
-            if (string.IsNullOrEmpty(timeSlot)) return false;
-
-            string daysPart = timeSlot.Split(' ')[0].ToUpper();
-            return selectedDay switch
+            return new List<CalendarDayHeader>
             {
-                "Monday" => daysPart.Contains("M"),
-                "Tuesday" => daysPart.Replace("TH", "").Contains("T"),
-                "Wednesday" => daysPart.Contains("W"),
-                "Thursday" => daysPart.Contains("TH"),
-                "Friday" => daysPart.Contains("F"),
-                "Saturday" => daysPart.Contains("S"),
-                _ => false
+                new CalendarDayHeader { Key = "Monday", ShortLabel = "MON", Label = "Monday" },
+                new CalendarDayHeader { Key = "Tuesday", ShortLabel = "TUE", Label = "Tuesday" },
+                new CalendarDayHeader { Key = "Wednesday", ShortLabel = "WED", Label = "Wednesday" },
+                new CalendarDayHeader { Key = "Thursday", ShortLabel = "THU", Label = "Thursday" },
+                new CalendarDayHeader { Key = "Friday", ShortLabel = "FRI", Label = "Friday" },
+                new CalendarDayHeader { Key = "Saturday", ShortLabel = "SAT", Label = "Saturday" }
             };
         }
 
-        private List<TimeBlock> GenerateTimelineBlocks(dynamic schedules)
+        private List<TimeMarker> GenerateTimeMarkers()
         {
-            var timeline = new List<TimeBlock>();
-            var dayStart = TimeSpan.FromHours(7); // 7:00 AM
-            var dayEnd = TimeSpan.FromHours(21); // 9:00 PM
+            var markers = new List<TimeMarker>();
+            var currentTime = CalendarStart;
 
-            TimeSpan currentTime = dayStart;
-
-            foreach (var schedule in schedules)
+            while (currentTime <= CalendarEnd)
             {
-                if (currentTime < schedule.Start)
+                markers.Add(new TimeMarker
                 {
-                    timeline.Add(CreateBlock("Vacant", currentTime, schedule.Start, false));
-                }
+                    Label = FormatTime(currentTime),
+                    TopPixels = (currentTime - CalendarStart).TotalMinutes * PixelsPerMinute
+                });
 
-                timeline.Add(CreateBlock(schedule.Title, schedule.Start, schedule.End, true));
-                currentTime = schedule.End;
+                currentTime = currentTime.Add(TimeSpan.FromMinutes(30));
             }
 
-            if (currentTime < dayEnd)
-            {
-                timeline.Add(CreateBlock("Vacant", currentTime, dayEnd, false));
-            }
-
-            return timeline;
+            return markers;
         }
 
-        private TimeBlock CreateBlock(string label, TimeSpan start, TimeSpan end, bool isOccupied)
+        private ScheduleEvent CreateScheduleEvent(string dayKey, string title, TimeSpan start, TimeSpan end)
         {
-            return new TimeBlock
+            var clampedStart = start < CalendarStart ? CalendarStart : start;
+            var clampedEnd = end > CalendarEnd ? CalendarEnd : end;
+
+            if (clampedEnd <= clampedStart)
             {
-                Label = label,
-                StartTime = FormatTime(start),
-                EndTime = FormatTime(end),
-                IsOccupied = isOccupied,
-                DurationMinutes = (end - start).TotalMinutes
+                clampedEnd = clampedStart.Add(TimeSpan.FromMinutes(30));
+            }
+
+            var topPixels = (clampedStart - CalendarStart).TotalMinutes * PixelsPerMinute;
+            var heightPixels = Math.Max(
+                MinimumEventHeightPixels,
+                (clampedEnd - clampedStart).TotalMinutes * PixelsPerMinute
+            );
+
+            return new ScheduleEvent
+            {
+                DayKey = dayKey,
+                Title = title,
+                StartTimeText = FormatTime(start),
+                EndTimeText = FormatTime(end),
+                TopPixels = topPixels,
+                HeightPixels = heightPixels
             };
+        }
+
+        private List<string> ExtractScheduledDays(string timeSlot)
+        {
+            var days = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(timeSlot))
+            {
+                return days;
+            }
+
+            var firstPart = timeSlot
+                .Trim()
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                .FirstOrDefault();
+
+            if (string.IsNullOrWhiteSpace(firstPart))
+            {
+                return days;
+            }
+
+            var dayCode = Regex.Replace(firstPart.ToUpper(), @"[^A-Z]", "");
+
+            if (dayCode.Contains("MONDAY"))
+            {
+                days.Add("Monday");
+            }
+
+            if (dayCode.Contains("TUESDAY"))
+            {
+                days.Add("Tuesday");
+            }
+
+            if (dayCode.Contains("WEDNESDAY"))
+            {
+                days.Add("Wednesday");
+            }
+
+            if (dayCode.Contains("THURSDAY"))
+            {
+                days.Add("Thursday");
+            }
+
+            if (dayCode.Contains("FRIDAY"))
+            {
+                days.Add("Friday");
+            }
+
+            if (dayCode.Contains("SATURDAY"))
+            {
+                days.Add("Saturday");
+            }
+
+            if (days.Any())
+            {
+                return OrderDays(days);
+            }
+
+            if (dayCode.Contains("M"))
+            {
+                days.Add("Monday");
+            }
+
+            if (dayCode.Contains("TH"))
+            {
+                days.Add("Thursday");
+            }
+
+            var codeWithoutThursday = dayCode.Replace("TH", "");
+
+            if (codeWithoutThursday.Contains("T"))
+            {
+                days.Add("Tuesday");
+            }
+
+            if (codeWithoutThursday.Contains("W"))
+            {
+                days.Add("Wednesday");
+            }
+
+            if (codeWithoutThursday.Contains("F"))
+            {
+                days.Add("Friday");
+            }
+
+            if (codeWithoutThursday.Contains("S"))
+            {
+                days.Add("Saturday");
+            }
+
+            return OrderDays(days);
+        }
+
+        private List<string> OrderDays(List<string> days)
+        {
+            var order = new List<string>
+            {
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday"
+            };
+
+            return days
+                .Distinct()
+                .OrderBy(day => order.IndexOf(day))
+                .ToList();
         }
 
         private (TimeSpan Start, TimeSpan End)? ExtractTimeSpan(string timeSlot)
         {
-            var match = Regex.Match(timeSlot, @"(\d{1,2}:\d{2}\s*[aApP][mM])\s*-\s*(\d{1,2}:\d{2}\s*[aApP][mM])", RegexOptions.IgnoreCase);
-            if (match.Success)
+            if (string.IsNullOrWhiteSpace(timeSlot))
             {
-                if (DateTime.TryParse(match.Groups[1].Value, out DateTime startTime) &&
-                    DateTime.TryParse(match.Groups[2].Value, out DateTime endTime))
-                {
-                    return (startTime.TimeOfDay, endTime.TimeOfDay);
-                }
+                return null;
             }
+
+            var match = Regex.Match(
+                timeSlot,
+                @"(\d{1,2}:\d{2}\s*[aApP][mM])\s*-\s*(\d{1,2}:\d{2}\s*[aApP][mM])",
+                RegexOptions.IgnoreCase
+            );
+
+            if (!match.Success)
+            {
+                return null;
+            }
+
+            if (DateTime.TryParse(match.Groups[1].Value, out DateTime startTime) &&
+                DateTime.TryParse(match.Groups[2].Value, out DateTime endTime))
+            {
+                return (startTime.TimeOfDay, endTime.TimeOfDay);
+            }
+
             return null;
         }
 
         private string FormatTime(TimeSpan time)
         {
-            return DateTime.Today.Add(time).ToString("h:mm tt").ToLower();
+            return DateTime.Today.Add(time).ToString("h:mm tt");
         }
     }
 }
