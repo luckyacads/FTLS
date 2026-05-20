@@ -3,7 +3,6 @@ using FTLSV2.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -20,8 +19,7 @@ namespace FTLSV2.Pages
 
         [BindProperty]
         [Required(ErrorMessage = "Faculty ID is required.")]
-        [StringLength(5, MinimumLength = 5, ErrorMessage = "Faculty ID must be exactly 5 digits.")]
-        [RegularExpression(@"^\d{5}$", ErrorMessage = "Faculty ID must contain numbers only.")]
+        [StringLength(8, MinimumLength = 8, ErrorMessage = "Faculty ID must be exactly 8 characters.")]
         public string FacultyId { get; set; } = string.Empty;
 
         [BindProperty]
@@ -37,10 +35,14 @@ namespace FTLSV2.Pages
         [EmailAddress(ErrorMessage = "Enter a valid email address.")]
         public string Email { get; set; } = string.Empty;
 
-        // NEW: Changed from Role (string) to DepartmentId (int)
         [BindProperty]
         [Required(ErrorMessage = "Department is required.")]
         public int? DepartmentId { get; set; }
+
+        // ---> NEW: Added School Property
+        [BindProperty]
+        [Required(ErrorMessage = "School is required.")]
+        public int? SchoolId { get; set; }
 
         [BindProperty]
         [Required(ErrorMessage = "Password is required.")]
@@ -53,13 +55,15 @@ namespace FTLSV2.Pages
         public string ErrorMessage { get; set; } = string.Empty;
         public string SuccessMessage { get; set; } = string.Empty;
 
-        // NEW: A list to hold the departments from the database
         public List<Department> AvailableDepartments { get; set; } = new List<Department>();
+        // ---> NEW: A list to hold the schools from the database
+        public List<School> AvailableSchools { get; set; } = new List<School>();
 
         public void OnGet()
         {
-            // Fetch departments from database and sort them alphabetically by Name
+            // Fetch departments and schools from database and sort them
             AvailableDepartments = _context.Departments.OrderBy(d => d.Name).ToList();
+            AvailableSchools = _context.Schools.OrderBy(s => s.Name).ToList();
         }
 
         public IActionResult OnPost()
@@ -69,8 +73,9 @@ namespace FTLSV2.Pages
             LastName = LastName?.Trim() ?? string.Empty;
             Email = Email?.Trim().ToLower() ?? string.Empty;
 
-            // Re-fetch departments in case the page reloads due to an error
+            // Re-fetch lists in case the page reloads due to an error
             AvailableDepartments = _context.Departments.OrderBy(d => d.Name).ToList();
+            AvailableSchools = _context.Schools.OrderBy(s => s.Name).ToList();
 
             if (!ModelState.IsValid)
             {
@@ -105,17 +110,16 @@ namespace FTLSV2.Pages
                 Email = Email,
                 Password = Password,
 
-                // HARDCODED ROLE: Self-registered users default to Faculty
+                // HARDCODED ROLE: Self-registered users default to Teacher
                 Role = "Faculty",
 
-                // SAVE THE CHOSEN DEPARTMENT
                 DepartmentId = DepartmentId,
+                SchoolId = SchoolId,
 
                 Status = "Pending",
                 MaxUnits = 24,
                 CurrentUnits = 0,
-                SchoolId = null,
-                CreatedByRole = "Self-Registration",
+                // ---> REMOVED CreatedBy and CreatedByRole <---
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -130,6 +134,7 @@ namespace FTLSV2.Pages
             LastName = string.Empty;
             Email = string.Empty;
             DepartmentId = null;
+            SchoolId = null; // Clear school dropdown
             Password = string.Empty;
             ConfirmPassword = string.Empty;
 

@@ -171,12 +171,7 @@
         <form method="post">
             <div class="form-group">
                 <label class="form-label" asp-for="FacultyId">Faculty ID</label>
-                <input class="form-input"
-                       asp-for="FacultyId"
-                       placeholder="Enter 5-digit Faculty ID"
-                       maxlength="5"
-                       inputmode="numeric"
-                       pattern="[0-9]{5}" />
+                <input class="form-input" asp-for="FacultyId" maxlength="5" placeholder="Enter 5-character Faculty ID" />
                 <span class="validation-message" asp-validation-for="FacultyId"></span>
             </div>
 
@@ -211,6 +206,21 @@
                     }
                 </select>
                 <span class="validation-message" asp-validation-for="DepartmentId"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" asp-for="SchoolId">School</label>
+                <select class="form-select" asp-for="SchoolId">
+                    <option value="">-- Select School --</option>
+                    @if (Model.AvailableSchools != null)
+                    {
+                        @foreach (var school in Model.AvailableSchools)
+                        {
+                            <option value="@school.Id">@school.Name (@school.Code)</option>
+                        }
+                    }
+                </select>
+                <span class="validation-message" asp-validation-for="SchoolId"></span>
             </div>
 
             <div class="form-group">

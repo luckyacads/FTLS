@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace FTLSV2.Models
 {
@@ -26,7 +27,8 @@ namespace FTLSV2.Models
 
         [ForeignKey(nameof(SchoolId))]
         public School? School { get; set; }
-
+        // <-- Added [JsonIgnore] right her
+        [JsonIgnore]
         public ICollection<Subject> Subjects { get; set; } = new List<Subject>();
     }
 }

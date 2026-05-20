@@ -77,6 +77,13 @@ app.MapGet("/api/subjects", async (string? code, string? title, FtlsDbContext db
 })
 .WithName("GetAllSubjects").WithTags("Subjects");
 
+app.MapGet("/api/subjects/{id}", async (int id, FtlsDbContext db) =>
+{
+    var subject = await db.Subjects.FindAsync(id);
+    return subject is not null ? Results.Ok(subject) : Results.NotFound();
+})
+.WithName("GetSubjectById").WithTags("Subjects");
+
 app.MapPost("/api/subjects", async (Subject subject, FtlsDbContext db) =>
 {
     if (subject == null) return Results.BadRequest();
@@ -120,6 +127,13 @@ app.MapGet("/api/users", async (string? lastName, string? facultyId, FtlsDbConte
     return Results.Ok(await query.ToListAsync());
 })
 .WithName("GetAllUsers").WithTags("Users");
+
+app.MapGet("/api/users/{id}", async (int id, FtlsDbContext db) =>
+{
+    var user = await db.Users.FindAsync(id);
+    return user is not null ? Results.Ok(user) : Results.NotFound();
+})
+.WithName("GetUserById").WithTags("Users");
 
 app.MapPost("/api/users", async (User user, FtlsDbContext db) =>
 {
@@ -165,6 +179,13 @@ app.MapGet("/api/rooms", async (string? type, int? minCapacity, FtlsDbContext db
 })
 .WithName("GetAllRooms").WithTags("Rooms");
 
+app.MapGet("/api/rooms/{id}", async (int id, FtlsDbContext db) =>
+{
+    var room = await db.Rooms.FindAsync(id);
+    return room is not null ? Results.Ok(room) : Results.NotFound();
+})
+.WithName("GetRoomById").WithTags("Rooms");
+
 app.MapPost("/api/rooms", async (Room room, FtlsDbContext db) =>
 {
     if (room == null) return Results.BadRequest();
@@ -208,6 +229,13 @@ app.MapGet("/api/schools", async (string? nameSearch, FtlsDbContext db) =>
 })
 .WithName("GetAllSchools").WithTags("Schools");
 
+app.MapGet("/api/schools/{id}", async (int id, FtlsDbContext db) =>
+{
+    var school = await db.Schools.FindAsync(id);
+    return school is not null ? Results.Ok(school) : Results.NotFound();
+})
+.WithName("GetSchoolById").WithTags("Schools");
+
 app.MapPost("/api/schools", async (School school, FtlsDbContext db) =>
 {
     if (school == null) return Results.BadRequest();
@@ -231,7 +259,6 @@ app.MapPut("/api/schools/{id}", async (int id, School updatedSchool, FtlsDbConte
     return Results.Ok(school);
 }).WithName("UpdateSchool").WithTags("Schools");
 
-// OPTION 2 implemented here:
 app.MapDelete("/api/schools/{id}", async (int id, FtlsDbContext db) =>
 {
     var school = await db.Schools.FindAsync(id);
@@ -268,6 +295,13 @@ app.MapGet("/api/departments", async (string? search, int? schoolId, FtlsDbConte
 })
 .WithName("GetAllDepartments").WithTags("Departments");
 
+app.MapGet("/api/departments/{id}", async (int id, FtlsDbContext db) =>
+{
+    var department = await db.Departments.FindAsync(id);
+    return department is not null ? Results.Ok(department) : Results.NotFound();
+})
+.WithName("GetDepartmentById").WithTags("Departments");
+
 app.MapPost("/api/departments", async (Department department, FtlsDbContext db) =>
 {
     if (department == null) return Results.BadRequest();
@@ -291,7 +325,6 @@ app.MapPut("/api/departments/{id}", async (int id, Department updatedDept, FtlsD
     return Results.Ok(dept);
 }).WithName("UpdateDepartment").WithTags("Departments");
 
-// OPTION 2 implemented here:
 app.MapDelete("/api/departments/{id}", async (int id, FtlsDbContext db) =>
 {
     var department = await db.Departments.FindAsync(id);
