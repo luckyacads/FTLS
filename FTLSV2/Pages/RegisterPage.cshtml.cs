@@ -3,6 +3,7 @@ using FTLSV2.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -19,7 +20,8 @@ namespace FTLSV2.Pages
 
         [BindProperty]
         [Required(ErrorMessage = "Faculty ID is required.")]
-        [StringLength(8, MinimumLength = 8, ErrorMessage = "Faculty ID must be exactly 8 characters.")]
+        [StringLength(5, MinimumLength = 5, ErrorMessage = "Faculty ID must be exactly 5 digits.")]
+        [RegularExpression(@"^\d{5}$", ErrorMessage = "Faculty ID must contain numbers only.")]
         public string FacultyId { get; set; } = string.Empty;
 
         [BindProperty]
@@ -103,7 +105,7 @@ namespace FTLSV2.Pages
                 Email = Email,
                 Password = Password,
 
-                // HARDCODED ROLE: Self-registered users default to Teacher
+                // HARDCODED ROLE: Self-registered users default to Faculty
                 Role = "Faculty",
 
                 // SAVE THE CHOSEN DEPARTMENT
@@ -113,7 +115,6 @@ namespace FTLSV2.Pages
                 MaxUnits = 24,
                 CurrentUnits = 0,
                 SchoolId = null,
-                CreatedBy = null,
                 CreatedByRole = "Self-Registration",
                 CreatedAt = DateTime.UtcNow
             };

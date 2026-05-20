@@ -30,33 +30,32 @@ namespace FTLSV2.Pages
 
         public IActionResult OnPost()
         {
-            if (string.IsNullOrEmpty(Username) || Username.Length < 8)
+            Username = Username?.Trim() ?? string.Empty;
+            Password = Password?.Trim() ?? string.Empty;
+
+            if (string.IsNullOrEmpty(Username) || Username.Length != 5 || !Username.All(char.IsDigit))
             {
-                ErrorMessage = "Faculty ID must be at least 8 characters long.";
+                ErrorMessage = "Faculty ID must be exactly 5 digits.";
                 return Page();
             }
 
-            // 1. Ask NeonDB: "Is there a user with this exact ID and Password?"
             var dbUser = _context.Users.FirstOrDefault(u =>
                 u.FacultyId == Username &&
                 u.Password == Password);
 
-            // 2. If we found a match, check their status!
             if (dbUser != null)
             {
-                // --- THIS IS THE NEW SECURITY BLOCK ---
                 if (dbUser.Status == "Inactive")
                 {
                     ErrorMessage = "This account has been deactivated. Please contact the Administrator.";
                     return Page();
                 }
-                // --------------------------------------
+
                 HttpContext.Session.SetString("ActiveUser", dbUser.FacultyId);
                 HttpContext.Session.SetString("ActiveUserName", dbUser.FirstName + " " + dbUser.LastName);
                 HttpContext.Session.SetString("ActiveUserEmail", dbUser.Email);
                 HttpContext.Session.SetString("UserRole", dbUser.Role);
 
-                // 3. If they are Active, route them normally
                 if (dbUser.Role == "Admin")
                 {
                     return RedirectToPage("/Admin/AdminPage");
@@ -65,20 +64,16 @@ namespace FTLSV2.Pages
                 {
                     return RedirectToPage("/Chairman/ChairmanPage");
                 }
-                else if (dbUser.Role == "Faculty" || dbUser.Role == "Faculty")
+                else if (dbUser.Role == "Faculty")
                 {
                     return RedirectToPage("/Teacher/TeacherPage");
                 }
             }
-            else
-            {
-                // If dbUser is null, they typed the wrong ID or Password
-                ErrorMessage = "Invalid Faculty ID or Password.";
-                return Page();
-            }
 
+            ErrorMessage = "Invalid Faculty ID or Password.";
             return Page();
         }
+
         // This runs when someone clicks the Logout button
         public IActionResult OnGetLogout()
         {

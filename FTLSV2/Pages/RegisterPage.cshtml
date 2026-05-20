@@ -171,7 +171,12 @@
         <form method="post">
             <div class="form-group">
                 <label class="form-label" asp-for="FacultyId">Faculty ID</label>
-                <input class="form-input" asp-for="FacultyId" placeholder="Enter 8-character Faculty ID" />
+                <input class="form-input"
+                       asp-for="FacultyId"
+                       placeholder="Enter 5-digit Faculty ID"
+                       maxlength="5"
+                       inputmode="numeric"
+                       pattern="[0-9]{5}" />
                 <span class="validation-message" asp-validation-for="FacultyId"></span>
             </div>
 

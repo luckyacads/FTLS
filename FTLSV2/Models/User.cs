@@ -11,26 +11,27 @@ namespace FTLSV2.Models
         [Column("id")]
         public int Id { get; set; }
 
+        // Visible 5-digit Faculty ID used for login and schedule ownership
         [Column("faculty_id")]
-        public string FacultyId { get; set; }
+        public string FacultyId { get; set; } = string.Empty;
 
         [Column("password")]
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
 
         [Column("role")]
-        public string Role { get; set; }
+        public string Role { get; set; } = string.Empty;
 
         [Column("email")]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         [Column("first_name")]
-        public string FirstName { get; set; }
+        public string FirstName { get; set; } = string.Empty;
 
         [Column("last_name")]
-        public string LastName { get; set; }
+        public string LastName { get; set; } = string.Empty;
 
         [Column("status")]
-        public string Status { get; set; }
+        public string Status { get; set; } = string.Empty;
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; }
@@ -47,12 +48,7 @@ namespace FTLSV2.Models
         [Column("department_id")]
         public int? DepartmentId { get; set; }
 
-        [Column("created_by")]
-        public int? CreatedBy { get; set; }
-
         [Column("created_by_role")]
         public string? CreatedByRole { get; set; }
-
-
     }
 }

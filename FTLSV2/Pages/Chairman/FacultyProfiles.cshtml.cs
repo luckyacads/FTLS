@@ -48,7 +48,7 @@ namespace FTLSV2.Pages.Chairman
 
             int departmentId = chairman.DepartmentId.Value;
 
-            var allowedRoles = new[] { "Teacher", "Faculty", "Chairman" };
+            var allowedRoles = new[] { "Faculty", "Chairman" };
 
             // Only same department
             var departmentUsers = _db.Users
@@ -63,7 +63,7 @@ namespace FTLSV2.Pages.Chairman
                 .Select(u =>
                 {
                     var totalUnits = _db.Schedules
-                        .Where(s => s.FacultyId == u.Id)
+                        .Where(s => s.FacultyId == u.FacultyId)
                         .Sum(s => (int?)s.AssignedUnits);
 
                     return new FacultyView(

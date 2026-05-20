@@ -41,7 +41,7 @@ namespace FTLSV2.Pages.Teacher
 
             // Fetch all schedules for this teacher
             var allSchedules = _context.Schedules
-                .Where(s => s.FacultyId == LoggedInUser.Id)
+                .Where(s => s.FacultyId == LoggedInUser.FacultyId)
                 .Include(s => s.Subject).Include(s => s.Room)
                 .AsNoTracking().ToList();
 

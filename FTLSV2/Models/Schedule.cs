@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FTLSV2.Models
@@ -11,21 +10,19 @@ namespace FTLSV2.Models
         [Column("schedule_id")]
         public int ScheduleId { get; set; }
 
-        // FK to users.id
+        // Runtime DB confirms this column is varchar.
+        // This stores users.faculty_id, not users.id.
         [Column("faculty_id")]
-        public int FacultyId { get; set; }
+        public string FacultyId { get; set; } = string.Empty;
 
-        // FK to subject.subject_id
         [Column("subject_id")]
         public int SubjectId { get; set; }
 
-        // FK to room_registry.room_id
         [Column("room_id")]
         public int? RoomId { get; set; }
 
-        // stored as varchar in DB (user-provided timeslot string)
         [Column("time_slot")]
-        public string TimeSlot { get; set; }
+        public string TimeSlot { get; set; } = string.Empty;
 
         [Column("assigned_units")]
         public int AssignedUnits { get; set; }
@@ -39,14 +36,13 @@ namespace FTLSV2.Models
         [Column("semester")]
         public string? Semester { get; set; }
 
-        // Navigation properties
         [ForeignKey(nameof(FacultyId))]
-        public User Faculty { get; set; }
+        public User Faculty { get; set; } = null!;
 
         [ForeignKey(nameof(SubjectId))]
-        public Subject Subject { get; set; }
+        public Subject Subject { get; set; } = null!;
 
         [ForeignKey(nameof(RoomId))]
-        public Room Room { get; set; }
+        public Room? Room { get; set; }
     }
 }

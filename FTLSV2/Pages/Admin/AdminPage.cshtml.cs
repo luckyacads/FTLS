@@ -5,7 +5,6 @@ using FTLSV2.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 
 namespace FTLSV2.Pages.Admin
@@ -21,7 +20,7 @@ namespace FTLSV2.Pages.Admin
         }
 
         public User LoggedInUser { get; set; }
-        public IList<User> DbUsers { get; set; }
+        public IList<User> DbUsers { get; set; } = new List<User>();
 
         // Dictionary to tell the frontend if a user has schedules
         public Dictionary<string, bool> UserHasSchedules { get; set; } = new();
@@ -30,7 +29,6 @@ namespace FTLSV2.Pages.Admin
 
         public IActionResult OnGet()
         {
-            // --- DIRECT HTTP CACHE KILLER ---
             Response.Headers.Append("Cache-Control", "no-cache, no-store, must-revalidate");
             Response.Headers.Append("Pragma", "no-cache");
             Response.Headers.Append("Expires", "0");
@@ -42,24 +40,34 @@ namespace FTLSV2.Pages.Admin
                 return RedirectToPage("/LoginPage");
             }
 
-            DbUsers = _context.Users.OrderByDescending(u => u.CreatedAt).ToList();
-            LoggedInUser = _context.Users.FirstOrDefault(u => u.FacultyId == activeId);
+            DbUsers = _context.Users
+                .OrderByDescending(u => u.CreatedAt)
+                .ToList();
 
-            // Check every user to see if they have schedules
-            var userIds = DbUsers.Select(u => u.Id).ToList();
+            LoggedInUser = _context.Users
+                .FirstOrDefault(u => u.FacultyId == activeId);
+
+            // schedule.faculty_id now references users.faculty_id, not users.id.
+            var facultyIds = DbUsers
+                .Where(u => !string.IsNullOrWhiteSpace(u.FacultyId))
+                .Select(u => u.FacultyId)
+                .ToList();
+
             var facultiesWithSchedules = _context.Schedules
-                .Where(s => userIds.Contains(s.FacultyId))
+                .Where(s => facultyIds.Contains(s.FacultyId))
                 .Select(s => s.FacultyId)
                 .Distinct()
                 .ToHashSet();
 
             foreach (var user in DbUsers)
             {
-                // Marks TRUE if they have 1 or more schedules, FALSE if 0
-                UserHasSchedules[user.FacultyId] = facultiesWithSchedules.Contains(user.Id);
+                UserHasSchedules[user.FacultyId] =
+                    !string.IsNullOrWhiteSpace(user.FacultyId) &&
+                    facultiesWithSchedules.Contains(user.FacultyId);
             }
 
             var settings = _context.SystemSettings.FirstOrDefault();
+
             if (settings == null)
             {
                 settings = new SystemSettings { MaxOverload = 21 };
@@ -68,6 +76,7 @@ namespace FTLSV2.Pages.Admin
             }
 
             InputMaxOverload = settings.MaxOverload;
+
             return Page();
         }
 
@@ -75,6 +84,7 @@ namespace FTLSV2.Pages.Admin
         public IActionResult OnPostToggleUserStatus(string facultyId)
         {
             var dbUser = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
+
             if (dbUser != null)
             {
                 try
@@ -113,24 +123,60 @@ namespace FTLSV2.Pages.Admin
 
             var user = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
 
-            if (user != null)
+            if (user == null)
             {
-                try
+                TempData["ErrorMessage"] = "User account could not be found.";
+                return RedirectToPage();
+            }
+
+            try
+            {
+                if (user.Role == "Admin")
                 {
-                    if (user.Role == "Admin")
+                    TempData["ErrorMessage"] = "Administrator accounts cannot be modified from this role assignment option.";
+                    return RedirectToPage();
+                }
+
+                // Restriction: only one Chairman per department.
+                if (newRole == "Chairman")
+                {
+                    if (!user.DepartmentId.HasValue)
                     {
-                        TempData["ErrorMessage"] = "Administrator accounts cannot be modified from this role assignment option.";
+                        TempData["ErrorMessage"] = "This user cannot be assigned as Chairman because no department is assigned to this account.";
                         return RedirectToPage();
                     }
 
-                    user.Role = newRole;
-                    _context.SaveChanges();
-                    TempData["SuccessMessage"] = $"Role for {user.FirstName} updated to {newRole}.";
+                    var existingChairman = _context.Users
+                        .FirstOrDefault(u =>
+                            u.FacultyId != user.FacultyId &&
+                            u.DepartmentId == user.DepartmentId &&
+                            u.Role == "Chairman");
+
+                    if (existingChairman != null)
+                    {
+                        var department = _context.Departments
+                            .FirstOrDefault(d => d.Id == user.DepartmentId.Value);
+
+                        string departmentName = department != null
+                            ? $"{department.Name} ({department.Code})"
+                            : "this department";
+
+                        TempData["ErrorMessage"] =
+                            $"{departmentName} already has an assigned Chairman: {existingChairman.FirstName} {existingChairman.LastName}. " +
+                            "Only one Chairman is allowed per department. Change the existing Chairman back to Faculty first before assigning another one.";
+
+                        return RedirectToPage();
+                    }
                 }
-                catch (Exception ex)
-                {
-                    TempData["ErrorMessage"] = $"Error updating role. {ex.Message}";
-                }
+
+                user.Role = newRole;
+                _context.SaveChanges();
+
+                TempData["SuccessMessage"] = $"Role for {user.FirstName} {user.LastName} updated to {newRole}.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error updating role. {ex.Message}";
             }
 
             return RedirectToPage();
@@ -140,6 +186,7 @@ namespace FTLSV2.Pages.Admin
         public IActionResult OnPostUpdateUserUnits(string facultyId, int newUnits)
         {
             var user = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
+
             if (user != null)
             {
                 var settings = _context.SystemSettings.FirstOrDefault();
@@ -164,10 +211,12 @@ namespace FTLSV2.Pages.Admin
         public IActionResult OnPostResetPassword(string facultyId)
         {
             var dbUser = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
+
             if (dbUser != null)
             {
                 dbUser.Password = "usjr1234";
                 _context.SaveChanges();
+
                 TempData["SuccessMessage"] = $"Password for {dbUser.FirstName} has been reset to 'usjr1234'.";
             }
 
@@ -178,16 +227,19 @@ namespace FTLSV2.Pages.Admin
         public IActionResult OnPostDeleteUser(string facultyId)
         {
             var dbUser = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
+
             if (dbUser != null)
             {
-                // 1. Delete their schedules first so the database doesn't crash!
-                var userSchedules = _context.Schedules.Where(s => s.FacultyId == dbUser.Id).ToList();
+                // schedule.faculty_id now stores the 5-digit faculty ID.
+                var userSchedules = _context.Schedules
+                    .Where(s => s.FacultyId == dbUser.FacultyId)
+                    .ToList();
+
                 if (userSchedules.Any())
                 {
                     _context.Schedules.RemoveRange(userSchedules);
                 }
 
-                // 2. Now delete the user
                 _context.Users.Remove(dbUser);
                 _context.SaveChanges();
 

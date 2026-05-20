@@ -9,24 +9,13 @@ namespace FTLSV2.Data
         {
         }
 
-        // This tells Entity Framework to link the User model to the 'users' table
         public DbSet<User> Users { get; set; }
         public DbSet<School> Schools { get; set; }
         public DbSet<Department> Departments { get; set; }
-
-        // Rooms table mapped to the room_registry table in NeonDB
         public DbSet<Room> Rooms { get; set; }
-
-        // Subjects table mapped to the subject table
         public DbSet<Subject> Subjects { get; set; }
-
-        // Schedules table mapped to the schedule table
         public DbSet<Schedule> Schedules { get; set; }
-
-        // Map faculty load summary view/table
         public DbSet<FacultyLoadSummary> FacultyLoadSummaries { get; set; }
-
-        // For Settings Variable
         public DbSet<SystemSettings> SystemSettings { get; set; }
         public DbSet<Curriculum> Curriculums { get; set; }
 
@@ -34,59 +23,137 @@ namespace FTLSV2.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // ---> Map User entity to the users table & max_units column <---
+            // Map User entity to the users table
             modelBuilder.Entity<User>(entity =>
             {
                 entity.ToTable("users");
+
+                // Keep users.id as the internal primary key for now.
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                // Visible 5-digit Faculty ID used for login and schedule ownership.
+                entity.Property(e => e.FacultyId)
+                      .HasColumnName("faculty_id")
+                      .HasMaxLength(20);
+
+                entity.HasIndex(e => e.FacultyId)
+                      .IsUnique();
+
+                entity.Property(e => e.Password).HasColumnName("password");
+                entity.Property(e => e.Role).HasColumnName("role");
+                entity.Property(e => e.Email).HasColumnName("email");
+                entity.Property(e => e.FirstName).HasColumnName("first_name");
+                entity.Property(e => e.LastName).HasColumnName("last_name");
+                entity.Property(e => e.Status).HasColumnName("status");
+                entity.Property(e => e.CreatedAt).HasColumnName("created_at");
                 entity.Property(e => e.MaxUnits).HasColumnName("max_units");
+                entity.Property(e => e.CurrentUnits).HasColumnName("current_units");
+                entity.Property(e => e.SchoolId).HasColumnName("school_id");
+                entity.Property(e => e.DepartmentId).HasColumnName("department_id");
+                entity.Property(e => e.CreatedByRole).HasColumnName("created_by_role");
             });
 
-            // Map the Room entity to the existing `room_registry` table and columns
-            modelBuilder.Entity<Room>(entity =>
+            // Map School entity to the schools table
+            modelBuilder.Entity<School>(entity =>
             {
-                entity.ToTable("room_registry");
-                entity.HasKey(e => e.RoomId);
-                entity.Property(e => e.RoomId).HasColumnName("room_id");
-                entity.Property(e => e.Name).HasColumnName("room_name").HasMaxLength(200);
-                entity.Property(e => e.Type).HasColumnName("type").HasMaxLength(100);
-                entity.Property(e => e.Capacity).HasColumnName("capacity");
+                entity.ToTable("schools");
+
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.Code).HasColumnName("code");
+                entity.Property(e => e.Name).HasColumnName("name");
+                entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             });
 
             // Map Department entity to the departments table
             modelBuilder.Entity<Department>(entity =>
             {
                 entity.ToTable("departments");
+
                 entity.HasKey(e => e.Id);
+
                 entity.Property(e => e.Id).HasColumnName("id");
                 entity.Property(e => e.SchoolId).HasColumnName("school_id");
                 entity.Property(e => e.Code).HasColumnName("code").HasMaxLength(50);
                 entity.Property(e => e.Name).HasColumnName("department").HasMaxLength(200);
+                entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+
+                entity.HasOne(d => d.School)
+                      .WithMany()
+                      .HasForeignKey(d => d.SchoolId);
             });
 
-            // Map Subject entity to the subject table 
+            // Map Room entity to the room_registry table
+            modelBuilder.Entity<Room>(entity =>
+            {
+                entity.ToTable("room_registry");
+
+                entity.HasKey(e => e.RoomId);
+
+                entity.Property(e => e.RoomId).HasColumnName("room_id");
+                entity.Property(e => e.Name).HasColumnName("room_name").HasMaxLength(200);
+                entity.Property(e => e.Type).HasColumnName("type").HasMaxLength(100);
+                entity.Property(e => e.Capacity).HasColumnName("capacity");
+                entity.Property(e => e.Availability).HasColumnName("availability").HasMaxLength(255);
+            });
+
+            // Map Subject entity to the subject table
             modelBuilder.Entity<Subject>(entity =>
             {
                 entity.ToTable("subject");
+
                 entity.HasKey(e => e.SubjectId);
+
                 entity.Property(e => e.SubjectId).HasColumnName("subject_id");
                 entity.Property(e => e.Code).HasColumnName("subject_code").HasMaxLength(50);
                 entity.Property(e => e.Title).HasColumnName("subject_title").HasMaxLength(300);
                 entity.Property(e => e.Units).HasColumnName("units");
-
-                // Map the actual integer foreign key column correctly
                 entity.Property(e => e.DepartmentId).HasColumnName("department_id");
 
-                // Explicitly define the relationship blueprint for EF Core
                 entity.HasOne(s => s.Department)
                       .WithMany(d => d.Subjects)
                       .HasForeignKey(s => s.DepartmentId);
             });
 
-            // Map Schedule entity to the schedule table & assigned_units column 
+            // Map Schedule entity to the schedule table
             modelBuilder.Entity<Schedule>(entity =>
             {
                 entity.ToTable("schedule");
+
+                entity.HasKey(e => e.ScheduleId);
+
+                entity.Property(e => e.ScheduleId).HasColumnName("schedule_id");
+
+                // schedule.faculty_id now references users.faculty_id, not users.id.
+                entity.Property(e => e.FacultyId)
+                      .HasColumnName("faculty_id")
+                      .HasMaxLength(20);
+
+                entity.Property(e => e.SubjectId).HasColumnName("subject_id");
+                entity.Property(e => e.RoomId).HasColumnName("room_id");
+                entity.Property(e => e.TimeSlot).HasColumnName("time_slot");
                 entity.Property(e => e.AssignedUnits).HasColumnName("assigned_units");
+                entity.Property(e => e.OfferCode).HasColumnName("offer_code");
+                entity.Property(e => e.AcademicYear).HasColumnName("academic_year");
+                entity.Property(e => e.Semester).HasColumnName("semester");
+
+                // Critical relationship:
+                // Schedule.FacultyId points to User.FacultyId.
+                entity.HasOne(e => e.Faculty)
+                      .WithMany()
+                      .HasForeignKey(e => e.FacultyId)
+                      .HasPrincipalKey(u => u.FacultyId);
+
+                entity.HasOne(e => e.Subject)
+                      .WithMany()
+                      .HasForeignKey(e => e.SubjectId);
+
+                entity.HasOne(e => e.Room)
+                      .WithMany()
+                      .HasForeignKey(e => e.RoomId);
             });
 
             // Map FacultyLoadSummary entity to the faculty_load_summary table/view
@@ -98,22 +165,21 @@ namespace FTLSV2.Data
             modelBuilder.Entity<Curriculum>(entity =>
             {
                 entity.ToTable("curriculum");
+
                 entity.HasKey(e => e.CurriculumId);
+
                 entity.Property(e => e.CurriculumId).HasColumnName("curriculum_id");
                 entity.Property(e => e.SubjectId).HasColumnName("subject_id");
                 entity.Property(e => e.DepartmentId).HasColumnName("department_id");
                 entity.Property(e => e.YearLevel).HasColumnName("year_level");
                 entity.Property(e => e.Semester).HasColumnName("semester");
-
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
                 entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
 
-                // Explicitly tell EF Core that Department is a linked table
                 entity.HasOne(c => c.Department)
                       .WithMany()
                       .HasForeignKey(c => c.DepartmentId);
 
-                // Explicitly tell EF Core to completely ignore Subject in the database constraints
                 entity.Ignore(c => c.Subject);
             });
         }

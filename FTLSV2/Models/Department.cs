@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FTLSV2.Models
 {
+    [Table("departments")]
     public class Department
     {
         [Key]
@@ -19,7 +21,12 @@ namespace FTLSV2.Models
         [Column("department")]
         public string? Name { get; set; }
 
-        // Navigation property mapping back to any subjects belonging here
+        [Column("created_at")]
+        public DateTime CreatedAt { get; set; }
+
+        [ForeignKey(nameof(SchoolId))]
+        public School? School { get; set; }
+
         public ICollection<Subject> Subjects { get; set; } = new List<Subject>();
     }
 }

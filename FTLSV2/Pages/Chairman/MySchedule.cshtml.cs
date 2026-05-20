@@ -54,7 +54,7 @@ namespace FTLSV2.Pages.Chairman
             }
 
             var schedules = _db.Schedules
-                .Where(s => s.FacultyId == user.Id)
+                .Where(s => s.FacultyId == user.FacultyId)
                 .AsNoTracking()
                 .ToList();
 
@@ -110,7 +110,7 @@ namespace FTLSV2.Pages.Chairman
                 .ToList();
 
             var allSchedulesWithSubjects = _db.Schedules
-                .Where(s => s.FacultyId == user.Id)
+                .Where(s => s.FacultyId == user.FacultyId)
                 .Join(_db.Subjects, s => s.SubjectId, sub => sub.SubjectId, (s, sub) => new { Schedule = s, Subject = sub })
                 .AsNoTracking()
                 .ToList();
