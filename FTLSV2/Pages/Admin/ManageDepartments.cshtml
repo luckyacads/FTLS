@@ -101,6 +101,23 @@
             transform: translateY(-1px);
         }
 
+    .btn-cancel {
+        background: #f3f4f6;
+        color: #374151;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 7px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.2s ease-in-out;
+    }
+
+        .btn-cancel:hover {
+            background: #e5e7eb;
+            transform: translateY(-1px);
+        }
+
     .btn-add {
         background: #07362d;
         color: white;
@@ -219,15 +236,71 @@
         font-style: italic;
     }
 
-    .add-department-section {
-        display: none;
-        margin-bottom: 25px;
-    }
-
     .form-actions {
-        margin-top: 5px;
+        margin-top: 8px;
         display: flex;
         justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(2px);
+    }
+
+    .modal-card {
+        width: 520px;
+        max-width: 92%;
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 20px 35px rgba(0, 0, 0, 0.18);
+        animation: modalFadeIn 0.18s ease-out;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 18px;
+    }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: #07362d;
+        }
+
+    .modal-close {
+        border: none;
+        background: transparent;
+        font-size: 24px;
+        line-height: 1;
+        cursor: pointer;
+        color: #777;
+    }
+
+        .modal-close:hover {
+            color: #07362d;
+        }
+
+    @@keyframes modalFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-8px) scale(0.98);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
     }
 </style>
 
@@ -247,46 +320,57 @@
         <div class="alert-error">✖ @TempData["ErrorMessage"]</div>
     }
 
-    <section id="addDepartmentSection" class="card add-department-section">
-        <h3 class="form-title">Add New Department</h3>
-
-        <form method="post" asp-page-handler="AddDepartment">
-            <div class="form-grid">
-                <div class="form-group">
-                    <label asp-for="NewSchoolId">School</label>
-                    <select asp-for="NewSchoolId" class="input" required>
-                        <option value="">Select School</option>
-                        @foreach (var school in Model.Schools)
-                        {
-                            <option value="@school.Id">@school.Name</option>
-                        }
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label asp-for="NewCode">Department Code</label>
-                    <input asp-for="NewCode"
-                           class="input"
-                           placeholder="Example: CPE"
-                           maxlength="20"
-                           required />
-                </div>
-
-                <div class="form-group" style="grid-column: span 2;">
-                    <label asp-for="NewName">Department Name</label>
-                    <input asp-for="NewName"
-                           class="input"
-                           placeholder="Example: Computer Engineering"
-                           maxlength="150"
-                           required />
-                </div>
+    <div id="addDepartmentModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Add New Department</h3>
+                <button type="button" class="modal-close" onclick="closeAddDepartmentModal()">×</button>
             </div>
 
-            <div class="form-actions">
-                <button type="submit" class="btn-primary">Save Department</button>
-            </div>
-        </form>
-    </section>
+            <form method="post" asp-page-handler="AddDepartment">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label asp-for="NewSchoolId">School</label>
+                        <select asp-for="NewSchoolId" class="input" required>
+                            <option value="">Select School</option>
+                            @foreach (var school in Model.Schools)
+                            {
+                                <option value="@school.Id">@school.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="NewCode">Department Code</label>
+                        <input asp-for="NewCode"
+                               class="input"
+                               placeholder="Example: CPE"
+                               maxlength="20"
+                               required />
+                    </div>
+
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label asp-for="NewName">Department Name</label>
+                        <input asp-for="NewName"
+                               class="input"
+                               placeholder="Example: Computer Engineering"
+                               maxlength="150"
+                               required />
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="closeAddDepartmentModal()">
+                        Cancel
+                    </button>
+
+                    <button type="submit" class="btn-primary">
+                        Save Department
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <section class="card">
         <div class="department-toolbar">
@@ -299,7 +383,7 @@
                        placeholder="Search department..."
                        onkeyup="filterDepartments()" />
 
-                <button type="button" id="btnAddDepartment" class="btn-add" onclick="toggleAddDepartmentForm()">
+                <button type="button" id="btnAddDepartment" class="btn-add" onclick="openAddDepartmentModal()">
                     + Add New Department
                 </button>
             </div>
@@ -342,18 +426,27 @@
 </div>
 
 <script>
-    function toggleAddDepartmentForm() {
-        const section = document.getElementById("addDepartmentSection");
-        const button = document.getElementById("btnAddDepartment");
-
-        if (section.style.display === "none" || section.style.display === "") {
-            section.style.display = "block";
-            button.innerText = "Close";
-        } else {
-            section.style.display = "none";
-            button.innerText = "+ Add New Department";
-        }
+    function openAddDepartmentModal() {
+        const modal = document.getElementById("addDepartmentModal");
+        modal.style.display = "flex";
     }
+
+    function closeAddDepartmentModal() {
+        const modal = document.getElementById("addDepartmentModal");
+        modal.style.display = "none";
+    }
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeAddDepartmentModal();
+        }
+    });
+
+    document.getElementById("addDepartmentModal").addEventListener("click", function (event) {
+        if (event.target === this) {
+            closeAddDepartmentModal();
+        }
+    });
 
     function filterDepartments() {
         const searchValue = document.getElementById("departmentSearch").value.toLowerCase().trim();

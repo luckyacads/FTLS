@@ -115,10 +115,12 @@
         cursor: pointer;
         font-weight: 600;
         font-size: 14px;
+        transition: all 0.2s ease-in-out;
     }
 
         .btn-ghost:hover {
             background: #dddddd;
+            transform: translateY(-1px);
         }
 
     .btn-edit {
@@ -169,12 +171,6 @@
         border-radius: 8px;
         border-left: 6px solid #f5c6cb;
         font-weight: 500;
-    }
-
-    .add-room-section {
-        display: none;
-        margin-bottom: 18px;
-        border-left: 5px solid #07362d;
     }
 
     .form-actions {
@@ -297,6 +293,18 @@
         backdrop-filter: blur(2px);
     }
 
+    .add-modal-card {
+        width: 760px;
+        max-width: calc(100% - 40px);
+        position: relative;
+        padding: 28px 30px;
+        border-radius: 16px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        border-left: 6px solid #07362d;
+        margin-bottom: 0;
+        animation: modalFadeIn 0.18s ease-out;
+    }
+
     .edit-modal-card {
         width: 760px;
         max-width: calc(100% - 40px);
@@ -306,8 +314,10 @@
         box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         border-left: 6px solid #17a2b8;
         margin-bottom: 0;
+        animation: modalFadeIn 0.18s ease-out;
     }
 
+    .modal-header,
     .edit-modal-header {
         display: flex;
         align-items: center;
@@ -316,6 +326,7 @@
         margin-bottom: 18px;
     }
 
+        .modal-header h3,
         .edit-modal-header h3 {
             margin: 0;
             color: #111827;
@@ -336,6 +347,18 @@
         .modal-close-x:hover {
             color: #111827;
         }
+
+    @@keyframes modalFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-8px) scale(0.98);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
 
     @@media (max-width: 900px) {
         .page-container {
@@ -359,6 +382,7 @@
             width: 100%;
         }
 
+        .add-modal-card,
         .edit-modal-card {
             width: calc(100% - 30px);
             padding: 24px 20px;
@@ -386,51 +410,6 @@
         </div>
     }
 
-    <section id="addRoomSection" class="card add-room-section">
-        <h3 class="form-title">Add New Room</h3>
-
-        <form method="post" asp-page-handler="AddRoom" id="addRoomForm">
-            <div class="form-grid">
-                <div class="form-group">
-                    <label asp-for="NewRoomName">Room Name</label>
-                    <input asp-for="NewRoomName"
-                           class="input"
-                           required
-                           placeholder="Example: Room 101" />
-                </div>
-
-                <div class="form-group">
-                    <label asp-for="NewRoomType">Type</label>
-                    <select asp-for="NewRoomType" class="input" required>
-                        <option value="">Select Type</option>
-                        <option value="Lecture">Lecture</option>
-                        <option value="Lab">Lab</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label asp-for="NewRoomCapacity">Capacity</label>
-                    <input asp-for="NewRoomCapacity"
-                           type="number"
-                           class="input"
-                           required
-                           value="30"
-                           min="1" />
-                </div>
-            </div>
-
-            <div class="form-actions">
-                <button type="button" class="btn-ghost" onclick="toggleAddRoomForm()">
-                    Cancel
-                </button>
-
-                <button type="submit" class="btn-primary" id="saveRoomBtn">
-                    Save Room
-                </button>
-            </div>
-        </form>
-    </section>
-
     <section class="card">
         <div class="room-toolbar">
             <h3>Registered Rooms (@Model.Rooms.Count)</h3>
@@ -445,7 +424,7 @@
                 <button type="button"
                         id="btnAddRoom"
                         class="btn-add"
-                        onclick="toggleAddRoomForm()">
+                        onclick="openAddRoomModal()">
                     + Add New Room
                 </button>
             </div>
@@ -511,6 +490,59 @@
             </table>
         </div>
     </section>
+</div>
+
+<!-- ADD ROOM MODAL -->
+<div id="addRoomModal" class="modal-overlay">
+    <div class="card add-modal-card">
+        <div class="modal-header">
+            <h3>Add New Room</h3>
+            <button type="button" class="modal-close-x" onclick="closeModal('addRoomModal')">
+                &times;
+            </button>
+        </div>
+
+        <form method="post" asp-page-handler="AddRoom" id="addRoomForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label asp-for="NewRoomName">Room Name</label>
+                    <input asp-for="NewRoomName"
+                           class="input"
+                           required
+                           placeholder="Example: Room 101" />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="NewRoomType">Type</label>
+                    <select asp-for="NewRoomType" class="input" required>
+                        <option value="">Select Type</option>
+                        <option value="Lecture">Lecture</option>
+                        <option value="Lab">Lab</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="NewRoomCapacity">Capacity</label>
+                    <input asp-for="NewRoomCapacity"
+                           type="number"
+                           class="input"
+                           required
+                           value="30"
+                           min="1" />
+                </div>
+            </div>
+
+            <div class="form-actions" style="margin-top: 16px;">
+                <button type="button" class="btn-ghost" onclick="closeModal('addRoomModal')">
+                    Cancel
+                </button>
+
+                <button type="submit" class="btn-primary" id="saveRoomBtn">
+                    Save Room
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <!-- EDIT ROOM MODAL -->
@@ -598,38 +630,14 @@
 </div>
 
 <script>
-    function toggleAddRoomForm() {
-        const form = document.getElementById("addRoomSection");
-        const button = document.getElementById("btnAddRoom");
-
+    function openAddRoomModal() {
         closeModal("editRoomModal");
-
-        if (form.style.display === "none" || form.style.display === "") {
-            form.style.display = "block";
-
-            if (button) {
-                button.innerText = "Close";
-            }
-        } else {
-            form.style.display = "none";
-
-            if (button) {
-                button.innerText = "+ Add New Room";
-            }
-        }
+        closeModal("deleteConfirmModal");
+        openModal("addRoomModal");
     }
 
     function openEditModal(id, name, type, capacity) {
-        const addForm = document.getElementById("addRoomSection");
-        const button = document.getElementById("btnAddRoom");
-
-        if (addForm) {
-            addForm.style.display = "none";
-        }
-
-        if (button) {
-            button.innerText = "+ Add New Room";
-        }
+        closeModal("addRoomModal");
 
         document.getElementById("editRoomId").value = id;
         document.getElementById("editRoomName").value = name;
@@ -640,6 +648,9 @@
     }
 
     function openDeleteModal(roomId, roomName) {
+        closeModal("addRoomModal");
+        closeModal("editRoomModal");
+
         document.getElementById("deleteRoomId").value = roomId;
 
         const message = document.getElementById("deleteModalMessage");
@@ -741,6 +752,20 @@
         }
     }
 
+    function closeModalOnOverlayClick(modalId) {
+        const modal = document.getElementById(modalId);
+
+        if (!modal) {
+            return;
+        }
+
+        modal.addEventListener("click", function (event) {
+            if (event.target === modal) {
+                closeModal(modalId);
+            }
+        });
+    }
+
     window.onload = function () {
         const alertBox = document.getElementById("success-alert");
 
@@ -753,10 +778,15 @@
                 }, 1000);
             }, 3000);
         }
+
+        closeModalOnOverlayClick("addRoomModal");
+        closeModalOnOverlayClick("editRoomModal");
+        closeModalOnOverlayClick("deleteConfirmModal");
     };
 
     document.addEventListener("keydown", function (event) {
         if (event.key === "Escape") {
+            closeModal("addRoomModal");
             closeModal("editRoomModal");
             closeModal("deleteConfirmModal");
         }
