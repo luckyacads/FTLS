@@ -51,7 +51,16 @@ namespace FTLSV2.Pages.Admin
 
                 if (dept == null)
                 {
-                    dept = new Department { Name = deptName };
+                    // FIX: Get a valid SchoolId to satisfy the database foreign key constraint
+                    var defaultSchool = _db.Schools.FirstOrDefault();
+                    int fallbackSchoolId = defaultSchool != null ? defaultSchool.Id : 1;
+
+                    dept = new Department
+                    {
+                        Name = deptName,
+                        SchoolId = fallbackSchoolId // Assign the fallback SchoolId
+                    };
+
                     _db.Departments.Add(dept);
                     _db.SaveChanges();
                 }
@@ -94,9 +103,18 @@ namespace FTLSV2.Pages.Admin
 
                 if (dept == null)
                 {
-                    dept = new Department { Name = deptName };
+                    // FIX: Get a valid SchoolId to satisfy the database foreign key constraint
+                    var defaultSchool = _db.Schools.FirstOrDefault();
+                    int fallbackSchoolId = defaultSchool != null ? defaultSchool.Id : 1;
+
+                    dept = new Department
+                    {
+                        Name = deptName,
+                        SchoolId = fallbackSchoolId // Assign the fallback SchoolId
+                    };
+
                     _db.Departments.Add(dept);
-                    _db.SaveChanges();
+                    _db.SaveChanges(); // <-- This will no longer crash!
                 }
 
                 subjectToEdit.Code = EditSubjectCode;

@@ -65,7 +65,8 @@ namespace FTLSV2.Data
 
                 entity.HasKey(e => e.Id);
 
-                entity.Property(e => e.Id).HasColumnName("id");
+                // FIXED: Changed "id" to "dept_id"
+                entity.Property(e => e.Id).HasColumnName("dept_id");
                 entity.Property(e => e.SchoolId).HasColumnName("school_id");
                 entity.Property(e => e.Code).HasColumnName("code").HasMaxLength(50);
                 entity.Property(e => e.Name).HasColumnName("department").HasMaxLength(200);

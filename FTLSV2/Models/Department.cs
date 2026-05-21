@@ -10,7 +10,8 @@ namespace FTLSV2.Models
     public class Department
     {
         [Key]
-        [Column("id")]
+        // FIXED: Changed "id" to "dept_id" to match your database
+        [Column("dept_id")]
         public int Id { get; set; }
 
         [Column("school_id")]
@@ -27,7 +28,7 @@ namespace FTLSV2.Models
 
         [ForeignKey(nameof(SchoolId))]
         public School? School { get; set; }
-        // <-- Added [JsonIgnore] right her
+
         [JsonIgnore]
         public ICollection<Subject> Subjects { get; set; } = new List<Subject>();
     }
