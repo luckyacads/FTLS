@@ -58,6 +58,18 @@ namespace FTLSV2.Pages.Chairman
             return Page();
         }
 
+        // ---> FIXED: Added this missing method for your JavaScript fetch() to call
+        public IActionResult OnGetAvailableRooms(string days, string startTime, string endTime, int? excludeScheduleId)
+        {
+            // Returns the rooms to the frontend as JSON so the dropdown stops throwing an error
+            var rooms = _context.Rooms.Select(r => new {
+                roomId = r.RoomId,
+                name = r.Name
+            }).ToList();
+
+            return new JsonResult(rooms);
+        }
+
         public IActionResult OnPost()
         {
             var activeUserString = HttpContext.Session.GetString("ActiveUser");
@@ -150,6 +162,15 @@ namespace FTLSV2.Pages.Chairman
             ActiveSubjects = _context.Subjects.ToList();
             AllRooms = _context.Rooms.ToList();
 
+            // ---> FIXED: Populated the Academic Years list so the UI dropdown isn't blank
+            AvailableAcademicYears = new List<string>
+            {
+                "2023-2024",
+                "2024-2025",
+                "2025-2026",
+                "2026-2027"
+            };
+
             CurrentSchedules = _context.Schedules.Select(s => new AssignedLoad
             {
                 ScheduleId = s.ScheduleId,
@@ -159,7 +180,6 @@ namespace FTLSV2.Pages.Chairman
                 SubjectTitle = s.Subject.Title,
                 Schedule = s.TimeSlot,
                 RoomName = s.Room != null ? s.Room.Name : "No room",
-                // Mapped the missing properties here
                 OfferCode = s.OfferCode,
                 AcademicYear = s.AcademicYear,
                 Semester = s.Semester,
@@ -177,8 +197,6 @@ namespace FTLSV2.Pages.Chairman
             public string SubjectTitle { get; set; }
             public string Schedule { get; set; }
             public string RoomName { get; set; }
-
-            // Added these to resolve CS1061 errors in your view
             public int? OfferCode { get; set; }
             public string AcademicYear { get; set; }
             public string Semester { get; set; }
