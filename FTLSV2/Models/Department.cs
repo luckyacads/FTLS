@@ -23,7 +23,7 @@ namespace FTLSV2.Models
         public string? Name { get; set; }
 
         [Column("created_at")]
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         [ForeignKey(nameof(SchoolId))]
         public School? School { get; set; }

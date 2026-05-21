@@ -18,6 +18,7 @@ namespace FTLSV2.Models
         public string Name { get; set; } = string.Empty;
 
         [Column("created_at")]
-        public DateTime CreatedAt { get; set; }
+        // ---> FIXED: Added auto-timestamp to prevent -Infinity issues on creation
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
