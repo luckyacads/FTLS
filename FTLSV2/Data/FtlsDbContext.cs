@@ -28,26 +28,16 @@ namespace FTLSV2.Data
             {
                 entity.ToTable("users");
 
-                // Keep users.id as the internal primary key for now.
-                entity.HasKey(e => e.Id);
+                // FacultyId is now the official Primary Key
+                entity.HasKey(e => e.FacultyId);
 
-                entity.Property(e => e.Id).HasColumnName("id");
-
-                // Visible 5-digit Faculty ID used for login and schedule ownership.
-                entity.Property(e => e.FacultyId)
-                      .HasColumnName("faculty_id")
-                      .HasMaxLength(20);
-
-                entity.HasIndex(e => e.FacultyId)
-                      .IsUnique();
-
+                entity.Property(e => e.FacultyId).HasColumnName("faculty_id");
                 entity.Property(e => e.Password).HasColumnName("password");
                 entity.Property(e => e.Role).HasColumnName("role");
                 entity.Property(e => e.Email).HasColumnName("email");
                 entity.Property(e => e.FirstName).HasColumnName("first_name");
                 entity.Property(e => e.LastName).HasColumnName("last_name");
                 entity.Property(e => e.Status).HasColumnName("status");
-                entity.Property(e => e.CreatedAt).HasColumnName("created_at");
                 entity.Property(e => e.MaxUnits).HasColumnName("max_units");
                 entity.Property(e => e.CurrentUnits).HasColumnName("current_units");
                 entity.Property(e => e.SchoolId).HasColumnName("school_id");
@@ -126,12 +116,7 @@ namespace FTLSV2.Data
                 entity.HasKey(e => e.ScheduleId);
 
                 entity.Property(e => e.ScheduleId).HasColumnName("schedule_id");
-
-                // schedule.faculty_id now references users.faculty_id, not users.id.
-                entity.Property(e => e.FacultyId)
-                      .HasColumnName("faculty_id")
-                      .HasMaxLength(20);
-
+                entity.Property(e => e.FacultyId).HasColumnName("faculty_id");
                 entity.Property(e => e.SubjectId).HasColumnName("subject_id");
                 entity.Property(e => e.RoomId).HasColumnName("room_id");
                 entity.Property(e => e.TimeSlot).HasColumnName("time_slot");
@@ -140,12 +125,10 @@ namespace FTLSV2.Data
                 entity.Property(e => e.AcademicYear).HasColumnName("academic_year");
                 entity.Property(e => e.Semester).HasColumnName("semester");
 
-                // Critical relationship:
-                // Schedule.FacultyId points to User.FacultyId.
+                // Schedule.FacultyId points directly to User.FacultyId
                 entity.HasOne(e => e.Faculty)
                       .WithMany()
-                      .HasForeignKey(e => e.FacultyId)
-                      .HasPrincipalKey(u => u.FacultyId);
+                      .HasForeignKey(e => e.FacultyId);
 
                 entity.HasOne(e => e.Subject)
                       .WithMany()

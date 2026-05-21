@@ -10,10 +10,9 @@ namespace FTLSV2.Models
         [Column("schedule_id")]
         public int ScheduleId { get; set; }
 
-        // Runtime DB confirms this column is varchar.
-        // This stores users.faculty_id, not users.id.
+        // FIXED: Changed to int to perfectly match the User model
         [Column("faculty_id")]
-        public string FacultyId { get; set; } = string.Empty;
+        public int FacultyId { get; set; }
 
         [Column("subject_id")]
         public int SubjectId { get; set; }

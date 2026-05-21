@@ -9,7 +9,6 @@ namespace FTLSV2.Pages.Teacher
 {
     public class AccountSettingsModel : PageModel
     {
-
         private readonly FtlsDbContext _context;
 
         public AccountSettingsModel(FtlsDbContext context)
@@ -30,8 +29,11 @@ namespace FTLSV2.Pages.Teacher
 
         public IActionResult OnGet()
         {
-            var activeId = HttpContext.Session.GetString("ActiveUser");
-            if (string.IsNullOrEmpty(activeId)) return RedirectToPage("/LoginPage");
+            var activeIdString = HttpContext.Session.GetString("ActiveUser");
+            if (string.IsNullOrEmpty(activeIdString)) return RedirectToPage("/LoginPage");
+
+            // FIXED: Parse string to int to match FacultyId property type
+            int activeId = int.Parse(activeIdString);
 
             LoggedInUser = _context.Users.FirstOrDefault(u => u.FacultyId == activeId);
             return Page();
@@ -39,10 +41,15 @@ namespace FTLSV2.Pages.Teacher
 
         public IActionResult OnPostChangePassword()
         {
-            var activeId = HttpContext.Session.GetString("ActiveUser");
-            if (string.IsNullOrEmpty(activeId)) return RedirectToPage("/LoginPage");
+            var activeIdString = HttpContext.Session.GetString("ActiveUser");
+            if (string.IsNullOrEmpty(activeIdString)) return RedirectToPage("/LoginPage");
+
+            // FIXED: Parse string to int
+            int activeId = int.Parse(activeIdString);
 
             LoggedInUser = _context.Users.FirstOrDefault(u => u.FacultyId == activeId);
+
+            if (LoggedInUser == null) return RedirectToPage("/LoginPage");
 
             // Check if they typed their old password correctly
             if (LoggedInUser.Password != CurrentPassword)
@@ -51,7 +58,7 @@ namespace FTLSV2.Pages.Teacher
                 return Page();
             }
 
-            // Save the new password to NeonDB
+            // Save the new password
             LoggedInUser.Password = NewPassword;
             _context.SaveChanges();
 

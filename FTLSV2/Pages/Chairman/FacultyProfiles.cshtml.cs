@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Collections.Generic;
 using System.Linq;
 using FTLSV2.Data;
+using Microsoft.AspNetCore.Http;
 
 namespace FTLSV2.Pages.Chairman
 {
@@ -14,9 +15,9 @@ namespace FTLSV2.Pages.Chairman
             _db = db;
         }
 
+        // FIXED: FacultyId is now an int. Removed unused 'Id' property.
         public record FacultyView(
-            int Id,
-            string FacultyId,
+            int FacultyId,
             string Name,
             string Role,
             string CurrentUnitsDisplay
@@ -26,14 +27,16 @@ namespace FTLSV2.Pages.Chairman
 
         public void OnGet()
         {
-            // Logged-in user from session
-            var activeFacultyId = HttpContext.Session.GetString("ActiveUser");
+            var activeFacultyIdString = HttpContext.Session.GetString("ActiveUser");
 
-            if (string.IsNullOrEmpty(activeFacultyId))
+            if (string.IsNullOrEmpty(activeFacultyIdString))
             {
                 FacultyList = new List<FacultyView>();
                 return;
             }
+
+            // FIXED: Parse the session string to an integer
+            int activeFacultyId = int.Parse(activeFacultyIdString);
 
             // Get chairman viewing the page
             var chairman = _db.Users.FirstOrDefault(u =>
@@ -67,7 +70,6 @@ namespace FTLSV2.Pages.Chairman
                         .Sum(s => (int?)s.AssignedUnits);
 
                     return new FacultyView(
-                        u.Id,
                         u.FacultyId,
                         $"{u.FirstName} {u.LastName}",
                         u.Role,

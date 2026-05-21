@@ -5,7 +5,7 @@ using FTLSV2.Models;
 using Microsoft.AspNetCore.Http;
 using System.Linq;
 
-namespace FTLSV2.Pages.Chairman // <-- Updated Namespace!
+namespace FTLSV2.Pages.Chairman
 {
     public class AccountSettingsModel : PageModel
     {
@@ -29,8 +29,11 @@ namespace FTLSV2.Pages.Chairman // <-- Updated Namespace!
 
         public IActionResult OnGet()
         {
-            var activeId = HttpContext.Session.GetString("ActiveUser");
-            if (string.IsNullOrEmpty(activeId)) return RedirectToPage("/LoginPage");
+            var activeIdString = HttpContext.Session.GetString("ActiveUser");
+            if (string.IsNullOrEmpty(activeIdString)) return RedirectToPage("/LoginPage");
+
+            // FIXED: Parse the session string into an integer to match the FacultyId type
+            int activeId = int.Parse(activeIdString);
 
             LoggedInUser = _context.Users.FirstOrDefault(u => u.FacultyId == activeId);
             return Page();
@@ -38,8 +41,11 @@ namespace FTLSV2.Pages.Chairman // <-- Updated Namespace!
 
         public IActionResult OnPostChangePassword()
         {
-            var activeId = HttpContext.Session.GetString("ActiveUser");
-            if (string.IsNullOrEmpty(activeId)) return RedirectToPage("/LoginPage");
+            var activeIdString = HttpContext.Session.GetString("ActiveUser");
+            if (string.IsNullOrEmpty(activeIdString)) return RedirectToPage("/LoginPage");
+
+            // FIXED: Parse the session string into an integer
+            int activeId = int.Parse(activeIdString);
 
             LoggedInUser = _context.Users.FirstOrDefault(u => u.FacultyId == activeId);
 

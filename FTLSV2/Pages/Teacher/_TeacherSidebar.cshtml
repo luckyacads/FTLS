@@ -3,10 +3,11 @@
 @inject FtlsDbContext _context
 
 @{
-    var userId = Context.Session.GetString("ActiveUser");
+    var userIdString = Context.Session.GetString("ActiveUser");
     User loggedUser = null;
 
-    if (!string.IsNullOrEmpty(userId))
+    // FIXED: Parse the string session ID into an int to match the FacultyId type
+    if (!string.IsNullOrEmpty(userIdString) && int.TryParse(userIdString, out int userId))
     {
         loggedUser = _context.Users.FirstOrDefault(u => u.FacultyId == userId);
     }
@@ -85,13 +86,11 @@
     @await RenderSectionAsync("Scripts", required: false)
 
     <script>
-        // If the browser loads this page from the Back-Forward Cache (bfcache)
-        window.addEventListener('pageshow', function (event) {
-            if (event.persisted) {
-                // Force a hard reload so the C# Server can kick them out!
-                window.location.reload(true);
-            }
-        });
+            window.addEventListener('pageshow', function (event) {
+                if (event.persisted) {
+                    window.location.reload(true);
+                }
+            });
     </script>
 </body>
 </html>

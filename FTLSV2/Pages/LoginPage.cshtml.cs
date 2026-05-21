@@ -1,20 +1,19 @@
 using FTLSV2.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
+using System.Linq;
 
 namespace FTLSV2.Pages
 {
     public class LoginPageModel : PageModel
     {
-        // --- ADD THESE LINES HERE ---
         private readonly FtlsDbContext _context;
 
         public LoginPageModel(FtlsDbContext context)
         {
             _context = context;
         }
-        // ----------------------------
 
         [BindProperty]
         public string Username { get; set; }
@@ -33,14 +32,19 @@ namespace FTLSV2.Pages
             Username = Username?.Trim() ?? string.Empty;
             Password = Password?.Trim() ?? string.Empty;
 
+            // Security check: Make sure it's exactly 5 numbers
             if (string.IsNullOrEmpty(Username) || Username.Length != 5 || !Username.All(char.IsDigit))
             {
                 ErrorMessage = "Faculty ID must be exactly 5 digits.";
                 return Page();
             }
 
+            // Convert the string username to an integer to match the new database schema
+            int activeUserId = int.Parse(Username);
+
+            // Query using the integer ID
             var dbUser = _context.Users.FirstOrDefault(u =>
-                u.FacultyId == Username &&
+                u.FacultyId == activeUserId &&
                 u.Password == Password);
 
             if (dbUser != null)
@@ -51,7 +55,8 @@ namespace FTLSV2.Pages
                     return Page();
                 }
 
-                HttpContext.Session.SetString("ActiveUser", dbUser.FacultyId);
+                // Convert FacultyId back to a string just for the Session memory
+                HttpContext.Session.SetString("ActiveUser", dbUser.FacultyId.ToString());
                 HttpContext.Session.SetString("ActiveUserName", dbUser.FirstName + " " + dbUser.LastName);
                 HttpContext.Session.SetString("ActiveUserEmail", dbUser.Email);
                 HttpContext.Session.SetString("UserRole", dbUser.Role);
@@ -74,13 +79,9 @@ namespace FTLSV2.Pages
             return Page();
         }
 
-        // This runs when someone clicks the Logout button
         public IActionResult OnGetLogout()
         {
-            // 1. Wipe the memory!
             HttpContext.Session.Clear();
-
-            // 2. Send them back to a fresh login screen
             return RedirectToPage("/LoginPage");
         }
     }

@@ -17,7 +17,6 @@
     <table class="table-light">
         <thead>
             <tr>
-                <th>ID</th>
                 <th>Faculty ID</th>
                 <th>Name</th>
                 <th>Role</th>
@@ -26,14 +25,22 @@
         </thead>
 
         <tbody>
-            @foreach (var f in Model.FacultyList)
+            @if (Model.FacultyList != null && Model.FacultyList.Any())
+            {
+                @foreach (var f in Model.FacultyList)
+                {
+                    <tr>
+                        <td>@f.FacultyId</td>
+                        <td>@f.Name</td>
+                        <td>@f.Role</td>
+                        <td>@f.CurrentUnitsDisplay</td>
+                    </tr>
+                }
+            }
+            else
             {
                 <tr>
-                    <td>@f.Id</td>
-                    <td>@f.FacultyId</td>
-                    <td>@f.Name</td>
-                    <td>@f.Role</td>
-                    <td>@f.CurrentUnitsDisplay</td>
+                    <td colspan="4" style="text-align: center;">No faculty members found.</td>
                 </tr>
             }
         </tbody>

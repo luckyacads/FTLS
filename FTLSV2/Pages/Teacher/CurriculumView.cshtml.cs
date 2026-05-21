@@ -20,7 +20,6 @@ namespace FTLSV2.Pages.Teacher
 
         public User LoggedInUser { get; set; }
 
-        // Kept as List<Curriculum> so your HTML loop works perfectly
         public List<Curriculum> MySubjects { get; set; } = new List<Curriculum>();
 
         public IList<Department> AllDepartments { get; set; }
@@ -28,8 +27,11 @@ namespace FTLSV2.Pages.Teacher
 
         public IActionResult OnGet()
         {
-            var activeId = HttpContext.Session.GetString("ActiveUser");
-            if (string.IsNullOrEmpty(activeId)) return RedirectToPage("/LoginPage");
+            var activeIdString = HttpContext.Session.GetString("ActiveUser");
+            if (string.IsNullOrEmpty(activeIdString)) return RedirectToPage("/LoginPage");
+
+            // FIXED: Parse the session string into an integer to match FacultyId
+            int activeId = int.Parse(activeIdString);
 
             LoggedInUser = _context.Users.FirstOrDefault(u => u.FacultyId == activeId);
             if (LoggedInUser == null) return RedirectToPage("/LoginPage");
@@ -41,8 +43,7 @@ namespace FTLSV2.Pages.Teacher
                 .ThenBy(c => c.Semester)
                 .ToList();
 
-            // 2. Manually link Subjects in C# so the HTML still gets the Code/Title/Units, 
-            // without requiring a database Foreign Key!
+            // 2. Manually link Subjects in C#
             var allSubjects = _context.Subjects.ToList();
             foreach (var item in MySubjects)
             {

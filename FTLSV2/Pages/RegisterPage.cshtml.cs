@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 namespace FTLSV2.Pages
 {
@@ -19,7 +20,7 @@ namespace FTLSV2.Pages
 
         [BindProperty]
         [Required(ErrorMessage = "Faculty ID is required.")]
-        [StringLength(8, MinimumLength = 8, ErrorMessage = "Faculty ID must be exactly 8 characters.")]
+        // Property name now matches asp-for="FacultyId" in your HTML
         public string FacultyId { get; set; } = string.Empty;
 
         [BindProperty]
@@ -39,7 +40,6 @@ namespace FTLSV2.Pages
         [Required(ErrorMessage = "Department is required.")]
         public int? DepartmentId { get; set; }
 
-        // ---> NEW: Added School Property
         [BindProperty]
         [Required(ErrorMessage = "School is required.")]
         public int? SchoolId { get; set; }
@@ -56,31 +56,31 @@ namespace FTLSV2.Pages
         public string SuccessMessage { get; set; } = string.Empty;
 
         public List<Department> AvailableDepartments { get; set; } = new List<Department>();
-        // ---> NEW: A list to hold the schools from the database
         public List<School> AvailableSchools { get; set; } = new List<School>();
 
         public void OnGet()
         {
-            // Fetch departments and schools from database and sort them
             AvailableDepartments = _context.Departments.OrderBy(d => d.Name).ToList();
             AvailableSchools = _context.Schools.OrderBy(s => s.Name).ToList();
         }
 
         public IActionResult OnPost()
         {
-            FacultyId = FacultyId?.Trim() ?? string.Empty;
             FirstName = FirstName?.Trim() ?? string.Empty;
             LastName = LastName?.Trim() ?? string.Empty;
             Email = Email?.Trim().ToLower() ?? string.Empty;
 
-            // Re-fetch lists in case the page reloads due to an error
             AvailableDepartments = _context.Departments.OrderBy(d => d.Name).ToList();
             AvailableSchools = _context.Schools.OrderBy(s => s.Name).ToList();
 
-            if (!ModelState.IsValid)
+            // Validate the Faculty ID
+            if (!int.TryParse(FacultyId, out int parsedFacultyId) || FacultyId.Length != 5)
             {
+                ErrorMessage = "Faculty ID must be exactly 5 digits.";
                 return Page();
             }
+
+            if (!ModelState.IsValid) return Page();
 
             if (Password != ConfirmPassword)
             {
@@ -88,7 +88,8 @@ namespace FTLSV2.Pages
                 return Page();
             }
 
-            bool facultyIdExists = _context.Users.Any(u => u.FacultyId == FacultyId);
+            // Database checks
+            bool facultyIdExists = _context.Users.Any(u => u.FacultyId == parsedFacultyId);
             if (facultyIdExists)
             {
                 ErrorMessage = "Faculty ID already exists.";
@@ -104,37 +105,30 @@ namespace FTLSV2.Pages
 
             var newUser = new User
             {
-                FacultyId = FacultyId,
+                FacultyId = parsedFacultyId,
                 FirstName = FirstName,
                 LastName = LastName,
                 Email = Email,
                 Password = Password,
-
-                // HARDCODED ROLE: Self-registered users default to Teacher
                 Role = "Faculty",
-
                 DepartmentId = DepartmentId,
                 SchoolId = SchoolId,
-
                 Status = "Pending",
                 MaxUnits = 24,
                 CurrentUnits = 0,
-                // ---> REMOVED CreatedBy and CreatedByRole <---
                 CreatedAt = DateTime.UtcNow
             };
 
             _context.Users.Add(newUser);
             _context.SaveChanges();
 
-            SuccessMessage = "Registration submitted successfully. Please wait for account approval before logging in.";
+            SuccessMessage = "Registration submitted successfully. Please wait for account approval.";
 
             ModelState.Clear();
             FacultyId = string.Empty;
             FirstName = string.Empty;
             LastName = string.Empty;
             Email = string.Empty;
-            DepartmentId = null;
-            SchoolId = null; // Clear school dropdown
             Password = string.Empty;
             ConfirmPassword = string.Empty;
 

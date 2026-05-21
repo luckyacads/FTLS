@@ -376,11 +376,11 @@
                                     class="btn-edit"
                                     onclick='openEditScheduleModal(
                                 @load.ScheduleId,
-                                @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.FacultyId ?? "")),
+                                @load.FacultyId,
                                 @load.SubjectId,
                                 @(load.RoomId ?? 0),
                                 @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.Schedule ?? "")),
-                                @(load.OfferCode.HasValue ? load.OfferCode.Value.ToString() : "null"),
+                                @(load.OfferCode ?? 0),
                                 @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.AcademicYear ?? ""))
                                 )'>
                                 Edit
@@ -410,7 +410,6 @@
     </table>
 </div>
 
-<!-- EDIT SCHEDULE MODAL -->
 <div id="editScheduleModal" class="modal-overlay">
     <div class="modal-card">
         <div class="modal-header">
@@ -522,12 +521,10 @@
     </div>
 </div>
 
-<!-- DELETE SCHEDULE FORM -->
 <form method="post" asp-page-handler="DeleteSchedule" id="deleteScheduleForm" style="display:none;">
     <input type="hidden" asp-for="DeleteScheduleId" id="deleteScheduleId" />
 </form>
 
-<!-- DELETE CONFIRMATION MODAL -->
 <div id="deleteScheduleModal" class="modal-overlay">
     <div class="modal-card modal-card-small">
         <h3 class="delete-title">Are you sure?</h3>

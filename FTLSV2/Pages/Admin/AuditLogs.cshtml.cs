@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using FTLSV2.Data;
+using FTLSV2.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,6 +26,7 @@ namespace FTLSV2.Pages.Admin
             Logs = users
                 .Select(u => new AuditLogView
                 {
+                    // Now safely using the CreatedAt property from your updated User model
                     Timestamp = u.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
                     Username = string.IsNullOrWhiteSpace(u.CreatedByRole)
                         ? "System / Self-Registered"

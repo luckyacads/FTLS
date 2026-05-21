@@ -2,63 +2,55 @@
 @using FTLSV2.Models
 @inject FtlsDbContext _context
 @{
-    var userId = Context.Session.GetString("ActiveUser");
+    var userIdString = Context.Session.GetString("ActiveUser");
     User loggedUser = null;
 
-    if (!string.IsNullOrEmpty(userId))
+    // FIXED: Parse the string ID into an int so it can be compared to u.FacultyId
+    if (!string.IsNullOrEmpty(userIdString) && int.TryParse(userIdString, out int userId))
     {
         loggedUser = _context.Users.FirstOrDefault(u => u.FacultyId == userId);
     }
 }
 
-@* @{
-    var test = Context.Session.GetString("UserId");
-}
-<div style="color:red;">DEBUG: @test</div> --> *@
-
 <!DOCTYPE html>
 <html lang="en">
-
-    <style>
-
-        /* SIDEBAR NAV STYLE */
-        .sidebar nav a {
-            display: block;
-            padding: 8px 12px;
-            border-radius: 6px;
-            color: #ffffff;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
-            line-height: 1.2;
-            transition: all 0.2s ease;
-        }
-
-        /* spacing between items */
-        .sidebar nav a:not(:last-child) {
-            margin-bottom: 4px; /* tighter than before */
-        }
-
-        /* HOVER + ACTIVE */
-        .sidebar nav a:hover,
-        .sidebar nav a.active {
-            background: #f1c40f !important;
-            color: #07362d !important;
-        }
-
-        .custom-footer {
-        margin-top: 40px;
-        padding: 16px 0;
-        text-align: center;
-        font-size: 13px;
-        color: #6b7280;
-        border-top: 1px solid #e5e7eb;
-}
-    </style>
-
-
 <head>
+    <style>
+            /* SIDEBAR NAV STYLE */
+            .sidebar nav a {
+                display: block;
+                padding: 8px 12px;
+                border-radius: 6px;
+                color: #ffffff;
+                text-decoration: none;
+                font-size: 14px;
+                font-weight: 500;
+                font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
+                line-height: 1.2;
+                transition: all 0.2s ease;
+            }
+
+                /* spacing between items */
+                .sidebar nav a:not(:last-child) {
+                    margin-bottom: 4px;
+                }
+
+                /* HOVER + ACTIVE */
+                .sidebar nav a:hover,
+                .sidebar nav a.active {
+                    background: #f1c40f !important;
+                    color: #07362d !important;
+                }
+
+            .custom-footer {
+                margin-top: 40px;
+                padding: 16px 0;
+                text-align: center;
+                font-size: 13px;
+                color: #6b7280;
+                border-top: 1px solid #e5e7eb;
+            }
+    </style>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - FTLSV2</title>
@@ -102,91 +94,39 @@
     {
         <div class="admin-container">
             <aside class="sidebar">
-                <!-- CYAN HEADER -->
-                <div style="
-                    padding:16px 12px;
-                    text-align:center;
-                    background: rgba(255,255,255,0.08);
-                    border-bottom: 1px solid rgba(255,255,255,0.1);
-                    ">
-                    <h2 style="
-                        margin:0;
-                        font-size:18px;
-                        font-weight:600;
-                        color:#ffffff;
-                        letter-spacing:0.5px;
-                        ">
+                <div style="padding:16px 12px; text-align:center; background: rgba(255,255,255,0.08); border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <h2 style="margin:0; font-size:18px; font-weight:600; color:#ffffff; letter-spacing:0.5px;">
                         Administrator
                     </h2>
                 </div>
                 @if (loggedUser != null)
                 {
-                    <div style="
-                        width:70px;
-                        height:70px;
-                        border-radius:50%;
-                        background:#f1c40f;          /* changed to yellow */
-                        color:#07362d;               /* keep dark green text */
-                        display:flex;
-                        align-items:center;
-                        justify-content:center;
-                        font-weight:700;
-                        font-size:22px;
-                        margin: 15px auto 10px auto;
-                        ">
+                    <div style="width:70px; height:70px; border-radius:50%; background:#f1c40f; color:#07362d; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:22px; margin: 15px auto 10px auto;">
                         @loggedUser.FirstName[0]@loggedUser.LastName[0]
                     </div>
 
-                    <div style="
-                        text-align:center;
-                        margin-bottom: 25px;
-                        color:#f1c40f;               /* changed to yellow */
-                        ">
-
-                        <div style="
-                            font-size:18px;
-                            font-weight:600;
-                            line-height:1.2;
-                            ">
+                    <div style="text-align:center; margin-bottom: 25px; color:#f1c40f;">
+                        <div style="font-size:18px; font-weight:600; line-height:1.2;">
                             @loggedUser.FirstName @loggedUser.LastName
                         </div>
 
-                        <div style="
-                            font-size:15px;
-                            margin-top:6px;
-                            font-weight:500;
-                            ">
+                        <div style="font-size:15px; margin-top:6px; font-weight:500;">
                             ID: @loggedUser.FacultyId
                         </div>
 
-                        <div style="
-                            font-size:14px;
-                            margin-top:4px;
-                            opacity:0.9;
-                            ">
+                        <div style="font-size:14px; margin-top:4px; opacity:0.9;">
                             @loggedUser.Email
                         </div>
 
-                        <div style="
-                        height:1px;
-                        width:80%;
-                        margin: 10px auto 20px auto;
-                        background: rgba(255,255,255,0.15);
-                        "></div>
-
+                        <div style="height:1px; width:80%; margin: 10px auto 20px auto; background: rgba(255,255,255,0.15);"></div>
                     </div>
                 }
-                <nav style="
-                    display:flex;
-                    flex-direction:column;
-                    ">
+                <nav style="display:flex; flex-direction:column;">
                     <a asp-page="/Admin/AdminPage" class="@(Context.Request.Path.StartsWithSegments("/Admin/AdminPage", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">User Management</a>
                     <a asp-page="/Admin/ManageDepartments" class="@(Context.Request.Path.StartsWithSegments("/Admin/ManageDepartments", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">Manage Departments</a>
                     <a asp-page="/Admin/RoomRegistry" class="@(Context.Request.Path.StartsWithSegments("/Admin/RoomRegistry", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">Room Registry</a>
                     <a asp-page="/Admin/AuditLogs" class="@(Context.Request.Path.StartsWithSegments("/Admin/AuditLogs", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">Audit Logs</a>
-                    <a asp-page="/LoginPage" class="logout" style="margin-top: 10px;">
-                        Logout
-                    </a>
+                    <a asp-page="/LoginPage" class="logout" style="margin-top: 10px;">Logout</a>
                 </nav>
             </aside>
 
@@ -219,14 +159,11 @@
 
     @await RenderSectionAsync("Scripts", required: false)
     <script>
-        // If the browser loads this page from the Back-Forward Cache (bfcache)
-        window.addEventListener('pageshow', function (event) {
-            if (event.persisted) {
-                // Force a hard reload so the C# Server can kick them out!
-                window.location.reload(true);
-            }
-        });
+            window.addEventListener('pageshow', function (event) {
+                if (event.persisted) {
+                    window.location.reload(true);
+                }
+            });
     </script>
-
 </body>
 </html>

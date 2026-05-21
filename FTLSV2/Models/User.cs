@@ -1,6 +1,6 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System;
 
 namespace FTLSV2.Models
 {
@@ -8,18 +8,9 @@ namespace FTLSV2.Models
     public class User
     {
         [Key]
-        [Column("id")]
-        public int Id { get; set; }
-
-        // Visible 5-digit Faculty ID used for login and schedule ownership
         [Column("faculty_id")]
-        public string FacultyId { get; set; } = string.Empty;
-
-        [Column("password")]
-        public string Password { get; set; } = string.Empty;
-
-        [Column("role")]
-        public string Role { get; set; } = string.Empty;
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        public int FacultyId { get; set; }
 
         [Column("email")]
         public string Email { get; set; } = string.Empty;
@@ -30,17 +21,11 @@ namespace FTLSV2.Models
         [Column("last_name")]
         public string LastName { get; set; } = string.Empty;
 
-        [Column("status")]
-        public string Status { get; set; } = string.Empty;
-
-        [Column("created_at")]
-        public DateTime CreatedAt { get; set; }
+        [Column("password")]
+        public string Password { get; set; } = string.Empty;
 
         [Column("max_units")]
         public int MaxUnits { get; set; }
-
-        [Column("current_units")]
-        public int? CurrentUnits { get; set; }
 
         [Column("school_id")]
         public int? SchoolId { get; set; }
@@ -48,7 +33,19 @@ namespace FTLSV2.Models
         [Column("department_id")]
         public int? DepartmentId { get; set; }
 
+        [Column("current_units")]
+        public int CurrentUnits { get; set; }
+
+        [Column("role")]
+        public string Role { get; set; } = string.Empty;
+
+        [Column("status")]
+        public string Status { get; set; } = string.Empty;
+
         [Column("created_by_role")]
         public string? CreatedByRole { get; set; }
+
+        [Column("created_at")]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

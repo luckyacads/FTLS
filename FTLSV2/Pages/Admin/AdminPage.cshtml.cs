@@ -22,8 +22,8 @@ namespace FTLSV2.Pages.Admin
         public User LoggedInUser { get; set; }
         public IList<User> DbUsers { get; set; } = new List<User>();
 
-        // Dictionary to tell the frontend if a user has schedules
-        public Dictionary<string, bool> UserHasSchedules { get; set; } = new();
+        // Now correctly uses 'int' as the key
+        public Dictionary<int, bool> UserHasSchedules { get; set; } = new();
 
         [BindProperty] public int InputMaxOverload { get; set; }
 
@@ -33,23 +33,25 @@ namespace FTLSV2.Pages.Admin
             Response.Headers.Append("Pragma", "no-cache");
             Response.Headers.Append("Expires", "0");
 
-            var activeId = HttpContext.Session.GetString("ActiveUser");
+            var activeIdString = HttpContext.Session.GetString("ActiveUser");
 
-            if (string.IsNullOrEmpty(activeId))
+            if (string.IsNullOrEmpty(activeIdString))
             {
                 return RedirectToPage("/LoginPage");
             }
 
+            // Convert the session string into an integer for DB queries
+            int activeId = int.Parse(activeIdString);
+
             DbUsers = _context.Users
-                .OrderByDescending(u => u.CreatedAt)
+                .OrderByDescending(u => u.FacultyId)
                 .ToList();
 
+            // Compare using the parsed integer
             LoggedInUser = _context.Users
                 .FirstOrDefault(u => u.FacultyId == activeId);
 
-            // schedule.faculty_id now references users.faculty_id, not users.id.
             var facultyIds = DbUsers
-                .Where(u => !string.IsNullOrWhiteSpace(u.FacultyId))
                 .Select(u => u.FacultyId)
                 .ToList();
 
@@ -61,9 +63,8 @@ namespace FTLSV2.Pages.Admin
 
             foreach (var user in DbUsers)
             {
-                UserHasSchedules[user.FacultyId] =
-                    !string.IsNullOrWhiteSpace(user.FacultyId) &&
-                    facultiesWithSchedules.Contains(user.FacultyId);
+                // No string.IsNullOrWhiteSpace check needed since it's an int
+                UserHasSchedules[user.FacultyId] = facultiesWithSchedules.Contains(user.FacultyId);
             }
 
             var settings = _context.SystemSettings.FirstOrDefault();
@@ -81,7 +82,8 @@ namespace FTLSV2.Pages.Admin
         }
 
         // --- HANDLES ACTIVATING / DEACTIVATING USERS ---
-        public IActionResult OnPostToggleUserStatus(string facultyId)
+        // Parameter updated to int
+        public IActionResult OnPostToggleUserStatus(int facultyId)
         {
             var dbUser = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
 
@@ -111,7 +113,8 @@ namespace FTLSV2.Pages.Admin
         }
 
         // --- ASSIGN / UPDATE USER ROLE ---
-        public IActionResult OnPostUpdateUserRole(string facultyId, string newRole)
+        // Parameter updated to int
+        public IActionResult OnPostUpdateUserRole(int facultyId, string newRole)
         {
             var allowedRoles = new[] { "Faculty", "Chairman" };
 
@@ -183,7 +186,8 @@ namespace FTLSV2.Pages.Admin
         }
 
         // --- UPDATE USER MAX UNITS ---
-        public IActionResult OnPostUpdateUserUnits(string facultyId, int newUnits)
+        // Parameter updated to int
+        public IActionResult OnPostUpdateUserUnits(int facultyId, int newUnits)
         {
             var user = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
 
@@ -208,7 +212,8 @@ namespace FTLSV2.Pages.Admin
         }
 
         // --- RESET USER PASSWORD ---
-        public IActionResult OnPostResetPassword(string facultyId)
+        // Parameter updated to int
+        public IActionResult OnPostResetPassword(int facultyId)
         {
             var dbUser = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
 
@@ -224,13 +229,13 @@ namespace FTLSV2.Pages.Admin
         }
 
         // --- DELETE USER ---
-        public IActionResult OnPostDeleteUser(string facultyId)
+        // Parameter updated to int
+        public IActionResult OnPostDeleteUser(int facultyId)
         {
             var dbUser = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
 
             if (dbUser != null)
             {
-                // schedule.faculty_id now stores the 5-digit faculty ID.
                 var userSchedules = _context.Schedules
                     .Where(s => s.FacultyId == dbUser.FacultyId)
                     .ToList();

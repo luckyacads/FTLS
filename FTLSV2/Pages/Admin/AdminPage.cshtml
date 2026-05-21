@@ -7,11 +7,11 @@
 
 <head>
     <script>
-        if (localStorage.getItem('userStatus') === 'loggedOut') {
-            window.location.replace('/LoginPage');
-        } else {
-            localStorage.setItem('userStatus', 'loggedIn');
-        }
+            if (localStorage.getItem('userStatus') === 'loggedOut') {
+                window.location.replace('/LoginPage');
+            } else {
+                localStorage.setItem('userStatus', 'loggedIn');
+            }
     </script>
 </head>
 
@@ -256,7 +256,7 @@
                         var statusText = string.IsNullOrEmpty(user.Status) ? "Pending" : user.Status;
                         var statusClass = statusText == "Active" ? "green" : (statusText == "Pending" ? "yellow" : "red");
 
-                        // Check if this user has schedules based on the backend dictionary
+                        // FIXED: Uses the clean integer faculty ID instead of a string conversion
                         bool hasSched = Model.UserHasSchedules.ContainsKey(user.FacultyId) && Model.UserHasSchedules[user.FacultyId];
 
                         <tr>
@@ -298,7 +298,7 @@
                             </td>
 
                             <td style="text-align:right; position:relative;">
-                                <button onclick="toggleUserMenu('@user.FacultyId', event)" style="background:none; border:none; cursor:pointer; font-size:18px; padding: 5px;">⋮</button>
+                                <button onclick="toggleUserMenu('@user.FacultyId.ToString()', event)" style="background:none; border:none; cursor:pointer; font-size:18px; padding: 5px;">⋮</button>
 
                                 <div id="menu-@user.FacultyId" class="dropdown-menu">
 
@@ -306,11 +306,11 @@
                                     {
                                         var currentRole = string.IsNullOrEmpty(user.Role) ? "Faculty" : user.Role;
 
-                                        <button onclick="openRoleModal('@user.FacultyId', '@currentRole')" class="dropdown-item-btn">
+                                        <button onclick="openRoleModal('@user.FacultyId.ToString()', '@currentRole')" class="dropdown-item-btn">
                                             Change Role
                                         </button>
 
-                                        <button onclick="openEditModal('@user.FacultyId', '@user.MaxUnits', @Model.InputMaxOverload)" class="dropdown-item-btn">
+                                        <button onclick="openEditModal('@user.FacultyId.ToString()', '@user.MaxUnits', @Model.InputMaxOverload)" class="dropdown-item-btn">
                                             Edit Units
                                         </button>
                                     }
@@ -329,7 +329,7 @@
 
                                     <form id="deleteForm-@user.FacultyId" method="post" asp-page-handler="DeleteUser" style="margin: 0;">
                                         <input type="hidden" name="facultyId" value="@user.FacultyId" />
-                                        <button type="button" class="dropdown-item-btn" style="color:red;" onclick="showDeleteModal('@user.FacultyId', @hasSched.ToString().ToLower())">Delete User</button>
+                                        <button type="button" class="dropdown-item-btn" style="color:red;" onclick="showDeleteModal('@user.FacultyId.ToString()', @hasSched.ToString().ToLower())">Delete User</button>
                                     </form>
                                 </div>
                             </td>

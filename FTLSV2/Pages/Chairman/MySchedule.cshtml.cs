@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using FTLSV2.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System; // Added for DateTime formatting
+using System;
 
 namespace FTLSV2.Pages.Chairman
 {
@@ -30,7 +30,6 @@ namespace FTLSV2.Pages.Chairman
         public List<SubjectGroup> SubjectHistory { get; set; } = new();
         public List<string> AvailableYears { get; set; } = new();
 
-        // Summary statistics
         public int TotalUnits { get; set; }
         public int TotalClasses { get; set; }
         public string CurrentAcademicYear { get; set; }
@@ -40,12 +39,15 @@ namespace FTLSV2.Pages.Chairman
 
         public void OnGet()
         {
-            var chairmanFacultyId = HttpContext.Session.GetString("ActiveUser");
+            var chairmanFacultyIdString = HttpContext.Session.GetString("ActiveUser");
 
-            if (string.IsNullOrEmpty(chairmanFacultyId))
+            if (string.IsNullOrEmpty(chairmanFacultyIdString))
             {
                 return;
             }
+
+            // FIXED: Parse session string into int to match the User.FacultyId integer type
+            int chairmanFacultyId = int.Parse(chairmanFacultyIdString);
 
             var user = _db.Users.FirstOrDefault(u => u.FacultyId == chairmanFacultyId);
             if (user == null)
@@ -63,7 +65,6 @@ namespace FTLSV2.Pages.Chairman
                 return;
             }
 
-            // Handling Nullable RoomId
             var roomIds = schedules
                 .Where(s => s.RoomId.HasValue)
                 .Select(s => s.RoomId.Value)
@@ -82,7 +83,6 @@ namespace FTLSV2.Pages.Chairman
                 .AsNoTracking()
                 .ToDictionary(s => s.SubjectId);
 
-            // Separate schedules by day AND SORT BY TIME
             MWFSchedules = schedules
                 .Where(s => !string.IsNullOrEmpty(s.TimeSlot) && s.TimeSlot.StartsWith("MWF"))
                 .Select(s => new ScheduleView(
@@ -93,7 +93,7 @@ namespace FTLSV2.Pages.Chairman
                     s.AssignedUnits.ToString(),
                     s.OfferCode
                 ))
-                .OrderBy(s => ParseStartTime(s.TimeSlot)) // Sorting applied here
+                .OrderBy(s => ParseStartTime(s.TimeSlot))
                 .ToList();
 
             TTHSchedules = schedules
@@ -106,7 +106,7 @@ namespace FTLSV2.Pages.Chairman
                     s.AssignedUnits.ToString(),
                     s.OfferCode
                 ))
-                .OrderBy(s => ParseStartTime(s.TimeSlot)) // Sorting applied here
+                .OrderBy(s => ParseStartTime(s.TimeSlot))
                 .ToList();
 
             var allSchedulesWithSubjects = _db.Schedules
@@ -130,7 +130,6 @@ namespace FTLSV2.Pages.Chairman
                     .ToList();
             }
 
-            // Group strictly by Academic Year
             SubjectHistory = filteredSubjects
                 .GroupBy(ps => $"Academic Year {ps.Schedule.AcademicYear ?? "TBA"}")
                 .Select(g => new SubjectGroup(
@@ -153,23 +152,16 @@ namespace FTLSV2.Pages.Chairman
             CurrentAcademicYear = schedules.FirstOrDefault()?.AcademicYear ?? "N/A";
         }
 
-        // --- HELPER METHOD TO EXTRACT AND SORT REAL CLOCK TIME ---
         private DateTime ParseStartTime(string timeSlot)
         {
             if (string.IsNullOrWhiteSpace(timeSlot)) return DateTime.MaxValue;
-
             try
             {
                 var startPart = timeSlot.Split('-')[0].Trim();
                 var timeString = new string(startPart.SkipWhile(c => !char.IsDigit(c)).ToArray());
-
-                if (DateTime.TryParse(timeString, out DateTime parsedTime))
-                {
-                    return parsedTime;
-                }
+                if (DateTime.TryParse(timeString, out DateTime parsedTime)) return parsedTime;
             }
             catch { }
-
             return DateTime.MaxValue;
         }
     }
