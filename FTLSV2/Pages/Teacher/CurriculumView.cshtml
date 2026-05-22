@@ -66,19 +66,6 @@
             </select>
         </div>
 
-        <div class="form-group" style="flex: 1; min-width: 200px;">
-            <label style="font-weight: bold; font-size: 12px; color: #7f8c8d; text-transform: uppercase; margin-bottom: 5px; display: block;">Degree Program</label>
-            <select id="programFilter" onchange="filterSubjects()" style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                <option value="All">All Programs</option>
-                <option value="Civil Engineering">Civil Engineering</option>
-                <option value="Mechanical Engineering">Mechanical Engineering</option>
-                <option value="Electronics Engineering">Electronics Engineering</option>
-                <option value="Computer Engineering">Computer Engineering</option>
-                <option value="Electrical Engineering">Electrical Engineering</option>
-                <option value="Industrial Engineering">Industrial Engineering</option>
-            </select>
-        </div>
-
         <div class="form-group" style="flex: 1; min-width: 150px;">
             <label style="font-weight: bold; font-size: 12px; color: #7f8c8d; text-transform: uppercase; margin-bottom: 5px; display: block;">Year Level</label>
             <select id="yearFilter" onchange="filterSubjects()" style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
@@ -171,7 +158,7 @@
         function filterSubjects() {
             var selectedSchool = document.getElementById("schoolFilter").value;
             var selectedDepartment = document.getElementById("departmentFilter").value;
-            var selectedProgram = document.getElementById("programFilter").value;
+            // REMOVED PROGRAM FILTER VALUE FETCH
             var selectedYear = document.getElementById("yearFilter").value;
             var selectedSem = document.getElementById("semFilter").value;
 
@@ -180,30 +167,29 @@
             rows.forEach(row => {
                 var rowSemester = row.getAttribute("data-semester") || "";
                 var rowDepartment = row.getAttribute("data-department") || "";
-                var rowSchool = row.getAttribute("data-school") || ""; // NEW: Grabs the school
+                var rowSchool = row.getAttribute("data-school") || "";
 
-                var deptCell = row.querySelector("td:nth-child(5)");
-                var rowDept = deptCell ? deptCell.textContent : "";
+                // REMOVED DEPT CELL QUERY USED FOR PROGRAM MATCHING
 
-                // UPDATED: Now it correctly checks if the row's school matches the dropdown
                 var matchSchool = (selectedSchool === "All" || rowSchool === selectedSchool);
                 var matchDepartment = (selectedDepartment === "All" || rowDepartment.includes(selectedDepartment));
-                var matchProgram = (selectedProgram === "All" || rowDept.includes(selectedProgram));
+                // REMOVED PROGRAM MATCH CHECK
                 var matchYear = (selectedYear === "All" || rowSemester.includes(selectedYear));
                 var matchSem = (selectedSem === "All" || rowSemester.includes(selectedSem));
 
-                if (matchSchool && matchDepartment && matchProgram && matchYear && matchSem) {
+                // REMOVED matchProgram FROM THE IF CONDITION
+                if (matchSchool && matchDepartment && matchYear && matchSem) {
                     row.style.display = "";
                 } else {
                     row.style.display = "none";
                 }
             });
         }
-        // Fixed element mapping logic here to handle full screen state changes cleanly
+
         function resetFilters() {
             document.getElementById("schoolFilter").value = "All";
             document.getElementById("departmentFilter").value = "All";
-            document.getElementById("programFilter").value = "All";
+            // REMOVED PROGRAM FILTER RESET
             document.getElementById("yearFilter").value = "All";
             document.getElementById("semFilter").value = "All";
             filterSubjects();
