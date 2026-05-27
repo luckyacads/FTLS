@@ -1,3 +1,46 @@
+@using FTLSV2.Data
+@using FTLSV2.Models
+@inject FtlsDbContext _context
+
+@{
+    var id = Context.Session.GetString("ActiveUser");
+    var name = Context.Session.GetString("ActiveUserName");
+    var email = Context.Session.GetString("ActiveUserEmail");
+
+    User chairmanUser = null;
+
+    string departmentName = "No Department Assigned";
+    string initials = "";
+
+    if (!string.IsNullOrEmpty(id) && int.TryParse(id, out int chairmanFacultyId))
+    {
+        chairmanUser = _context.Users.FirstOrDefault(u => u.FacultyId == chairmanFacultyId);
+
+        @if (chairmanUser != null)
+        {
+            departmentName = _context.Departments
+                .Where(d => d.Id == chairmanUser.DepartmentId)
+                .Select(d => d.Name)
+                .FirstOrDefault() ?? "No Department Assigned";
+        }
+    }
+
+    if (!string.IsNullOrEmpty(name))
+    {
+        var nameParts = name.Split(' ', System.StringSplitOptions.RemoveEmptyEntries);
+
+        var firstInitial = nameParts.Length > 0
+            ? nameParts[0].Substring(0, 1)
+            : "";
+
+        var lastInitial = nameParts.Length > 1
+            ? nameParts[nameParts.Length - 1].Substring(0, 1)
+            : "";
+
+        initials = firstInitial + lastInitial;
+    }
+}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,32 +54,37 @@
     @await RenderSectionAsync("Styles", required: false)
 
     <style>
-        /* MATCH ADMIN SIDEBAR FONT SYSTEM */
-        .sidebar,
-        .sidebar nav a {
-            font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
-        }
-
-            /* NAV LINKS */
+            .sidebar,
             .sidebar nav a {
-                display: block;
-                padding: 8px 12px;
-                margin-bottom: 6px;
-                border-radius: 6px;
-                color: #ffffff;
-                text-decoration: none;
-                font-size: 14px;
-                font-weight: 500;
-                line-height: 1.2;
-                transition: all 0.2s ease;
+                font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
             }
 
-                /* HOVER + ACTIVE */
-                .sidebar nav a:hover,
-                .sidebar nav a.active {
-                    background: #f1c40f;
-                    color: #07362d;
+                .sidebar nav a {
+                    display: block;
+                    padding: 8px 12px;
+                    margin-bottom: 6px;
+                    border-radius: 6px;
+                    color: #ffffff;
+                    text-decoration: none;
+                    font-size: 14px;
+                    font-weight: 500;
+                    line-height: 1.2;
+                    transition: all 0.2s ease;
                 }
+
+                    .sidebar nav a:hover,
+                    .sidebar nav a.active {
+                        background: #f1c40f;
+                        color: #07362d;
+                    }
+
+            .chairman-profile-department {
+                font-size: 14px;
+                margin-top: 4px;
+                color: #ffffff;
+                opacity: 0.95;
+                font-weight: 500;
+            }
     </style>
 </head>
 <body>
@@ -51,28 +99,29 @@
                 </h2>
             </div>
 
-            @{
-                var id = Context.Session.GetString("ActiveUser");
-                var name = Context.Session.GetString("ActiveUserName");
-                var email = Context.Session.GetString("ActiveUserEmail");
-            }
-
             @if (!string.IsNullOrEmpty(id))
             {
                 <div style="width:70px; height:70px; border-radius:50%; background:#f1c40f; color:#07362d; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:22px; margin: 15px auto 10px auto;">
-                    @(name?[0])@(name?.Split(' ').LastOrDefault()?[0])
+                    @initials
                 </div>
 
                 <div style="text-align:center; margin-bottom: 25px; color:#f1c40f;">
                     <div style="font-size:18px; font-weight:600; line-height:1.2;">
                         @name
                     </div>
+
                     <div style="font-size:15px; margin-top:6px; font-weight:500;">
                         ID: @id
                     </div>
+
                     <div style="font-size:14px; margin-top:4px; opacity:0.9;">
                         @email
                     </div>
+
+                    <div class="chairman-profile-department">
+                        Department: @departmentName
+                    </div>
+
                     <div style="height:1px; width:80%; margin: 10px auto 20px auto; background: rgba(255,255,255,0.15);"></div>
                 </div>
             }
@@ -115,14 +164,13 @@
     </div>
 
     @await RenderSectionAsync("Scripts", required: false)
+
     <script>
-        // If the browser loads this page from the Back-Forward Cache (bfcache)
-        window.addEventListener('pageshow', function (event) {
-            if (event.persisted) {
-                // Force a hard reload so the C# Server can kick them out!
-                window.location.reload(true);
-            }
-        });
+            window.addEventListener('pageshow', function (event) {
+                if (event.persisted) {
+                    window.location.reload(true);
+                }
+            });
     </script>
 </body>
 </html>

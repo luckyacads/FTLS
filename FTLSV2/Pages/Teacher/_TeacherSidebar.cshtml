@@ -6,10 +6,30 @@
     var userIdString = Context.Session.GetString("ActiveUser");
     User loggedUser = null;
 
-    // FIXED: Parse the string session ID into an int to match the FacultyId type
+    string departmentName = "No Department Assigned";
+    string initials = "";
+
     if (!string.IsNullOrEmpty(userIdString) && int.TryParse(userIdString, out int userId))
     {
         loggedUser = _context.Users.FirstOrDefault(u => u.FacultyId == userId);
+
+        if (loggedUser != null)
+        {
+            departmentName = _context.Departments
+                .Where(d => d.Id == loggedUser.DepartmentId)
+                .Select(d => d.Name)
+                .FirstOrDefault() ?? "No Department Assigned";
+
+            var firstInitial = !string.IsNullOrEmpty(loggedUser.FirstName)
+                ? loggedUser.FirstName.Substring(0, 1)
+                : "";
+
+            var lastInitial = !string.IsNullOrEmpty(loggedUser.LastName)
+                ? loggedUser.LastName.Substring(0, 1)
+                : "";
+
+            initials = firstInitial + lastInitial;
+        }
     }
 
     var path = Context.Request.Path.Value ?? "";
@@ -22,7 +42,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - FTLSV2</title>
     <link rel="stylesheet" href="~/css/Teacher-Sidebar.css" />
+
     @RenderSection("Styles", required: false)
+
+    <style>
+            .profile-department {
+                font-size: 13px;
+                margin-top: 4px;
+                color: #f1c40f;
+                opacity: 0.95;
+                font-weight: 500;
+            }
+    </style>
 </head>
 <body>
     <div class="teacher-container">
@@ -34,7 +65,7 @@
             @if (loggedUser != null)
             {
                 <div class="profile-avatar">
-                    @loggedUser.FirstName[0]@loggedUser.LastName[0]
+                    @initials
                 </div>
 
                 <div class="profile-info">
@@ -48,6 +79,10 @@
 
                     <div class="profile-email">
                         @loggedUser.Email
+                    </div>
+
+                    <div class="profile-department">
+                        Department: @departmentName
                     </div>
 
                     <div class="profile-divider"></div>
