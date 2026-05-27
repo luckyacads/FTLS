@@ -42,7 +42,6 @@ namespace FTLSV2.Data
                 entity.Property(e => e.CurrentUnits).HasColumnName("current_units");
                 entity.Property(e => e.SchoolId).HasColumnName("school_id");
                 entity.Property(e => e.DepartmentId).HasColumnName("department_id");
-                entity.Property(e => e.CreatedByRole).HasColumnName("created_by_role");
             });
 
             // Map School entity to the schools table

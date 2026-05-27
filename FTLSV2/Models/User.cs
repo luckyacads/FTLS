@@ -42,9 +42,6 @@ namespace FTLSV2.Models
         [Column("status")]
         public string Status { get; set; } = string.Empty;
 
-        [Column("created_by_role")]
-        public string? CreatedByRole { get; set; }
-
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
