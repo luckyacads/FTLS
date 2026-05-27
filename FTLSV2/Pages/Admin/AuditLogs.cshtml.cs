@@ -20,15 +20,25 @@ namespace FTLSV2.Pages.Admin
 
         public async Task OnGetAsync()
         {
-            Logs = await _context.Users
-                .Select(u => new AuditLogView
+            // 1. Fetch raw data from NeonDB and sort it natively using the actual DateTime
+            var rawUsers = await _context.Users
+                .OrderByDescending(u => u.CreatedAt)
+                .Select(u => new
                 {
-                    Timestamp = u.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
-                    Username = "System",
-                    Action = $"Created {u.Role} account for {u.FirstName} {u.LastName}"
+                    u.CreatedAt,
+                    u.Role,
+                    u.FirstName,
+                    u.LastName
                 })
-                .OrderByDescending(a => a.Timestamp)
-                .ToListAsync();
+                .ToListAsync(); 
+
+            // 2. Now that the data is in C#, we can safely use .ToString() formatting
+            Logs = rawUsers.Select(u => new AuditLogView
+            {
+                Timestamp = u.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                Username = "System",
+                Action = $"Created {u.Role} account for {u.FirstName} {u.LastName}"
+            }).ToList();
         }
     }
 
