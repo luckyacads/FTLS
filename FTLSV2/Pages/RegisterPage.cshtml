@@ -194,23 +194,8 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label" asp-for="DepartmentId">Department</label>
-                <select class="form-select" asp-for="DepartmentId">
-                    <option value="">-- Select Department --</option>
-                    @if (Model.AvailableDepartments != null)
-                    {
-                        @foreach (var dept in Model.AvailableDepartments)
-                        {
-                            <option value="@dept.Id">@dept.Name (@dept.Code)</option>
-                        }
-                    }
-                </select>
-                <span class="validation-message" asp-validation-for="DepartmentId"></span>
-            </div>
-
-            <div class="form-group">
                 <label class="form-label" asp-for="SchoolId">School</label>
-                <select class="form-select" asp-for="SchoolId">
+                <select class="form-select" asp-for="SchoolId" id="schoolDropdown" onchange="filterDepartments()">
                     <option value="">-- Select School --</option>
                     @if (Model.AvailableSchools != null)
                     {
@@ -221,6 +206,21 @@
                     }
                 </select>
                 <span class="validation-message" asp-validation-for="SchoolId"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" asp-for="DepartmentId">Department</label>
+                <select class="form-select" asp-for="DepartmentId" id="departmentDropdown">
+                    <option value="">-- Select Department --</option>
+                    @if (Model.AvailableDepartments != null)
+                    {
+                        @foreach (var dept in Model.AvailableDepartments)
+                        {
+                            <option value="@dept.Id" data-school="@dept.SchoolId">@dept.Name (@dept.Code)</option>
+                        }
+                    }
+                </select>
+                <span class="validation-message" asp-validation-for="DepartmentId"></span>
             </div>
 
             <div class="form-group">
@@ -246,5 +246,43 @@
             </div>
         </form>
     </div>
+    <script>
+        function filterDepartments() {
+            var schoolSelect = document.getElementById("schoolDropdown");
+            var departmentSelect = document.getElementById("departmentDropdown");
+            var selectedSchoolId = schoolSelect.value;
+
+            // Reset the department selection every time the school changes
+            departmentSelect.value = "";
+
+            var options = departmentSelect.options;
+
+            // Loop through all department options
+            for (var i = 0; i < options.length; i++) {
+                var option = options[i];
+
+                // Skip the default "-- Select Department --" option
+                if (option.value === "") continue;
+
+                var optionSchoolId = option.getAttribute("data-school");
+
+                // If no school is selected, or the department matches the selected school, show it
+                if (selectedSchoolId === "" || optionSchoolId === selectedSchoolId) {
+                    option.hidden = false;
+                    option.disabled = false;
+                } else {
+                    // Otherwise, hide it from the list
+                    option.hidden = true;
+                    option.disabled = true;
+                }
+            }
+        }
+
+        // Run this once when the page loads just in case a school was already selected
+        // (like if the page reloads due to a validation error)
+        document.addEventListener("DOMContentLoaded", function () {
+            filterDepartments();
+        });
+    </script>
 </body>
 </html>
