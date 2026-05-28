@@ -30,8 +30,16 @@ namespace FTLSV2.Models
         [Column("school_id")]
         public int? SchoolId { get; set; }
 
+        // ---> ADDED: School Navigation Property
+        [ForeignKey(nameof(SchoolId))]
+        public School? School { get; set; }
+
         [Column("department_id")]
         public int? DepartmentId { get; set; }
+
+        // ---> ADDED: Department Navigation Property
+        [ForeignKey(nameof(DepartmentId))]
+        public Department? Department { get; set; }
 
         [Column("current_units")]
         public int CurrentUnits { get; set; }

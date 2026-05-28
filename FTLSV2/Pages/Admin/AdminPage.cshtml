@@ -7,11 +7,11 @@
 
 <head>
     <script>
-            if (localStorage.getItem('userStatus') === 'loggedOut') {
-                window.location.replace('/LoginPage');
-            } else {
-                localStorage.setItem('userStatus', 'loggedIn');
-            }
+        if (localStorage.getItem('userStatus') === 'loggedOut') {
+            window.location.replace('/LoginPage');
+        } else {
+            localStorage.setItem('userStatus', 'loggedIn');
+        }
     </script>
 </head>
 
@@ -238,13 +238,14 @@
             <table class="admin-table">
                 <thead>
                     <tr>
-                        <th style="width: 15%;">ID</th>
+                        <th style="width: 10%;">ID</th>
                         <th style="width: 20%;">NAME</th>
                         <th style="width: 20%;">EMAIL</th>
-                        <th style="width: 15%;">ROLE</th>
+                        <th style="width: 15%;">DEPARTMENT</th>
+                        <th style="width: 10%;">ROLE</th>
                         <th style="width: 10%;">UNITS</th>
                         <th style="width: 10%;">STATUS</th>
-                        <th style="width: 10%;"></th>
+                        <th style="width: 5%;"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -256,7 +257,6 @@
                         var statusText = string.IsNullOrEmpty(user.Status) ? "Pending" : user.Status;
                         var statusClass = statusText == "Active" ? "green" : (statusText == "Pending" ? "yellow" : "red");
 
-                        // FIXED: Uses the clean integer faculty ID instead of a string conversion
                         bool hasSched = Model.UserHasSchedules.ContainsKey(user.FacultyId) && Model.UserHasSchedules[user.FacultyId];
 
                         <tr>
@@ -270,6 +270,19 @@
                                 </div>
                             </td>
                             <td>@user.Email</td>
+
+                            <td>
+                                @if (user.Department != null)
+                                {
+                                    <span class="badge" style="background: #e8f0fe; color: #1967d2; font-size: 12px;" title="@user.Department.Name">
+                                        @user.Department.Code
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span style="color: #999; font-size: 12px; font-style: italic;">N/A</span>
+                                }
+                            </td>
 
                             <td>
                                 @if (string.IsNullOrEmpty(user.Role))
@@ -392,6 +405,7 @@
         </div>
     </div>
 </div>
+
 <script>
     let formToSubmitId = '';
 

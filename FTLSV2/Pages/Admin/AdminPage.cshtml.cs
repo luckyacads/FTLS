@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace FTLSV2.Pages.Admin
 {
@@ -43,7 +44,9 @@ namespace FTLSV2.Pages.Admin
             // Convert the session string into an integer for DB queries
             int activeId = int.Parse(activeIdString);
 
+            // Update this query in OnGet()
             DbUsers = _context.Users
+                .Include(u => u.Department) // <--- ADD THIS LINE to load the department data
                 .OrderByDescending(u => u.FacultyId)
                 .ToList();
 
