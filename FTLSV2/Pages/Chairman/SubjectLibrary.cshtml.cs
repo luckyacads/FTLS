@@ -24,13 +24,15 @@ namespace FTLSV2.Pages.Admin
         [BindProperty] public string NewSubjectCode { get; set; }
         [BindProperty] public string NewSubjectTitle { get; set; }
         [BindProperty] public int NewSubjectUnits { get; set; }
-        [BindProperty] public string NewSubjectDepartment { get; set; }
+        // FIXED: Now uses ID instead of string
+        [BindProperty] public int NewSubjectDepartmentId { get; set; }
 
         [BindProperty] public int EditSubjectId { get; set; }
         [BindProperty] public string EditSubjectCode { get; set; }
         [BindProperty] public string EditSubjectTitle { get; set; }
         [BindProperty] public int EditSubjectUnits { get; set; }
-        [BindProperty] public string EditSubjectDepartment { get; set; }
+        // FIXED: Now uses ID instead of string
+        [BindProperty] public int EditSubjectDepartmentId { get; set; }
 
         public void OnGet()
         {
@@ -44,33 +46,14 @@ namespace FTLSV2.Pages.Admin
 
         public IActionResult OnPostAddSubject()
         {
-            if (!string.IsNullOrEmpty(NewSubjectCode) && !string.IsNullOrEmpty(NewSubjectTitle) && !string.IsNullOrEmpty(NewSubjectDepartment))
+            if (!string.IsNullOrEmpty(NewSubjectCode) && !string.IsNullOrEmpty(NewSubjectTitle) && NewSubjectDepartmentId > 0)
             {
-                string deptName = NewSubjectDepartment.Trim();
-                var dept = _db.Departments.FirstOrDefault(d => d.Name.ToLower() == deptName.ToLower());
-
-                if (dept == null)
-                {
-                    // FIX: Get a valid SchoolId to satisfy the database foreign key constraint
-                    var defaultSchool = _db.Schools.FirstOrDefault();
-                    int fallbackSchoolId = defaultSchool != null ? defaultSchool.Id : 1;
-
-                    dept = new Department
-                    {
-                        Name = deptName,
-                        SchoolId = fallbackSchoolId // Assign the fallback SchoolId
-                    };
-
-                    _db.Departments.Add(dept);
-                    _db.SaveChanges();
-                }
-
                 var subject = new Subject
                 {
                     Code = NewSubjectCode,
                     Title = NewSubjectTitle,
                     Units = NewSubjectUnits,
-                    DepartmentId = dept.Id
+                    DepartmentId = NewSubjectDepartmentId // Direct assignment!
                 };
 
                 try
@@ -82,7 +65,6 @@ namespace FTLSV2.Pages.Admin
                 catch (Exception ex)
                 {
                     var baseMsg = ex.GetBaseException()?.Message ?? ex.Message;
-                    System.Diagnostics.Debug.WriteLine($"Error adding subject: {baseMsg}");
                     TempData["ErrorMessage"] = $"An error occurred while saving the subject. {baseMsg}";
                 }
             }
@@ -96,31 +78,13 @@ namespace FTLSV2.Pages.Admin
         public IActionResult OnPostEditSubject()
         {
             var subjectToEdit = _db.Subjects.FirstOrDefault(s => s.SubjectId == EditSubjectId);
-            if (subjectToEdit != null && !string.IsNullOrEmpty(EditSubjectDepartment))
+
+            if (subjectToEdit != null && EditSubjectDepartmentId > 0)
             {
-                string deptName = EditSubjectDepartment.Trim();
-                var dept = _db.Departments.FirstOrDefault(d => d.Name.ToLower() == deptName.ToLower());
-
-                if (dept == null)
-                {
-                    // FIX: Get a valid SchoolId to satisfy the database foreign key constraint
-                    var defaultSchool = _db.Schools.FirstOrDefault();
-                    int fallbackSchoolId = defaultSchool != null ? defaultSchool.Id : 1;
-
-                    dept = new Department
-                    {
-                        Name = deptName,
-                        SchoolId = fallbackSchoolId // Assign the fallback SchoolId
-                    };
-
-                    _db.Departments.Add(dept);
-                    _db.SaveChanges(); // <-- This will no longer crash!
-                }
-
                 subjectToEdit.Code = EditSubjectCode;
                 subjectToEdit.Title = EditSubjectTitle;
                 subjectToEdit.Units = EditSubjectUnits;
-                subjectToEdit.DepartmentId = dept.Id;
+                subjectToEdit.DepartmentId = EditSubjectDepartmentId; // Direct assignment!
 
                 try
                 {
@@ -130,7 +94,6 @@ namespace FTLSV2.Pages.Admin
                 catch (Exception ex)
                 {
                     var baseMsg = ex.GetBaseException()?.Message ?? ex.Message;
-                    System.Diagnostics.Debug.WriteLine($"Error updating subject: {baseMsg}");
                     TempData["ErrorMessage"] = $"An error occurred while updating the subject. {baseMsg}";
                 }
             }
@@ -151,7 +114,6 @@ namespace FTLSV2.Pages.Admin
                 catch (Exception ex)
                 {
                     var baseMsg = ex.GetBaseException()?.Message ?? ex.Message;
-                    System.Diagnostics.Debug.WriteLine($"Error deleting subject: {baseMsg}");
                     TempData["ErrorMessage"] = $"An error occurred while deleting the subject. {baseMsg}";
                 }
             }

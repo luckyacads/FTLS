@@ -31,12 +31,26 @@
             outline: none;
             box-shadow: 0 0 0 2px rgba(7,54,45,0.1);
         }
+
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.45);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(2px);
+    }
 </style>
 
 <div class="page-container">
     <header class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
         <h1 style="margin: 0;">Subject Library</h1>
-        <button id="btnAddSubject" class="btn-primary" onclick="toggleAddSubjectForm()">+ Add Subject</button>
+        <button id="btnAddSubject" class="btn-primary" onclick="openModal('addSubjectModal')">+ Add Subject</button>
     </header>
 
     @if (TempData["SuccessMessage"] != null)
@@ -46,75 +60,16 @@
         </div>
     }
 
-    <div id="addSubjectSection" class="card" style="display: none; border-top: 5px solid #07362d; margin-bottom: 25px;">
-        <div style="display: flex; align-items: center; margin-bottom: 20px;">
-            <h3 style="margin: 0; color: #07362d;">Add New Subject</h3>
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div id="error-alert" style="background-color: #f8d7da; color: #721c24; padding: 12px; margin-bottom: 20px; border-radius: 6px; border-left: 5px solid #dc3545; font-weight: 500;">
+            ⚠ @TempData["ErrorMessage"]
         </div>
-
-        <form method="post" asp-page-handler="AddSubject">
-            <div style="display: flex; gap: 15px; margin-bottom: 20px;">
-                <div class="form-group" style="flex: 1;">
-                    <label>Subject Code</label>
-                    <input type="text" asp-for="NewSubjectCode" class="input" required placeholder="e.g. IT101">
-                </div>
-                <div class="form-group" style="flex: 2;">
-                    <label>Title</label>
-                    <input type="text" asp-for="NewSubjectTitle" class="input" required placeholder="e.g. Network Admin">
-                </div>
-                <div class="form-group" style="flex: 1;">
-                    <label>Units</label>
-                    <input type="number" asp-for="NewSubjectUnits" class="input" required value="3">
-                </div>
-                <div class="form-group" style="flex: 1.5;">
-                    <label>Department</label>
-                    <input type="text" asp-for="NewSubjectDepartment" class="input" required placeholder="e.g. Computer Science">
-                </div>
-            </div>
-
-            <div style="display: flex; gap: 10px;">
-                <button type="submit" class="btn-primary" style="width: auto; padding: 10px 20px;">Save Subject</button>
-                <button type="button" onclick="toggleAddSubjectForm()" style="padding: 10px 20px; border: none; background: #eee; color: #333; cursor: pointer; border-radius: 6px; font-weight: 600;">Cancel</button>
-            </div>
-        </form>
-    </div>
-
-    <div id="editSubjectSection" class="card" style="display: none; border-top: 5px solid #155724; margin-bottom: 25px;">
-        <div style="display: flex; align-items: center; margin-bottom: 20px;">
-            <h3 style="margin: 0; color: #155724;">Edit Subject</h3>
-        </div>
-
-        <form method="post" asp-page-handler="EditSubject">
-            <input type="hidden" asp-for="EditSubjectId" id="editSubjectId" />
-
-            <div style="display: flex; gap: 15px; margin-bottom: 20px;">
-                <div class="form-group" style="flex: 1;">
-                    <label>Subject Code</label>
-                    <input type="text" asp-for="EditSubjectCode" id="editSubjectCode" class="input" required>
-                </div>
-                <div class="form-group" style="flex: 2;">
-                    <label>Subject Title</label>
-                    <input type="text" asp-for="EditSubjectTitle" id="editSubjectTitle" class="input" required>
-                </div>
-                <div class="form-group" style="flex: 1;">
-                    <label>Units</label>
-                    <input type="number" asp-for="EditSubjectUnits" id="editSubjectUnits" class="input" required>
-                </div>
-                <div class="form-group" style="flex: 1.5;">
-                    <label>Department</label>
-                    <input type="text" asp-for="EditSubjectDepartment" id="editSubjectDepartment" class="input" required>
-                </div>
-            </div>
-
-            <div style="display: flex; gap: 10px;">
-                <button type="submit" class="btn-primary" style="background-color: #155724; width: auto; padding: 10px 20px;">Update Subject</button>
-                <button type="button" onclick="hideEditForm()" style="padding: 10px 20px; border: none; background: #eee; color: #333; cursor: pointer; border-radius: 6px; font-weight: 600;">Cancel</button>
-            </div>
-        </form>
-    </div>
+    }
 
     <section class="card">
         <div class="search-row" style="margin-bottom: 20px;">
-            <input type="text" id="subjectSearchInput" onkeyup="filterSubjects()" placeholder="Search subjects..." class="input" />
+            <input type="text" id="subjectSearchInput" onkeyup="filterSubjects()" placeholder="Search subjects..." class="input" style="max-width: 400px;" />
         </div>
 
         <table class="subject-table" style="width: 100%; border-collapse: collapse; text-align: left;">
@@ -130,6 +85,9 @@
             <tbody>
                 @foreach (var subject in Model.Subjects)
                 {
+                    // Default to 0 if null so JS doesn't break
+                    var deptId = subject.DepartmentId;
+
                     <tr style="border-bottom: 1px solid #f5f5f5;">
                         <td style="padding: 10px;">@subject.Code</td>
                         <td style="padding: 10px;">@subject.Title</td>
@@ -137,7 +95,7 @@
                         <td style="padding: 10px;">@subject.Department?.Name</td>
                         <td style="padding: 10px;">
                             <div style="display: flex; gap: 8px;">
-                                <button class="btn-edit" style="border: 1px solid #ccc; background: white; padding: 6px 10px; border-radius: 6px; cursor: pointer;" onclick="showEditForm(@subject.SubjectId, '@subject.Code', '@subject.Title', @subject.Units, '@subject.Department?.Name')">Edit</button>
+                                <button class="btn-edit" style="border: 1px solid #ccc; background: white; padding: 6px 10px; border-radius: 6px; cursor: pointer;" onclick="showEditForm(@subject.SubjectId, '@subject.Code', '@subject.Title', @subject.Units, @deptId)">Edit</button>
 
                                 <form method="post" asp-page-handler="DeleteSubject" style="margin:0;" onsubmit="return confirm('Are you sure you want to delete this subject?');">
                                     <input type="hidden" name="subjectId" value="@subject.SubjectId" />
@@ -152,40 +110,126 @@
     </section>
 </div>
 
+<div id="addSubjectModal" class="modal-overlay">
+    <div class="card" style="width: 600px; max-width: 90%; border-left: 6px solid #07362d; border-radius: 12px; padding: 25px; margin: 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0; color: #07362d;">Add New Subject</h3>
+            <button type="button" onclick="closeModal('addSubjectModal')" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #888;">&times;</button>
+        </div>
+
+        <form method="post" asp-page-handler="AddSubject">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>Subject Code</label>
+                    <input type="text" asp-for="NewSubjectCode" class="input" placeholder="e.g. IT101" required />
+                </div>
+
+                <div class="form-group">
+                    <label>Units</label>
+                    <input type="number" asp-for="NewSubjectUnits" class="input" min="1" max="6" value="3" required />
+                </div>
+
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Title</label>
+                    <input type="text" asp-for="NewSubjectTitle" class="input" placeholder="e.g. Network Admin" required />
+                </div>
+
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Department</label>
+                    <select asp-for="NewSubjectDepartmentId" class="input" required>
+                        <option value="">-- Select Department --</option>
+                        @if (Model.Departments != null)
+                        {
+                            @foreach (var dept in Model.Departments)
+                            {
+                                <option value="@dept.Id">@dept.Name (@dept.Code)</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px;">
+                <button type="button" onclick="closeModal('addSubjectModal')" style="padding: 10px 15px; border: none; border-radius: 6px; background: #eee; cursor: pointer; font-weight: 600;">Cancel</button>
+                <button type="submit" class="btn-primary" style="width: auto;">Save Subject</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="editSubjectModal" class="modal-overlay">
+    <div class="card" style="width: 600px; max-width: 90%; border-left: 6px solid #155724; border-radius: 12px; padding: 25px; margin: 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0; color: #155724;">Edit Subject</h3>
+            <button type="button" onclick="closeModal('editSubjectModal')" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #888;">&times;</button>
+        </div>
+
+        <form method="post" asp-page-handler="EditSubject">
+            <input type="hidden" asp-for="EditSubjectId" id="editSubjectId" />
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>Subject Code</label>
+                    <input type="text" asp-for="EditSubjectCode" id="editSubjectCode" class="input" required />
+                </div>
+
+                <div class="form-group">
+                    <label>Units</label>
+                    <input type="number" asp-for="EditSubjectUnits" id="editSubjectUnits" class="input" min="1" max="6" required />
+                </div>
+
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Title</label>
+                    <input type="text" asp-for="EditSubjectTitle" id="editSubjectTitle" class="input" required />
+                </div>
+
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Department</label>
+                    <select asp-for="EditSubjectDepartmentId" id="editSubjectDepartmentId" class="input" required>
+                        <option value="">-- Select Department --</option>
+                        @if (Model.Departments != null)
+                        {
+                            @foreach (var dept in Model.Departments)
+                            {
+                                <option value="@dept.Id">@dept.Name (@dept.Code)</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px;">
+                <button type="button" onclick="closeModal('editSubjectModal')" style="padding: 10px 15px; border: none; border-radius: 6px; background: #eee; cursor: pointer; font-weight: 600;">Cancel</button>
+                <button type="submit" class="btn-primary" style="background-color: #155724; width: auto;">Update Subject</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
-    function toggleAddSubjectForm() {
-        var form = document.getElementById("addSubjectSection");
-        var editForm = document.getElementById("editSubjectSection");
-        var btnAdd = document.getElementById("btnAddSubject");
-
-        editForm.style.display = "none";
-
-        if (form.style.display === "none" || form.style.display === "") {
-            form.style.display = "block";
-            btnAdd.style.display = "none";
-        } else {
-            form.style.display = "none";
-            btnAdd.style.display = "block";
-        }
+    function openModal(modalId) {
+        document.getElementById(modalId).style.display = "flex";
     }
 
-    function showEditForm(id, code, title, units, department) {
-        var btnAdd = document.getElementById("btnAddSubject");
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = "none";
+    }
 
-        document.getElementById("addSubjectSection").style.display = "none";
+    // Passes the actual ID into the dropdown instead of a text string
+    function showEditForm(id, code, title, units, departmentId) {
         document.getElementById("editSubjectId").value = id;
         document.getElementById("editSubjectCode").value = code;
         document.getElementById("editSubjectTitle").value = title;
         document.getElementById("editSubjectUnits").value = units;
-        document.getElementById("editSubjectDepartment").value = department;
 
-        document.getElementById("editSubjectSection").style.display = "block";
-        btnAdd.style.display = "none";
-    }
+        // Selects the matching option in the dropdown
+        if (departmentId > 0) {
+            document.getElementById("editSubjectDepartmentId").value = departmentId;
+        } else {
+            document.getElementById("editSubjectDepartmentId").value = "";
+        }
 
-    function hideEditForm() {
-        document.getElementById("editSubjectSection").style.display = "none";
-        document.getElementById("btnAddSubject").style.display = "block";
+        openModal('editSubjectModal');
     }
 
     function filterSubjects() {
@@ -202,4 +246,12 @@
             }
         }
     }
+
+    // Close modals if the user presses the Escape key
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeModal("addSubjectModal");
+            closeModal("editSubjectModal");
+        }
+    });
 </script>
