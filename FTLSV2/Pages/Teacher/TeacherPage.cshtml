@@ -39,37 +39,86 @@
             margin: 0;
         }
 
-        /* --- 2. LAYOUT ENHANCEMENTS --- */
-        .schedule-container {
-            display: block;
-            width: 100%;
-            box-sizing: border-box;
+        /* --- 2. NEW: SPLIT VIEW LAYOUT --- */
+        .schedule-split-view {
+            display: flex;
+            gap: 25px;
+            align-items: flex-start;
+            margin-bottom: 30px;
         }
 
-        .schedule-card {
-            width: 100% !important;
-            max-width: 100% !important;
-            box-sizing: border-box !important;
-            margin-left: 0 !important;
-            margin-right: 0 !important;
+        /* The Day Boxes (Left Side) */
+        .day-sidebar {
+            width: 220px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            flex-shrink: 0;
         }
 
-        /* --- 3. MODERN TABLE UI FOR CURRENT SCHEDULE --- */
+        .day-box {
+            background: #07362d;
+            color: white;
+            padding: 16px 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            border: 2px solid transparent;
+            user-select: none;
+        }
+
+            .day-box:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 6px 12px -2px rgba(0,0,0,0.15);
+                background: #0a4d40;
+            }
+
+            .day-box.active {
+                background: #f1c40f;
+                color: #07362d;
+                border: 2px solid #07362d;
+                transform: translateY(-3px);
+                box-shadow: 0 6px 12px -2px rgba(0,0,0,0.15);
+            }
+
+        /* The Table Display (Right Side) */
+        .schedule-content {
+            flex: 1;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            padding: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+            min-height: 400px; /* Keeps the right side from jumping up/down */
+        }
+
+        .schedule-content-header {
+            color: #111827;
+            margin-top: 0;
+            font-size: 20px;
+            border-bottom: 2px solid #f3f4f6;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        /* --- 3. MODERN TABLE UI --- */
         .table-wrapper {
             background: #ffffff;
             border: 1px solid #e5e7eb;
             border-radius: 10px;
-            overflow: hidden; /* Keeps the rounded corners crisp */
-            margin-bottom: 25px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            overflow-x: auto; /* Adds scrolling on small screens */
+            overflow: hidden;
+            overflow-x: auto;
         }
 
         .schedule-table {
             width: 100%;
             border-collapse: collapse;
             text-align: left;
-            min-width: 700px;
+            min-width: 600px;
         }
 
             .schedule-table thead {
@@ -112,10 +161,42 @@
             color: #07362d;
         }
 
+        /* Animation for changing days */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         /* Responsive Fixes */
-        @@media (max-width: 768px) {
+        @@media (max-width: 900px) {
+            .schedule-split-view {
+                flex-direction: column;
+            }
+
+            .day-sidebar {
+                width: 100%;
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @@media (max-width: 600px) {
             .stats-row {
                 grid-template-columns: 1fr;
+            }
+
+            .day-sidebar {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
@@ -141,100 +222,71 @@
     </div>
 </div>
 
-<div class="schedule-container" id="printableArea">
-    <div class="schedule-card" style="background: #fdfdfd; padding: 25px; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
-        <h3 style="color: #111827; margin-top: 0; font-size: 20px; border-bottom: 2px solid #f3f4f6; padding-bottom: 10px;">Current Schedule</h3>
+<div class="schedule-split-view" id="printableArea">
 
-        @if (Model.MWFSchedules.Any())
-        {
-            <h4 style="color: #047857; margin: 25px 0 15px 0; font-weight: 600; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px;">Monday, Wednesday, Friday</h4>
+    <div class="day-sidebar" id="printSidebar">
+        <div class="day-box active" onclick="selectDay(this, 'Monday', 'MWF')">Monday</div>
+        <div class="day-box" onclick="selectDay(this, 'Tuesday', 'TTH')">Tuesday</div>
+        <div class="day-box" onclick="selectDay(this, 'Wednesday', 'MWF')">Wednesday</div>
+        <div class="day-box" onclick="selectDay(this, 'Thursday', 'TTH')">Thursday</div>
+        <div class="day-box" onclick="selectDay(this, 'Friday', 'MWF')">Friday</div>
+        <div class="day-box" onclick="selectDay(this, 'Saturday', 'SAT')">Saturday</div>
+    </div>
 
-            <div class="table-wrapper">
-                <table class="schedule-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 20%;">Time</th>
-                            <th style="width: 15%;">Code</th>
-                            <th style="width: 30%;">Subject</th>
-                            <th style="width: 15%;">Room</th>
-                            <th style="width: 10%; text-align: center;">Offer Code</th>
-                            <th style="width: 10%; text-align: center;">Units</th>
+    <div class="schedule-content">
+        <h3 class="schedule-content-header" id="selectedDayTitle">Monday's Schedule</h3>
+
+        <div class="table-wrapper" id="scheduleTableWrapper">
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Time</th>
+                        <th style="width: 15%;">Code</th>
+                        <th style="width: 30%;">Subject</th>
+                        <th style="width: 15%;">Room</th>
+                        <th style="width: 15%; text-align: center;">Units</th>
+                    </tr>
+                </thead>
+                <tbody id="scheduleTableBody">
+                    @foreach (var schedule in Model.MWFSchedules)
+                    {
+                        <tr class="schedule-row" data-daycode="MWF">
+                            <td class="col-time">@schedule.TimeSlot</td>
+                            <td class="col-code">@schedule.SubjectCode</td>
+                            <td>@schedule.SubjectTitle</td>
+                            <td>@schedule.RoomName</td>
+                            <td style="text-align: center;">
+                                <span style="background: #f3f4f6; color: #374151; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 12px;">@schedule.Units Units</span>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var schedule in Model.MWFSchedules)
-                        {
-                            <tr>
-                                <td class="col-time">@schedule.TimeSlot</td>
-                                <td class="col-code">@schedule.SubjectCode</td>
-                                <td>@schedule.SubjectTitle</td>
-                                <td>@schedule.RoomName</td>
-                                <td style="text-align: center;">
-                                    <span style="font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: 600; background: @(schedule.OfferCode.HasValue ? "#d1fae5" : "#fee2e2"); color: @(schedule.OfferCode.HasValue ? "#065f46" : "#991b1b");">
-                                        @(schedule.OfferCode?.ToString() ?? "N/A")
-                                    </span>
-                                </td>
-                                <td style="text-align: center;">
-                                    <span style="background: #f3f4f6; color: #374151; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 12px;">@schedule.Units Units</span>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
+                    }
 
-        @if (Model.TTHSchedules.Any())
-        {
-            <h4 style="color: #b45309; margin: 30px 0 15px 0; font-weight: 600; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px;">Tuesday, Thursday</h4>
-
-            <div class="table-wrapper">
-                <table class="schedule-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 20%;">Time</th>
-                            <th style="width: 15%;">Code</th>
-                            <th style="width: 30%;">Subject</th>
-                            <th style="width: 15%;">Room</th>
-                            <th style="width: 10%; text-align: center;">Offer Code</th>
-                            <th style="width: 10%; text-align: center;">Units</th>
+                    @foreach (var schedule in Model.TTHSchedules)
+                    {
+                        <tr class="schedule-row" data-daycode="TTH" style="display: none;">
+                            <td class="col-time">@schedule.TimeSlot</td>
+                            <td class="col-code">@schedule.SubjectCode</td>
+                            <td>@schedule.SubjectTitle</td>
+                            <td>@schedule.RoomName</td>
+                            <td style="text-align: center;">
+                                <span style="background: #f3f4f6; color: #374151; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 12px;">@schedule.Units Units</span>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var schedule in Model.TTHSchedules)
-                        {
-                            <tr>
-                                <td class="col-time">@schedule.TimeSlot</td>
-                                <td class="col-code">@schedule.SubjectCode</td>
-                                <td>@schedule.SubjectTitle</td>
-                                <td>@schedule.RoomName</td>
-                                <td style="text-align: center;">
-                                    <span style="font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: 600; background: @(schedule.OfferCode.HasValue ? "#d1fae5" : "#fee2e2"); color: @(schedule.OfferCode.HasValue ? "#065f46" : "#991b1b");">
-                                        @(schedule.OfferCode?.ToString() ?? "N/A")
-                                    </span>
-                                </td>
-                                <td style="text-align: center;">
-                                    <span style="background: #f3f4f6; color: #374151; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 12px;">@schedule.Units Units</span>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
+                    }
+                </tbody>
+            </table>
+        </div>
 
-        @if (!Model.MWFSchedules.Any() && !Model.TTHSchedules.Any())
-        {
-            <div style="text-align: center; padding: 40px 20px; color: #6b7280; background: #f9fafb; border-radius: 8px; margin-top: 15px;">
-                <p style="margin: 0; font-size: 15px; font-weight: 500;">No classes scheduled for the current semester.</p>
-            </div>
-        }
+        <div id="noClassesMessage" style="display: none; text-align: center; padding: 60px 20px; color: #6b7280; background: #f9fafb; border-radius: 8px; border: 1px dashed #e5e7eb;">
+            <p style="margin: 0; font-size: 15px; font-weight: 500;">No classes scheduled for this day.</p>
+        </div>
+
     </div>
 </div>
 
 @if (Model.SubjectHistory.Any())
 {
-    <div class="schedule-card" style="margin-top: 30px; background: white; padding: 25px; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
+    <div class="schedule-card" style="margin-top: 10px; background: white; padding: 25px; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f3f4f6; padding-bottom: 15px; margin-bottom: 20px;">
             <h3 style="color: #111827; margin: 0; font-size: 20px;">Subject History</h3>
 
@@ -298,38 +350,91 @@
 
 @section Scripts {
     <script>
+        // --- Split-View Logic ---
+        function selectDay(element, dayName, dayCode) {
+            // 1. Update active styling on the boxes
+            document.querySelectorAll('.day-box').forEach(box => box.classList.remove('active'));
+            element.classList.add('active');
+
+            // 2. Update the Title
+            document.getElementById('selectedDayTitle').innerText = dayName + "'s Schedule";
+
+            // 3. Filter the Table Rows
+            let rows = document.querySelectorAll('.schedule-row');
+            let visibleCount = 0;
+
+            // Remove animation class to restart it
+            let tableBody = document.getElementById('scheduleTableBody');
+            tableBody.classList.remove('fade-in');
+            void tableBody.offsetWidth; // Trigger reflow to restart animation
+
+            rows.forEach(row => {
+                if(row.getAttribute('data-daycode') === dayCode) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Re-add animation
+            tableBody.classList.add('fade-in');
+
+            // 4. Toggle empty state message
+            if (visibleCount > 0) {
+                document.getElementById('scheduleTableWrapper').style.display = 'block';
+                document.getElementById('noClassesMessage').style.display = 'none';
+            } else {
+                document.getElementById('scheduleTableWrapper').style.display = 'none';
+                document.getElementById('noClassesMessage').style.display = 'block';
+            }
+        }
+
         function toggleSemester(headerElement) {
             const content = headerElement.nextElementSibling;
             content.style.display = (content.style.display === 'none') ? 'block' : 'none';
         }
 
+        // Updated print logic to show ALL schedules properly when printing
         function printSchedule() {
+            // Temporarily show ALL rows and hide the sidebar for printing
+            document.querySelectorAll('.schedule-row').forEach(row => row.style.display = '');
+            document.getElementById('scheduleTableWrapper').style.display = 'block';
+            document.getElementById('noClassesMessage').style.display = 'none';
+            document.getElementById('selectedDayTitle').innerText = "Complete Weekly Schedule";
+            document.getElementById('printSidebar').style.display = 'none';
+
             const printContent = document.getElementById('printableArea').innerHTML;
             const originalContent = document.body.innerHTML;
             document.body.innerHTML = printContent;
+
             window.print();
+
+            // Restore original content
             document.body.innerHTML = originalContent;
             window.location.reload();
         }
 
-        // --- NEW CODE: SCROLL POSITION SAVER ---
-
-        // 1. Save the exact scroll position just before the page refreshes
+        // Scroll Position Saver
         window.addEventListener("beforeunload", function () {
             sessionStorage.setItem("scrollPosition", window.scrollY);
         });
 
-        // 2. Instantly jump back the exact millisecond the HTML is ready (No waiting for images/CSS)
         document.addEventListener("DOMContentLoaded", function () {
             const scrollPos = sessionStorage.getItem("scrollPosition");
             if (scrollPos !== null) {
-                // Use 'auto' instead of 'smooth' to make it an instant, invisible snap
                 window.scrollTo({
                     top: parseInt(scrollPos),
                     left: 0,
                     behavior: "auto"
                 });
                 sessionStorage.removeItem("scrollPosition");
+            }
+
+            // Run logic once on load to ensure Monday is showing correctly
+            let activeBox = document.querySelector('.day-box.active');
+            if(activeBox) {
+                selectDay(activeBox, 'Monday', 'MWF');
             }
         });
     </script>
