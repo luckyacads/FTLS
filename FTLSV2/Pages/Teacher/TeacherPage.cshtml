@@ -39,14 +39,13 @@
             margin: 0;
         }
 
-        /* --- 2. LAYOUT ENHANCEMENTS (SINGLE COLUMN & ALIGNMENT FIX) --- */
+        /* --- 2. LAYOUT ENHANCEMENTS --- */
         .schedule-container {
             display: block;
             width: 100%;
             box-sizing: border-box;
         }
 
-        /* 🔥 THE ALIGNMENT FIX: Forces the white cards to perfectly match the green cards above */
         .schedule-card {
             width: 100% !important;
             max-width: 100% !important;
@@ -55,125 +54,68 @@
             margin-right: 0 !important;
         }
 
-        .schedule-cards-grid {
-            display: flex;
-            flex-direction: column; /* Forces a single column */
-            gap: 15px;
-        }
-
-        /* --- 3. HORIZONTAL CLASS CARDS --- */
-        .class-card {
+        /* --- 3. MODERN TABLE UI FOR CURRENT SCHEDULE --- */
+        .table-wrapper {
             background: #ffffff;
             border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 18px 24px;
+            border-radius: 10px;
+            overflow: hidden; /* Keeps the rounded corners crisp */
+            margin-bottom: 25px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            overflow-x: auto; /* Adds scrolling on small screens */
         }
 
-            .class-card:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 6px 12px -2px rgba(0,0,0,0.05);
-                border-color: #d1d5db;
-            }
-
-            /* Color-coded side accent bars */
-            .class-card.mwf-card::before {
-                content: '';
-                position: absolute;
-                left: 0;
-                top: 0;
-                bottom: 0;
-                width: 6px;
-                background-color: #10b981;
-            }
-
-            .class-card.tth-card::before {
-                content: '';
-                position: absolute;
-                left: 0;
-                top: 0;
-                bottom: 0;
-                width: 6px;
-                background-color: #f59e0b;
-            }
-
-        /* Grouping layout inside the horizontal card */
-        .card-main-info {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            flex: 1;
-            padding-left: 8px;
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            min-width: 700px;
         }
 
-        .card-header-group {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+            .schedule-table thead {
+                background: #f8f9fb;
+                border-bottom: 2px solid #e5e7eb;
+            }
 
-            .card-header-group h4 {
-                margin: 0;
-                color: #111827;
-                font-size: 16px;
+            .schedule-table th {
+                padding: 14px 20px;
+                font-size: 11px;
+                text-transform: uppercase;
+                color: #6b7280;
                 font-weight: 700;
+                letter-spacing: 0.5px;
             }
 
-        .card-details-group {
-            display: flex;
-            gap: 24px; /* Spacing between time, subject, room */
-            font-size: 13px;
-            color: #4b5563;
-        }
+            .schedule-table td {
+                padding: 14px 20px;
+                font-size: 13px;
+                color: #374151;
+                border-bottom: 1px solid #f3f4f6;
+                vertical-align: middle;
+            }
 
-        .detail-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+            .schedule-table tbody tr:last-child td {
+                border-bottom: none;
+            }
 
-        .detail-label {
+            .schedule-table tbody tr:hover {
+                background-color: #f9fafb;
+            }
+
+        .col-time {
             font-weight: 600;
-            color: #9ca3af;
-            text-transform: uppercase;
-            font-size: 11px;
-            letter-spacing: 0.5px;
+            color: #111827;
         }
 
-        .card-action-group {
-            display: flex;
-            align-items: center;
-            margin-left: 20px;
+        .col-code {
+            font-weight: 700;
+            color: #07362d;
         }
 
-        /* Responsive Fixes for smaller screens */
+        /* Responsive Fixes */
         @@media (max-width: 768px) {
             .stats-row {
                 grid-template-columns: 1fr;
-            }
-
-            .class-card {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 16px;
-            }
-
-            .card-details-group {
-                flex-direction: column;
-                gap: 8px;
-            }
-
-            .card-action-group {
-                margin-left: 0;
-                width: 100%;
-                border-top: 1px solid #f3f4f6;
-                padding-top: 12px;
             }
         }
     </style>
@@ -206,74 +148,78 @@
         @if (Model.MWFSchedules.Any())
         {
             <h4 style="color: #047857; margin: 25px 0 15px 0; font-weight: 600; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px;">Monday, Wednesday, Friday</h4>
-            <div class="schedule-cards-grid">
-                @foreach (var schedule in Model.MWFSchedules)
-                {
-                    <div class="class-card mwf-card">
-                        <div class="card-main-info">
-                            <div class="card-header-group">
-                                <h4>@schedule.SubjectCode</h4>
-                                <span style="font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: 600; background: @(schedule.OfferCode.HasValue ? "#d1fae5" : "#fee2e2"); color: @(schedule.OfferCode.HasValue ? "#065f46" : "#991b1b");">
-                                    @(schedule.OfferCode?.ToString() ?? "No Offer")
-                                </span>
-                            </div>
-                            <div class="card-details-group">
-                                <div class="detail-item">
-                                    <span class="detail-label">Time:</span>
-                                    <strong style="color: #1f2937;">@schedule.TimeSlot</strong>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Subject:</span>
-                                    <span>@schedule.SubjectTitle</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Room:</span>
-                                    <span>@schedule.RoomName</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-action-group">
-                            <span style="background: #f3f4f6; color: #374151; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 13px;">@schedule.Units Units</span>
-                        </div>
-                    </div>
-                }
+
+            <div class="table-wrapper">
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 20%;">Time</th>
+                            <th style="width: 15%;">Code</th>
+                            <th style="width: 30%;">Subject</th>
+                            <th style="width: 15%;">Room</th>
+                            <th style="width: 10%; text-align: center;">Offer Code</th>
+                            <th style="width: 10%; text-align: center;">Units</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var schedule in Model.MWFSchedules)
+                        {
+                            <tr>
+                                <td class="col-time">@schedule.TimeSlot</td>
+                                <td class="col-code">@schedule.SubjectCode</td>
+                                <td>@schedule.SubjectTitle</td>
+                                <td>@schedule.RoomName</td>
+                                <td style="text-align: center;">
+                                    <span style="font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: 600; background: @(schedule.OfferCode.HasValue ? "#d1fae5" : "#fee2e2"); color: @(schedule.OfferCode.HasValue ? "#065f46" : "#991b1b");">
+                                        @(schedule.OfferCode?.ToString() ?? "N/A")
+                                    </span>
+                                </td>
+                                <td style="text-align: center;">
+                                    <span style="background: #f3f4f6; color: #374151; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 12px;">@schedule.Units Units</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
         }
 
         @if (Model.TTHSchedules.Any())
         {
             <h4 style="color: #b45309; margin: 30px 0 15px 0; font-weight: 600; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px;">Tuesday, Thursday</h4>
-            <div class="schedule-cards-grid">
-                @foreach (var schedule in Model.TTHSchedules)
-                {
-                    <div class="class-card tth-card">
-                        <div class="card-main-info">
-                            <div class="card-header-group">
-                                <h4>@schedule.SubjectCode</h4>
-                                <span style="font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: 600; background: @(schedule.OfferCode.HasValue ? "#d1fae5" : "#fee2e2"); color: @(schedule.OfferCode.HasValue ? "#065f46" : "#991b1b");">
-                                    @(schedule.OfferCode?.ToString() ?? "No Offer")
-                                </span>
-                            </div>
-                            <div class="card-details-group">
-                                <div class="detail-item">
-                                    <span class="detail-label">Time:</span>
-                                    <strong style="color: #1f2937;">@schedule.TimeSlot</strong>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Subject:</span>
-                                    <span>@schedule.SubjectTitle</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Room:</span>
-                                    <span>@schedule.RoomName</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-action-group">
-                            <span style="background: #f3f4f6; color: #374151; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 13px;">@schedule.Units Units</span>
-                        </div>
-                    </div>
-                }
+
+            <div class="table-wrapper">
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 20%;">Time</th>
+                            <th style="width: 15%;">Code</th>
+                            <th style="width: 30%;">Subject</th>
+                            <th style="width: 15%;">Room</th>
+                            <th style="width: 10%; text-align: center;">Offer Code</th>
+                            <th style="width: 10%; text-align: center;">Units</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var schedule in Model.TTHSchedules)
+                        {
+                            <tr>
+                                <td class="col-time">@schedule.TimeSlot</td>
+                                <td class="col-code">@schedule.SubjectCode</td>
+                                <td>@schedule.SubjectTitle</td>
+                                <td>@schedule.RoomName</td>
+                                <td style="text-align: center;">
+                                    <span style="font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: 600; background: @(schedule.OfferCode.HasValue ? "#d1fae5" : "#fee2e2"); color: @(schedule.OfferCode.HasValue ? "#065f46" : "#991b1b");">
+                                        @(schedule.OfferCode?.ToString() ?? "N/A")
+                                    </span>
+                                </td>
+                                <td style="text-align: center;">
+                                    <span style="background: #f3f4f6; color: #374151; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 12px;">@schedule.Units Units</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
         }
 
