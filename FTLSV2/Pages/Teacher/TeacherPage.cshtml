@@ -365,5 +365,26 @@
             document.body.innerHTML = originalContent;
             window.location.reload();
         }
+
+        // --- NEW CODE: SCROLL POSITION SAVER ---
+
+        // 1. Save the exact scroll position just before the page refreshes
+        window.addEventListener("beforeunload", function () {
+            sessionStorage.setItem("scrollPosition", window.scrollY);
+        });
+
+        // 2. Instantly jump back the exact millisecond the HTML is ready (No waiting for images/CSS)
+        document.addEventListener("DOMContentLoaded", function () {
+            const scrollPos = sessionStorage.getItem("scrollPosition");
+            if (scrollPos !== null) {
+                // Use 'auto' instead of 'smooth' to make it an instant, invisible snap
+                window.scrollTo({
+                    top: parseInt(scrollPos),
+                    left: 0,
+                    behavior: "auto"
+                });
+                sessionStorage.removeItem("scrollPosition");
+            }
+        });
     </script>
 }
