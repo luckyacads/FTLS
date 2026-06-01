@@ -183,15 +183,245 @@
         white-space: nowrap;
     }
 
-    @@media (max-width: 800px) {
-        .edit-form-grid {
-            grid-template-columns: 1fr;
+    /* --- MODERN TIME PICKER UI --- */
+    .modern-time-container {
+        display: flex;
+        align-items: center;
+        background: #f8fafc;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        padding: 4px;
+        transition: all 0.2s ease;
+    }
+
+        .modern-time-container:focus-within {
+            border-color: #07362d;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(7, 54, 45, 0.1);
         }
 
-        .modal-card {
-            width: calc(100% - 30px);
-            padding: 24px 20px;
+    .modern-time-input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        padding: 8px 12px;
+        font-size: 14px;
+        color: #111827;
+        font-weight: 600;
+        outline: none;
+        cursor: pointer;
+        border-radius: 6px;
+        transition: background 0.2s;
+    }
+
+        .modern-time-input:hover {
+            background: #e2e8f0;
         }
+
+    select.modern-time-input {
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        background-size: 14px;
+        padding-right: 28px;
+    }
+
+    .time-separator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #9ca3af;
+        font-weight: 700;
+        font-size: 12px;
+        padding: 0 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* --- NEW ALTERNATIVE UI: TABS & ROW CARDS --- */
+    .schedule-header-area {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #f3f4f6;
+        padding-bottom: 15px;
+    }
+
+    .day-tabs {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding-bottom: 5px;
+        margin-bottom: 20px;
+    }
+
+    .day-tab {
+        padding: 8px 20px;
+        border-radius: 30px; /* Pill shape */
+        background: #f3f4f6;
+        color: #4b5563;
+        font-weight: 600;
+        font-size: 14px;
+        border: 2px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+        .day-tab:hover {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .day-tab.active {
+            background: #07362d;
+            color: white;
+            border-color: #07362d;
+            box-shadow: 0 4px 10px rgba(7, 54, 45, 0.2);
+            transform: translateY(-1px);
+        }
+
+    /* Floating Row Cards */
+    .class-list-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-height: 300px;
+    }
+
+    .class-list-item {
+        display: flex;
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 16px 20px;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        border-left: 5px solid #10b981; /* Green accent border */
+    }
+
+        .class-list-item:hover {
+            border-color: #d1d5db;
+            box-shadow: 0 6px 12px -2px rgba(0,0,0,0.05);
+            transform: translateX(4px); /* Slight slide effect */
+            border-left-color: #f59e0b; /* Changes color on hover */
+        }
+
+    .class-time {
+        width: 180px;
+        font-weight: 700;
+        color: #111827;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .class-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .class-code {
+        font-weight: 700;
+        color: #07362d;
+        font-size: 15px;
+    }
+
+    .class-title {
+        color: #4b5563;
+        font-size: 13px;
+    }
+
+    .class-meta {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-shrink: 0;
+    }
+
+    .class-room {
+        font-size: 13px;
+        font-weight: 600;
+        color: #6b7280;
+        background: #f3f4f6;
+        padding: 4px 10px;
+        border-radius: 6px;
+    }
+
+    .class-units {
+        background: #eef2ff;
+        color: #1d4ed8;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 13px;
+    }
+
+    /* Animation */
+    .fade-list {
+        animation: fadeSlideUp 0.3s ease-out;
+    }
+
+    @@keyframes fadeSlideUp {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    @@media (max-width: 800px) {
+        .edit-form-grid
+
+    {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-card {
+        width: calc(100% - 30px);
+        padding: 24px 20px;
+    }
+
+    .modern-time-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 5px;
+    }
+
+    .time-separator {
+        display: none;
+    }
+
+    .class-list-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .class-time {
+        width: 100%;
+    }
+
+    .class-meta {
+        width: 100%;
+        justify-content: flex-start;
+        margin-top: 8px;
+        padding-top: 12px;
+        border-top: 1px solid #f3f4f6;
+    }
+
     }
 </style>
 
@@ -270,9 +500,9 @@
                 <div class="form-group" style="margin-bottom: 20px; width: 100%;">
                     <label style="display: block; font-weight: bold; color: #07362d; margin-bottom: 8px;">Time Slot</label>
 
-                    <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
-                        <select asp-for="SelectedDays" required style="flex: 1.2; min-width: 0; height: 40px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; color: #333; cursor: pointer; background-color: #fff;">
-                            <option value="" disabled selected>-- Day --</option>
+                    <div class="modern-time-container">
+                        <select asp-for="SelectedDays" required class="modern-time-input" style="flex: 1.2;">
+                            <option value="" disabled selected>Day</option>
                             <option value="MWF">MWF</option>
                             <option value="TTh">TTh</option>
                             <option value="M">Monday</option>
@@ -283,11 +513,13 @@
                             <option value="S">Saturday</option>
                         </select>
 
-                        <input type="time" asp-for="StartTime" required onclick="this.showPicker()" style="flex: 1; min-width: 0; height: 40px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; color: #333; cursor: pointer; background-color: #fff;" />
+                        <div class="time-separator">|</div>
 
-                        <span style="font-weight: bold; color: #555; font-size: 13px;">to</span>
+                        <input type="time" asp-for="StartTime" required class="modern-time-input" onclick="this.showPicker()" title="Start Time" />
 
-                        <input type="time" asp-for="EndTime" required onclick="this.showPicker()" style="flex: 1; min-width: 0; height: 40px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; color: #333; cursor: pointer; background-color: #fff;" />
+                        <div class="time-separator">TO</div>
+
+                        <input type="time" asp-for="EndTime" required class="modern-time-input" onclick="this.showPicker()" title="End Time" />
                     </div>
                 </div>
 
@@ -339,75 +571,67 @@
     </div>
 </div>
 
-<div class="chairman-card" style="margin-top: 20px; width: 100%;">
-    <h3>Assigned Teaching Loads</h3>
+<div class="chairman-card" style="margin-top: 20px; width: 100%; background: #fdfdfd;" id="printableArea">
 
-    <table class="table-light" style="width: 100%;">
-        <thead>
-            <tr>
-                <th>Faculty</th>
-                <th>Course</th>
-                <th>Schedule</th>
-                <th>Room</th>
-                <th>Offer Code</th>
-                <th>Academic Year</th>
-                <th>Semester</th>
-                <th>Load Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
+    <div class="schedule-header-area">
+        <h3 style="margin: 0; font-size: 20px; color: #111827;">Assigned Teaching Loads</h3>
+    </div>
 
-        <tbody>
-            @if (Model.CurrentSchedules != null && Model.CurrentSchedules.Any())
+    <div class="day-tabs" id="printSidebar">
+        <button class="day-tab active" onclick="selectTab(this, 'MWF')">Monday, Wednesday, Friday</button>
+        <button class="day-tab" onclick="selectTab(this, 'TTH')">Tuesday, Thursday</button>
+    </div>
+
+    <!-- The Floating List Area -->
+    <div class="class-list-container" id="scheduleListContainer">
+
+        @if (Model.CurrentSchedules != null && Model.CurrentSchedules.Any())
+        {
+            @foreach (var load in Model.CurrentSchedules)
             {
-                @foreach (var load in Model.CurrentSchedules)
-                {
-                    <tr>
-                        <td>@load.FacultyName</td>
-                        <td>@load.CourseCode</td>
-                        <td>@load.Schedule</td>
-                        <td>@load.RoomName</td>
-                        <td>@load.OfferCode</td>
-                        <td>@load.AcademicYear</td>
-                        <td>@load.Semester</td>
-                        <td><span class="badge badge-success">Assigned</span></td>
-                        <td class="action-cell">
-                            <button type="button"
-                                    class="btn-edit"
-                                    onclick='openEditScheduleModal(
-                                @load.ScheduleId,
-                                @load.FacultyId,
-                                @load.SubjectId,
-                                @(load.RoomId ?? 0),
-                                @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.Schedule ?? "")),
-                                @(load.OfferCode ?? 0),
-                                @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.AcademicYear ?? ""))
-                                )'>
+                // We determine the data-daycode based on the actual schedule string so JS can filter it
+                string dayCode = (load.Schedule ?? "").StartsWith("TTh") || (load.Schedule ?? "").StartsWith("TTH") ? "TTH" : "MWF";
+
+                <div class="class-list-item" data-daycode="@dayCode">
+                    <div class="class-time">@load.Schedule</div>
+
+                    <div class="class-info">
+                        <div class="class-code" style="display: flex; align-items: center;">
+                            @load.CourseCode
+                            <span style="font-weight:normal; color:#6b7280; font-size:12px; margin-left:6px;">(Offer: @(load.OfferCode ?? 0))</span>
+
+                            <!-- NEW: Load Status Badge -->
+                            <span style="background: #e1f5ee; color: #0f6e56; padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase; margin-left: 10px; letter-spacing: 0.5px;">Assigned</span>
+                        </div>
+
+                        <!-- NEW: Added Semester next to the Academic Year -->
+                        <div class="class-title">@load.FacultyName • @load.Semester (@load.AcademicYear)</div>
+                    </div>
+
+                    <div class="class-meta">
+                        <div class="class-room">@load.RoomName</div>
+
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" class="btn-edit" onclick='openEditScheduleModal(@load.ScheduleId, @load.FacultyId, @load.SubjectId, @(load.RoomId ?? 0), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.Schedule ?? "")), @(load.OfferCode ?? 0), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.AcademicYear ?? "")))'>
                                 Edit
                             </button>
-
-                            <button type="button"
-                                    class="btn-delete"
-                                    onclick='openDeleteScheduleModal(
-                                @load.ScheduleId,
-                                @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.CourseCode ?? "this course"))
-                                )'>
+                            <button type="button" class="btn-delete" onclick='openDeleteScheduleModal(@load.ScheduleId, @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.CourseCode ?? "this course")))'>
                                 Delete
                             </button>
-                        </td>
-                    </tr>
-                }
+                        </div>
+                    </div>
+                </div>
             }
-            else
-            {
-                <tr>
-                    <td colspan="9" style="text-align: center; padding: 18px; color: #777;">
-                        No assigned teaching loads found.
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+        }
+
+        <!-- Empty State Message -->
+        <div id="noClassesMessage" style="display: none; text-align: center; padding: 60px 20px; color: #6b7280; background: #f9fafb; border-radius: 12px; border: 1px dashed #d1d5db; margin-top: 10px;">
+            <svg style="width: 48px; height: 48px; margin: 0 auto 10px auto; color: #9ca3af;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <p style="margin: 0; font-size: 15px; font-weight: 500;">No schedules assigned for these days.</p>
+        </div>
+    </div>
 </div>
 
 <div id="editScheduleModal" class="modal-overlay">
@@ -449,19 +673,29 @@
                     </select>
                 </div>
 
-                <div class="edit-form-group">
-                    <label asp-for="EditDays">Days</label>
-                    <select asp-for="EditDays" id="editDays" class="edit-input" required>
-                        <option value="">Select Days</option>
-                        <option value="MWF">MWF</option>
-                        <option value="TTh">TTh</option>
-                        <option value="M">Monday</option>
-                        <option value="T">Tuesday</option>
-                        <option value="W">Wednesday</option>
-                        <option value="Th">Thursday</option>
-                        <option value="F">Friday</option>
-                        <option value="S">Saturday</option>
-                    </select>
+                <div class="edit-form-group" style="grid-column: span 2;">
+                    <label>Time Slot</label>
+                    <div class="modern-time-container">
+                        <select asp-for="EditDays" id="editDays" class="modern-time-input" required style="flex: 1.2;">
+                            <option value="">Select Days</option>
+                            <option value="MWF">MWF</option>
+                            <option value="TTh">TTh</option>
+                            <option value="M">Monday</option>
+                            <option value="T">Tuesday</option>
+                            <option value="W">Wednesday</option>
+                            <option value="Th">Thursday</option>
+                            <option value="F">Friday</option>
+                            <option value="S">Saturday</option>
+                        </select>
+
+                        <div class="time-separator">|</div>
+
+                        <input asp-for="EditStartTime" id="editStartTime" type="time" class="modern-time-input" required onclick="this.showPicker()" />
+
+                        <div class="time-separator">TO</div>
+
+                        <input asp-for="EditEndTime" id="editEndTime" type="time" class="modern-time-input" required onclick="this.showPicker()" />
+                    </div>
                 </div>
 
                 <div class="edit-form-group">
@@ -479,21 +713,11 @@
                 </div>
 
                 <div class="edit-form-group">
-                    <label asp-for="EditStartTime">Start Time</label>
-                    <input asp-for="EditStartTime" id="editStartTime" type="time" class="edit-input" required onclick="this.showPicker()" />
-                </div>
-
-                <div class="edit-form-group">
-                    <label asp-for="EditEndTime">End Time</label>
-                    <input asp-for="EditEndTime" id="editEndTime" type="time" class="edit-input" required onclick="this.showPicker()" />
-                </div>
-
-                <div class="edit-form-group">
                     <label asp-for="EditOfferCode">Offer Code</label>
                     <input asp-for="EditOfferCode" id="editOfferCode" type="number" class="edit-input" />
                 </div>
 
-                <div class="edit-form-group">
+                <div class="edit-form-group" style="grid-column: span 2;">
                     <label asp-for="EditAcademicYear">Academic Year</label>
                     <select asp-for="EditAcademicYear" id="editAcademicYear" class="edit-input" required>
                         <option value="">Select Academic Year</option>
@@ -544,7 +768,48 @@
 </div>
 
 <script>
+    // --- Tabs & Filtering Logic ---
+    function selectTab(element, dayCode) {
+        // Update tab visuals
+        document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
+        element.classList.add('active');
+
+        let visibleCount = 0;
+        let listContainer = document.getElementById('scheduleListContainer');
+
+        // Remove animation to re-trigger it
+        listContainer.classList.remove('fade-list');
+        void listContainer.offsetWidth; // Force browser reflow
+
+        // Filter items
+        document.querySelectorAll('.class-list-item').forEach(row => {
+            if (row.getAttribute('data-daycode') === dayCode) {
+                row.style.display = 'flex';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Add animation back
+        listContainer.classList.add('fade-list');
+
+        // Handle Empty State
+        if (visibleCount > 0) {
+            document.getElementById('noClassesMessage').style.display = 'none';
+        } else {
+            document.getElementById('noClassesMessage').style.display = 'block';
+        }
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
+        // Run logic once on load to default to MWF
+        let activeTab = document.querySelector('.day-tab.active');
+        if(activeTab) {
+            selectTab(activeTab, 'MWF');
+        }
+
+        // Room Fetching Logic
         const daysInput = document.getElementById("SelectedDays");
         const startInput = document.getElementById("StartTime");
         const endInput = document.getElementById("EndTime");
