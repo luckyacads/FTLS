@@ -38,7 +38,6 @@
     /* --- RESPONSIVE GRID CARDS UI --- */
     .subject-grid-container {
         display: grid;
-        /* This magic line makes it responsive: 3-4 cards per row on desktop, 1 on mobile */
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
         gap: 20px;
         margin-top: 25px;
@@ -53,14 +52,14 @@
         padding: 20px;
         transition: all 0.2s ease;
         box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-        border-top: 5px solid #07362d; /* Accent moved to the top for grid cards */
+        border-top: 5px solid #07362d;
         min-height: 160px;
     }
 
         .subject-card:hover {
             border-color: #d1d5db;
             box-shadow: 0 10px 20px -5px rgba(0,0,0,0.08);
-            transform: translateY(-4px); /* Hover pops the card up */
+            transform: translateY(-4px);
             border-top-color: #2ecc71;
         }
 
@@ -83,12 +82,12 @@
         font-weight: 500;
         line-height: 1.4;
         margin-bottom: 20px;
-        flex-grow: 1; /* Pushes the footer to the bottom */
+        flex-grow: 1;
     }
 
     .card-footer-row {
         display: flex;
-        justify-content: space-between;
+        justify-content: flex-end; /* Changed to push buttons to right since badge is gone */
         align-items: center;
         padding-top: 15px;
         border-top: 1px solid #f3f4f6;
@@ -103,19 +102,6 @@
         border-radius: 6px;
         font-weight: 700;
         font-size: 12px;
-    }
-
-    .badge-dept {
-        background: #f3f4f6;
-        color: #4b5563;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 11px;
-        font-weight: 600;
-        max-width: 150px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
     /* --- ACTION BUTTONS --- */
@@ -193,14 +179,12 @@
     <section style="background: transparent;">
         <div class="search-row" style="position: relative; max-width: 500px;">
             <svg style="position: absolute; left: 14px; top: 12px; width: 18px; height: 18px; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            <input type="text" id="subjectSearchInput" onkeyup="filterSubjects()" placeholder="Search by code, title, or department..." class="input" style="padding-left: 40px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);" />
+            <input type="text" id="subjectSearchInput" onkeyup="filterSubjects()" placeholder="Search by code or title..." class="input" style="padding-left: 40px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);" />
         </div>
 
         <div class="subject-grid-container">
             @foreach (var subject in Model.Subjects)
             {
-                var deptId = subject.DepartmentId;
-
                 <div class="subject-card">
                     <div class="card-header-row">
                         <div class="subject-code">@subject.Code</div>
@@ -210,12 +194,8 @@
                     <div class="subject-title">@subject.Title</div>
 
                     <div class="card-footer-row">
-                        <span class="badge-dept" title="@(subject.Department?.Name ?? "No Department")">
-                            @(subject.Department?.Name ?? "No Department")
-                        </span>
-
                         <div style="display: flex; gap: 6px;">
-                            <button class="btn-edit" onclick="showEditForm(@subject.SubjectId, '@subject.Code', '@subject.Title', @subject.Units, @deptId)">Edit</button>
+                            <button class="btn-edit" onclick="showEditForm(@subject.SubjectId, '@subject.Code', '@subject.Title', @subject.Units)">Edit</button>
 
                             <form method="post" asp-page-handler="DeleteSubject" style="margin:0;" onsubmit="return confirm('Are you sure you want to permanently delete @subject.Code?');">
                                 <input type="hidden" name="subjectId" value="@subject.SubjectId" />
@@ -259,20 +239,7 @@
                     <label>Subject Title</label>
                     <input type="text" asp-for="NewSubjectTitle" class="input" placeholder="e.g. Network Administration" required />
                 </div>
-
-                <div class="form-group" style="grid-column: span 2;">
-                    <label>Department</label>
-                    <select asp-for="NewSubjectDepartmentId" class="input" required>
-                        <option value="">-- Select Department --</option>
-                        @if (Model.Departments != null)
-                        {
-                            @foreach (var dept in Model.Departments)
-                            {
-                                <option value="@dept.Id">@dept.Name (@dept.Code)</option>
-                            }
-                        }
-                    </select>
-                </div>
+                
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 30px;">
@@ -308,20 +275,7 @@
                     <label>Subject Title</label>
                     <input type="text" asp-for="EditSubjectTitle" id="editSubjectTitle" class="input" required />
                 </div>
-
-                <div class="form-group" style="grid-column: span 2;">
-                    <label>Department</label>
-                    <select asp-for="EditSubjectDepartmentId" id="editSubjectDepartmentId" class="input" required>
-                        <option value="">-- Select Department --</option>
-                        @if (Model.Departments != null)
-                        {
-                            @foreach (var dept in Model.Departments)
-                            {
-                                <option value="@dept.Id">@dept.Name (@dept.Code)</option>
-                            }
-                        }
-                    </select>
-                </div>
+                
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 30px;">
@@ -341,22 +295,16 @@
         document.getElementById(modalId).style.display = "none";
     }
 
-    function showEditForm(id, code, title, units, departmentId) {
+    // REMOVED departmentId parameter
+    function showEditForm(id, code, title, units) {
         document.getElementById("editSubjectId").value = id;
         document.getElementById("editSubjectCode").value = code;
         document.getElementById("editSubjectTitle").value = title;
         document.getElementById("editSubjectUnits").value = units;
 
-        if (departmentId > 0) {
-            document.getElementById("editSubjectDepartmentId").value = departmentId;
-        } else {
-            document.getElementById("editSubjectDepartmentId").value = "";
-        }
-
         openModal('editSubjectModal');
     }
 
-    // Filter script updated for Grid Cards
     function filterSubjects() {
         var input = document.getElementById("subjectSearchInput");
         var filter = input.value.toLowerCase();
@@ -373,7 +321,6 @@
         });
     }
 
-    // Close modals if the user presses the Escape key
     document.addEventListener("keydown", function (event) {
         if (event.key === "Escape") {
             closeModal("addSubjectModal");

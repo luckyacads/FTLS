@@ -19,41 +19,39 @@ namespace FTLSV2.Pages.Admin
         }
 
         public List<Subject> Subjects { get; set; } = new List<Subject>();
-        public List<Department> Departments { get; set; } = new List<Department>();
+
+        // REMOVED: public List<Department> Departments { get; set; }
 
         [BindProperty] public string NewSubjectCode { get; set; }
         [BindProperty] public string NewSubjectTitle { get; set; }
         [BindProperty] public int NewSubjectUnits { get; set; }
-        // FIXED: Now uses ID instead of string
-        [BindProperty] public int NewSubjectDepartmentId { get; set; }
+        // REMOVED: [BindProperty] public int NewSubjectDepartmentId { get; set; }
 
         [BindProperty] public int EditSubjectId { get; set; }
         [BindProperty] public string EditSubjectCode { get; set; }
         [BindProperty] public string EditSubjectTitle { get; set; }
         [BindProperty] public int EditSubjectUnits { get; set; }
-        // FIXED: Now uses ID instead of string
-        [BindProperty] public int EditSubjectDepartmentId { get; set; }
+        // REMOVED: [BindProperty] public int EditSubjectDepartmentId { get; set; }
 
         public void OnGet()
         {
+            // REMOVED: .Include(s => s.Department) since we don't need it for the UI anymore
             Subjects = _db.Subjects
-                .Include(s => s.Department)
                 .OrderBy(s => s.Title)
                 .ToList();
-
-            Departments = _db.Departments.OrderBy(d => d.Name).ToList();
         }
 
         public IActionResult OnPostAddSubject()
         {
-            if (!string.IsNullOrEmpty(NewSubjectCode) && !string.IsNullOrEmpty(NewSubjectTitle) && NewSubjectDepartmentId > 0)
+            // CHANGED: Removed the department check
+            if (!string.IsNullOrEmpty(NewSubjectCode) && !string.IsNullOrEmpty(NewSubjectTitle))
             {
                 var subject = new Subject
                 {
                     Code = NewSubjectCode,
                     Title = NewSubjectTitle,
                     Units = NewSubjectUnits,
-                    DepartmentId = NewSubjectDepartmentId // Direct assignment!
+                    DepartmentId = null // Explicitly setting it to null
                 };
 
                 try
@@ -79,12 +77,13 @@ namespace FTLSV2.Pages.Admin
         {
             var subjectToEdit = _db.Subjects.FirstOrDefault(s => s.SubjectId == EditSubjectId);
 
-            if (subjectToEdit != null && EditSubjectDepartmentId > 0)
+            // CHANGED: Removed the department check
+            if (subjectToEdit != null)
             {
                 subjectToEdit.Code = EditSubjectCode;
                 subjectToEdit.Title = EditSubjectTitle;
                 subjectToEdit.Units = EditSubjectUnits;
-                subjectToEdit.DepartmentId = EditSubjectDepartmentId; // Direct assignment!
+                subjectToEdit.DepartmentId = null; // Explicitly setting it to null
 
                 try
                 {
