@@ -20,10 +20,9 @@ namespace FTLSV2.Pages.Admin
             _context = context;
         }
 
-        public User LoggedInUser { get; set; }
+        public User? LoggedInUser { get; set; } // Updated with ? to resolve warning
         public IList<User> DbUsers { get; set; } = new List<User>();
 
-        // Now correctly uses 'int' as the key
         public Dictionary<int, bool> UserHasSchedules { get; set; } = new();
 
         [BindProperty] public int InputMaxOverload { get; set; }
@@ -41,16 +40,13 @@ namespace FTLSV2.Pages.Admin
                 return RedirectToPage("/LoginPage");
             }
 
-            // Convert the session string into an integer for DB queries
             int activeId = int.Parse(activeIdString);
 
-            // Update this query in OnGet()
             DbUsers = _context.Users
-                .Include(u => u.Department) // <--- ADD THIS LINE to load the department data
+                .Include(u => u.Department)
                 .OrderByDescending(u => u.FacultyId)
                 .ToList();
 
-            // Compare using the parsed integer
             LoggedInUser = _context.Users
                 .FirstOrDefault(u => u.FacultyId == activeId);
 
@@ -66,7 +62,6 @@ namespace FTLSV2.Pages.Admin
 
             foreach (var user in DbUsers)
             {
-                // No string.IsNullOrWhiteSpace check needed since it's an int
                 UserHasSchedules[user.FacultyId] = facultiesWithSchedules.Contains(user.FacultyId);
             }
 
@@ -85,7 +80,6 @@ namespace FTLSV2.Pages.Admin
         }
 
         // --- HANDLES ACTIVATING / DEACTIVATING USERS ---
-        // Parameter updated to int
         public IActionResult OnPostToggleUserStatus(int facultyId)
         {
             var dbUser = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
@@ -116,7 +110,6 @@ namespace FTLSV2.Pages.Admin
         }
 
         // --- ASSIGN / UPDATE USER ROLE ---
-        // Parameter updated to int
         public IActionResult OnPostUpdateUserRole(int facultyId, string newRole)
         {
             var allowedRoles = new[] { "Faculty", "Chairman" };
@@ -143,7 +136,6 @@ namespace FTLSV2.Pages.Admin
                     return RedirectToPage();
                 }
 
-                // Restriction: only one Chairman per department.
                 if (newRole == "Chairman")
                 {
                     if (!user.DepartmentId.HasValue)
@@ -189,7 +181,6 @@ namespace FTLSV2.Pages.Admin
         }
 
         // --- UPDATE USER MAX UNITS ---
-        // Parameter updated to int
         public IActionResult OnPostUpdateUserUnits(int facultyId, int newUnits)
         {
             var user = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
@@ -215,7 +206,6 @@ namespace FTLSV2.Pages.Admin
         }
 
         // --- RESET USER PASSWORD ---
-        // Parameter updated to int
         public IActionResult OnPostResetPassword(int facultyId)
         {
             var dbUser = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
@@ -231,8 +221,7 @@ namespace FTLSV2.Pages.Admin
             return RedirectToPage();
         }
 
-        // --- DELETE USER ---
-        // Parameter updated to int
+        // --- DELETE USER (Soft Delete) ---
         public IActionResult OnPostDeleteUser(int facultyId)
         {
             var dbUser = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
@@ -248,10 +237,30 @@ namespace FTLSV2.Pages.Admin
                     _context.Schedules.RemoveRange(userSchedules);
                 }
 
-                _context.Users.Remove(dbUser);
+                dbUser.Is_delete = true;
+                dbUser.Status = "Inactive";
+
                 _context.SaveChanges();
 
-                TempData["SuccessMessage"] = $"Account for {dbUser.FirstName} {dbUser.LastName} has been permanently deleted.";
+                TempData["SuccessMessage"] = $"Account for {dbUser.FirstName} {dbUser.LastName} has been flagged as deleted.";
+            }
+
+            return RedirectToPage();
+        }
+
+        // --- RESTORE USER (Reverses Soft Delete) ---
+        public IActionResult OnPostRestoreUser(int facultyId)
+        {
+            var dbUser = _context.Users.FirstOrDefault(u => u.FacultyId == facultyId);
+
+            if (dbUser != null)
+            {
+                dbUser.Is_delete = false;
+                dbUser.Status = "Active";
+
+                _context.SaveChanges();
+
+                TempData["SuccessMessage"] = $"Account for {dbUser.FirstName} {dbUser.LastName} has been successfully restored!";
             }
 
             return RedirectToPage();

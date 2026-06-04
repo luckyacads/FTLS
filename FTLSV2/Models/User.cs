@@ -52,5 +52,9 @@ namespace FTLSV2.Models
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        // ---> ADDED: Soft Delete Flag
+        [Column("is_delete")]
+        public bool Is_delete { get; set; } = false;
     }
 }

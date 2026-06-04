@@ -7,11 +7,11 @@
 
 <head>
     <script>
-        if (localStorage.getItem('userStatus') === 'loggedOut') {
-            window.location.replace('/LoginPage');
-        } else {
-            localStorage.setItem('userStatus', 'loggedIn');
-        }
+            if (localStorage.getItem('userStatus') === 'loggedOut') {
+                window.location.replace('/LoginPage');
+            } else {
+                localStorage.setItem('userStatus', 'loggedIn');
+            }
     </script>
 </head>
 
@@ -253,13 +253,16 @@
                     {
                         var initials = $"{user.FirstName?[0]}{user.LastName?[0]}".ToUpper();
 
-                        // Status Logic for new registrations
-                        var statusText = string.IsNullOrEmpty(user.Status) ? "Pending" : user.Status;
-                        var statusClass = statusText == "Active" ? "green" : (statusText == "Pending" ? "yellow" : "red");
+                        bool isDeleted = user.Is_delete;
+
+                        var statusText = isDeleted ? "Deleted" : (string.IsNullOrEmpty(user.Status) ? "Pending" : user.Status);
+                        var statusClass = isDeleted ? "red" : (statusText == "Active" ? "green" : (statusText == "Pending" ? "yellow" : "red"));
 
                         bool hasSched = Model.UserHasSchedules.ContainsKey(user.FacultyId) && Model.UserHasSchedules[user.FacultyId];
 
-                        <tr>
+                        var rowStyle = isDeleted ? "color: #c0392b; background: #fdf0f0;" : "";
+
+                        <tr style="@rowStyle">
                             <td>@user.FacultyId</td>
                             <td>
                                 <div style="display:flex; align-items:center;">
@@ -331,7 +334,7 @@
                                     <form method="post" asp-page-handler="ToggleUserStatus" style="margin: 0;">
                                         <input type="hidden" name="facultyId" value="@user.FacultyId" />
                                         <button type="submit" class="dropdown-item-btn">
-                                            @(statusText == "Active" ? "Deactivate Account" : "Activate Account")
+                                            @(user.Status == "Active" ? "Deactivate Account" : "Activate Account")
                                         </button>
                                     </form>
 
@@ -340,10 +343,22 @@
                                         <button type="submit" class="dropdown-item-btn">Reset Password</button>
                                     </form>
 
-                                    <form id="deleteForm-@user.FacultyId" method="post" asp-page-handler="DeleteUser" style="margin: 0;">
-                                        <input type="hidden" name="facultyId" value="@user.FacultyId" />
-                                        <button type="button" class="dropdown-item-btn" style="color:red;" onclick="showDeleteModal('@user.FacultyId.ToString()', @hasSched.ToString().ToLower())">Delete User</button>
-                                    </form>
+                                    @if (isDeleted)
+                                    {
+                                        <!-- IF DELETED: Display Restore option instead -->
+                                        <form method="post" asp-page-handler="RestoreUser" style="margin: 0;">
+                                            <input type="hidden" name="facultyId" value="@user.FacultyId" />
+                                            <button type="submit" class="dropdown-item-btn" style="color: green; font-weight: bold;">Restore User</button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <!-- IF ACTIVE: Display ordinary Delete configuration option -->
+                                        <form id="deleteForm-@user.FacultyId" method="post" asp-page-handler="DeleteUser" style="margin: 0;">
+                                            <input type="hidden" name="facultyId" value="@user.FacultyId" />
+                                            <button type="button" class="dropdown-item-btn" style="color:red;" onclick="showDeleteModal('@user.FacultyId.ToString()', @hasSched.ToString().ToLower())">Delete User</button>
+                                        </form>
+                                    }
                                 </div>
                             </td>
                         </tr>
