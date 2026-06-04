@@ -28,21 +28,33 @@ namespace FTLSV2.Pages.Chairman
         [BindProperty] public int SelectedFacultyId { get; set; }
         [BindProperty] public int SelectedSubjectId { get; set; }
         [BindProperty] public int SelectedRoomId { get; set; }
-        [BindProperty] public string SelectedDays { get; set; }
+
+        // CHANGED: SelectedDays is now a List to catch checkbox array
+        [BindProperty] public List<string> SelectedDays { get; set; } = new List<string>();
+
         [BindProperty] public TimeSpan StartTime { get; set; }
         [BindProperty] public TimeSpan EndTime { get; set; }
         [BindProperty] public int? SelectedOfferCode { get; set; }
         [BindProperty] public string SelectedAcademicYear { get; set; }
 
+        // ADDED: New property to catch the Semester dropdown
+        [BindProperty] public string SelectedSemester { get; set; }
+
         [BindProperty] public int EditScheduleId { get; set; }
         [BindProperty] public int EditFacultyId { get; set; }
         [BindProperty] public int EditSubjectId { get; set; }
         [BindProperty] public int EditRoomId { get; set; }
-        [BindProperty] public string EditDays { get; set; }
+
+        // CHANGED: EditDays is now a List for checkboxes in the Edit Modal
+        [BindProperty] public List<string> EditDays { get; set; } = new List<string>();
+
         [BindProperty] public TimeSpan EditStartTime { get; set; }
         [BindProperty] public TimeSpan EditEndTime { get; set; }
         [BindProperty] public int? EditOfferCode { get; set; }
         [BindProperty] public string EditAcademicYear { get; set; }
+
+        // ADDED: New property for Semester in the Edit Modal
+        [BindProperty] public string EditSemester { get; set; }
 
         [BindProperty] public int DeleteScheduleId { get; set; }
         public int GlobalMaxLimit { get; set; }
@@ -58,10 +70,8 @@ namespace FTLSV2.Pages.Chairman
             return Page();
         }
 
-        // ---> FIXED: Added this missing method for your JavaScript fetch() to call
         public IActionResult OnGetAvailableRooms(string days, string startTime, string endTime, int? excludeScheduleId)
         {
-            // Returns the rooms to the frontend as JSON so the dropdown stops throwing an error
             var rooms = _context.Rooms.Select(r => new {
                 roomId = r.RoomId,
                 name = r.Name
@@ -75,9 +85,9 @@ namespace FTLSV2.Pages.Chairman
             var activeUserString = HttpContext.Session.GetString("ActiveUser");
             if (string.IsNullOrEmpty(activeUserString)) return RedirectToPage("/LoginPage");
 
-            if (SelectedFacultyId == 0 || string.IsNullOrEmpty(SelectedDays) || SelectedSubjectId == 0)
+            if (SelectedFacultyId == 0 || SelectedDays == null || SelectedDays.Count == 0 || SelectedSubjectId == 0 || string.IsNullOrEmpty(SelectedSemester))
             {
-                TempData["ErrorMessage"] = "Please fill in all the schedule fields.";
+                TempData["ErrorMessage"] = "Please fill in all the schedule fields, including days and semester.";
                 LoadPageData();
                 return Page();
             }
@@ -106,7 +116,9 @@ namespace FTLSV2.Pages.Chairman
                 return Page();
             }
 
-            string formattedTimeSlot = $"{SelectedDays} {DateTime.Today.Add(StartTime):h:mm tt} - {DateTime.Today.Add(EndTime):h:mm tt}";
+            // CHANGED: Convert the List of selected days into a comma-separated string
+            string joinedDays = string.Join(", ", SelectedDays);
+            string formattedTimeSlot = $"{joinedDays} {DateTime.Today.Add(StartTime):h:mm tt} - {DateTime.Today.Add(EndTime):h:mm tt}";
 
             var newSchedule = new Schedule
             {
@@ -117,11 +129,13 @@ namespace FTLSV2.Pages.Chairman
                 AssignedUnits = officialSubjectUnits,
                 OfferCode = SelectedOfferCode,
                 AcademicYear = SelectedAcademicYear,
-                Semester = "1st Sem"
+                Semester = SelectedSemester // UPDATED to use dynamic semester dropdown
             };
 
             _context.Schedules.Add(newSchedule);
             _context.SaveChanges();
+
+            TempData["SuccessMessage"] = "Schedule successfully assigned!";
 
             return RedirectToPage();
         }
@@ -131,12 +145,23 @@ namespace FTLSV2.Pages.Chairman
             var schedule = _context.Schedules.FirstOrDefault(s => s.ScheduleId == EditScheduleId);
             if (schedule == null) return Page();
 
+            if (EditDays == null || EditDays.Count == 0)
+            {
+                TempData["ErrorMessage"] = "You must select at least one day.";
+                return RedirectToPage();
+            }
+
             schedule.FacultyId = EditFacultyId;
             schedule.SubjectId = EditSubjectId;
             schedule.RoomId = EditRoomId > 0 ? EditRoomId : null;
-            schedule.TimeSlot = $"{EditDays} {DateTime.Today.Add(EditStartTime):h:mm tt} - {DateTime.Today.Add(EditEndTime):h:mm tt}";
+
+            // CHANGED: Convert List of edited days back into a string
+            string joinedEditDays = string.Join(", ", EditDays);
+            schedule.TimeSlot = $"{joinedEditDays} {DateTime.Today.Add(EditStartTime):h:mm tt} - {DateTime.Today.Add(EditEndTime):h:mm tt}";
+
             schedule.OfferCode = EditOfferCode;
             schedule.AcademicYear = EditAcademicYear;
+            schedule.Semester = EditSemester; // Save the updated Semester
 
             _context.SaveChanges();
             return RedirectToPage();
@@ -158,11 +183,10 @@ namespace FTLSV2.Pages.Chairman
             var settings = _context.SystemSettings.FirstOrDefault();
             GlobalMaxLimit = settings?.MaxOverload ?? 21;
 
-            ActiveFaculty = _context.Users.Where(u => u.Role == "Faculty").ToList();
+            ActiveFaculty = _context.Users.Where(u => u.Role == "Faculty" && u.Is_delete == false).ToList(); // Ensure deleted faculty aren't shown
             ActiveSubjects = _context.Subjects.ToList();
             AllRooms = _context.Rooms.ToList();
 
-            // ---> FIXED: Populated the Academic Years list so the UI dropdown isn't blank
             AvailableAcademicYears = new List<string>
             {
                 "2023-2024",

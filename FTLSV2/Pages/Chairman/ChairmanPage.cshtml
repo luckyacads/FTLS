@@ -183,7 +183,6 @@
         white-space: nowrap;
     }
 
-    /* --- MODERN TIME PICKER UI --- */
     .modern-time-container {
         display: flex;
         align-items: center;
@@ -240,7 +239,6 @@
         letter-spacing: 0.5px;
     }
 
-    /* --- NEW ALTERNATIVE UI: TABS & ROW CARDS --- */
     .schedule-header-area {
         display: flex;
         justify-content: space-between;
@@ -260,7 +258,7 @@
 
     .day-tab {
         padding: 8px 20px;
-        border-radius: 30px; /* Pill shape */
+        border-radius: 30px;
         background: #f3f4f6;
         color: #4b5563;
         font-weight: 600;
@@ -284,7 +282,6 @@
             transform: translateY(-1px);
         }
 
-    /* Floating Row Cards */
     .class-list-container {
         display: flex;
         flex-direction: column;
@@ -301,14 +298,14 @@
         padding: 16px 20px;
         transition: all 0.2s ease;
         box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        border-left: 5px solid #10b981; /* Green accent border */
+        border-left: 5px solid #10b981;
     }
 
         .class-list-item:hover {
             border-color: #d1d5db;
             box-shadow: 0 6px 12px -2px rgba(0,0,0,0.05);
-            transform: translateX(4px); /* Slight slide effect */
-            border-left-color: #f59e0b; /* Changes color on hover */
+            transform: translateX(4px);
+            border-left-color: #f59e0b;
         }
 
     .class-time {
@@ -362,66 +359,89 @@
         font-size: 13px;
     }
 
-    /* Animation */
+    /* --- NEW CHECKBOX STYLES --- */
+    .checkbox-group {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        background: #f8fafc;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        padding: 8px 15px;
+        height: 100%; /* Matches the height of the time picker */
+        box-sizing: border-box;
+    }
+
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #374151;
+        cursor: pointer;
+    }
+
+        .checkbox-label input[type="checkbox"] {
+            accent-color: #07362d;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
     .fade-list {
         animation: fadeSlideUp 0.3s ease-out;
     }
 
     @@keyframes fadeSlideUp {
-        from
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
 
-    {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     @@media (max-width: 800px) {
-        .edit-form-grid
+        .edit-form-grid {
+            grid-template-columns: 1fr;
+        }
 
-    {
-        grid-template-columns: 1fr;
-    }
+        .modal-card {
+            width: calc(100% - 30px);
+            padding: 24px 20px;
+        }
 
-    .modal-card {
-        width: calc(100% - 30px);
-        padding: 24px 20px;
-    }
+        .modern-time-container {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 5px;
+        }
 
-    .modern-time-container {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 5px;
-    }
+        .time-separator {
+            display: none;
+        }
 
-    .time-separator {
-        display: none;
-    }
+        .class-list-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
 
-    .class-list-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
+        .class-time {
+            width: 100%;
+        }
 
-    .class-time {
-        width: 100%;
-    }
-
-    .class-meta {
-        width: 100%;
-        justify-content: flex-start;
-        margin-top: 8px;
-        padding-top: 12px;
-        border-top: 1px solid #f3f4f6;
-    }
-
+        .class-meta {
+            width: 100%;
+            justify-content: flex-start;
+            margin-top: 8px;
+            padding-top: 12px;
+            border-top: 1px solid #f3f4f6;
+        }
     }
 </style>
 
@@ -468,7 +488,6 @@
 
                     <select asp-for="SelectedFacultyId" required>
                         <option value="">-- Select Faculty --</option>
-
                         @if (Model.ActiveFaculty != null)
                         {
                             @foreach (var faculty in Model.ActiveFaculty)
@@ -484,7 +503,6 @@
 
                     <select asp-for="SelectedSubjectId" required>
                         <option value="">-- Select a Course --</option>
-
                         @if (Model.ActiveSubjects != null)
                         {
                             @foreach (var subject in Model.ActiveSubjects)
@@ -497,38 +515,32 @@
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                
+                <div class="form-group" style="margin-bottom: 20px; width: 100%;">
+                    <label style="display: block; font-weight: bold; color: #07362d; margin-bottom: 8px;">Schedule Days</label>
+                    <div class="checkbox-group" id="daysCheckboxGroup">
+                        <label class="checkbox-label"><input type="checkbox" name="SelectedDays" value="M"> M</label>
+                        <label class="checkbox-label"><input type="checkbox" name="SelectedDays" value="T"> T</label>
+                        <label class="checkbox-label"><input type="checkbox" name="SelectedDays" value="W"> W</label>
+                        <label class="checkbox-label"><input type="checkbox" name="SelectedDays" value="Th"> Th</label>
+                        <label class="checkbox-label"><input type="checkbox" name="SelectedDays" value="F"> F</label>
+                        <label class="checkbox-label"><input type="checkbox" name="SelectedDays" value="S"> S</label>
+                    </div>
+                </div>
+
                 <div class="form-group" style="margin-bottom: 20px; width: 100%;">
                     <label style="display: block; font-weight: bold; color: #07362d; margin-bottom: 8px;">Time Slot</label>
-
                     <div class="modern-time-container">
-                        <select asp-for="SelectedDays" required class="modern-time-input" style="flex: 1.2;">
-                            <option value="" disabled selected>Day</option>
-                            <option value="MWF">MWF</option>
-                            <option value="TTh">TTh</option>
-                            <option value="M">Monday</option>
-                            <option value="T">Tuesday</option>
-                            <option value="W">Wednesday</option>
-                            <option value="Th">Thursday</option>
-                            <option value="F">Friday</option>
-                            <option value="S">Saturday</option>
-                        </select>
-
-                        <div class="time-separator">|</div>
-
                         <input type="time" asp-for="StartTime" required class="modern-time-input" onclick="this.showPicker()" title="Start Time" />
-
                         <div class="time-separator">TO</div>
-
                         <input type="time" asp-for="EndTime" required class="modern-time-input" onclick="this.showPicker()" title="End Time" />
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label>Assigned Room</label>
-
                     <select asp-for="SelectedRoomId" required style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
                         <option value="">-- Select a Room --</option>
-
                         @if (Model.AllRooms != null)
                         {
                             @foreach (var room in Model.AllRooms)
@@ -541,20 +553,27 @@
 
                 <div class="form-group">
                     <label>Offer Code</label>
-
                     <input type="number"
                            asp-for="SelectedOfferCode"
                            required
                            style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;"
                            placeholder="Enter offer code" />
                 </div>
+                
+                <div class="form-group">
+                    <label>Semester</label>
+                    <select asp-for="SelectedSemester" required style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                        <option value="">-- Select Semester --</option>
+                        <option value="1st Semester">1st Semester</option>
+                        <option value="2nd Semester">2nd Semester</option>
+                        <option value="Summer">Summer</option>
+                    </select>
+                </div>
 
                 <div class="form-group">
                     <label>Academic Year</label>
-
                     <select asp-for="SelectedAcademicYear" required style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
                         <option value="">-- Select Academic Year --</option>
-
                         @if (Model.AvailableAcademicYears != null)
                         {
                             @foreach (var year in Model.AvailableAcademicYears)
@@ -577,34 +596,21 @@
         <h3 style="margin: 0; font-size: 20px; color: #111827;">Assigned Teaching Loads</h3>
     </div>
 
-    <div class="day-tabs" id="printSidebar">
-        <button class="day-tab active" onclick="selectTab(this, 'MWF')">Monday, Wednesday, Friday</button>
-        <button class="day-tab" onclick="selectTab(this, 'TTH')">Tuesday, Thursday</button>
-    </div>
-
-    <!-- The Floating List Area -->
     <div class="class-list-container" id="scheduleListContainer">
-
         @if (Model.CurrentSchedules != null && Model.CurrentSchedules.Any())
         {
             @foreach (var load in Model.CurrentSchedules)
             {
-                // We determine the data-daycode based on the actual schedule string so JS can filter it
-                string dayCode = (load.Schedule ?? "").StartsWith("TTh") || (load.Schedule ?? "").StartsWith("TTH") ? "TTH" : "MWF";
-
-                <div class="class-list-item" data-daycode="@dayCode">
+                <div class="class-list-item">
                     <div class="class-time">@load.Schedule</div>
 
                     <div class="class-info">
                         <div class="class-code" style="display: flex; align-items: center;">
                             @load.CourseCode
                             <span style="font-weight:normal; color:#6b7280; font-size:12px; margin-left:6px;">(Offer: @(load.OfferCode ?? 0))</span>
-
-                            <!-- NEW: Load Status Badge -->
                             <span style="background: #e1f5ee; color: #0f6e56; padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase; margin-left: 10px; letter-spacing: 0.5px;">Assigned</span>
                         </div>
 
-                        <!-- NEW: Added Semester next to the Academic Year -->
                         <div class="class-title">@load.FacultyName • @load.Semester (@load.AcademicYear)</div>
                     </div>
 
@@ -612,7 +618,7 @@
                         <div class="class-room">@load.RoomName</div>
 
                         <div style="display: flex; gap: 8px;">
-                            <button type="button" class="btn-edit" onclick='openEditScheduleModal(@load.ScheduleId, @load.FacultyId, @load.SubjectId, @(load.RoomId ?? 0), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.Schedule ?? "")), @(load.OfferCode ?? 0), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.AcademicYear ?? "")))'>
+                            <button type="button" class="btn-edit" onclick='openEditScheduleModal(@load.ScheduleId, @load.FacultyId, @load.SubjectId, @(load.RoomId ?? 0), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.Schedule ?? "")), @(load.OfferCode ?? 0), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.AcademicYear ?? "")), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.Semester ?? "")))'>
                                 Edit
                             </button>
                             <button type="button" class="btn-delete" onclick='openDeleteScheduleModal(@load.ScheduleId, @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.CourseCode ?? "this course")))'>
@@ -623,14 +629,12 @@
                 </div>
             }
         }
-
-        <!-- Empty State Message -->
-        <div id="noClassesMessage" style="display: none; text-align: center; padding: 60px 20px; color: #6b7280; background: #f9fafb; border-radius: 12px; border: 1px dashed #d1d5db; margin-top: 10px;">
-            <svg style="width: 48px; height: 48px; margin: 0 auto 10px auto; color: #9ca3af;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <p style="margin: 0; font-size: 15px; font-weight: 500;">No schedules assigned for these days.</p>
-        </div>
+        else
+        {
+            <div id="noClassesMessage" style="text-align: center; padding: 60px 20px; color: #6b7280; background: #f9fafb; border-radius: 12px; border: 1px dashed #d1d5db; margin-top: 10px;">
+                <p style="margin: 0; font-size: 15px; font-weight: 500;">No schedules assigned yet.</p>
+            </div>
+        }
     </div>
 </div>
 
@@ -674,26 +678,22 @@
                 </div>
 
                 <div class="edit-form-group" style="grid-column: span 2;">
+                    <label>Schedule Days</label>
+                    <div class="checkbox-group" id="editDaysGroup">
+                        <label class="checkbox-label"><input type="checkbox" name="EditDays" value="M"> M</label>
+                        <label class="checkbox-label"><input type="checkbox" name="EditDays" value="T"> T</label>
+                        <label class="checkbox-label"><input type="checkbox" name="EditDays" value="W"> W</label>
+                        <label class="checkbox-label"><input type="checkbox" name="EditDays" value="Th"> Th</label>
+                        <label class="checkbox-label"><input type="checkbox" name="EditDays" value="F"> F</label>
+                        <label class="checkbox-label"><input type="checkbox" name="EditDays" value="S"> S</label>
+                    </div>
+                </div>
+
+                <div class="edit-form-group" style="grid-column: span 2;">
                     <label>Time Slot</label>
                     <div class="modern-time-container">
-                        <select asp-for="EditDays" id="editDays" class="modern-time-input" required style="flex: 1.2;">
-                            <option value="">Select Days</option>
-                            <option value="MWF">MWF</option>
-                            <option value="TTh">TTh</option>
-                            <option value="M">Monday</option>
-                            <option value="T">Tuesday</option>
-                            <option value="W">Wednesday</option>
-                            <option value="Th">Thursday</option>
-                            <option value="F">Friday</option>
-                            <option value="S">Saturday</option>
-                        </select>
-
-                        <div class="time-separator">|</div>
-
                         <input asp-for="EditStartTime" id="editStartTime" type="time" class="modern-time-input" required onclick="this.showPicker()" />
-
                         <div class="time-separator">TO</div>
-
                         <input asp-for="EditEndTime" id="editEndTime" type="time" class="modern-time-input" required onclick="this.showPicker()" />
                     </div>
                 </div>
@@ -716,8 +716,18 @@
                     <label asp-for="EditOfferCode">Offer Code</label>
                     <input asp-for="EditOfferCode" id="editOfferCode" type="number" class="edit-input" />
                 </div>
+                
+                <div class="edit-form-group">
+                    <label asp-for="EditSemester">Semester</label>
+                    <select asp-for="EditSemester" id="editSemester" class="edit-input" required>
+                        <option value="">Select Semester</option>
+                        <option value="1st Semester">1st Semester</option>
+                        <option value="2nd Semester">2nd Semester</option>
+                        <option value="Summer">Summer</option>
+                    </select>
+                </div>
 
-                <div class="edit-form-group" style="grid-column: span 2;">
+                <div class="edit-form-group">
                     <label asp-for="EditAcademicYear">Academic Year</label>
                     <select asp-for="EditAcademicYear" id="editAcademicYear" class="edit-input" required>
                         <option value="">Select Academic Year</option>
@@ -733,13 +743,8 @@
             </div>
 
             <div class="modal-actions">
-                <button type="button" class="btn-cancel" onclick="closeModal('editScheduleModal')">
-                    Cancel
-                </button>
-
-                <button type="submit" class="btn-primary">
-                    Update Schedule
-                </button>
+                <button type="button" class="btn-cancel" onclick="closeModal('editScheduleModal')">Cancel</button>
+                <button type="submit" class="btn-primary">Update Schedule</button>
             </div>
         </form>
     </div>
@@ -752,103 +757,58 @@
 <div id="deleteScheduleModal" class="modal-overlay">
     <div class="modal-card modal-card-small">
         <h3 class="delete-title">Are you sure?</h3>
-
         <p id="deleteScheduleMessage" class="delete-message"></p>
-
         <div class="modal-actions center-actions">
-            <button type="button" class="btn-cancel" onclick="closeModal('deleteScheduleModal')">
-                Cancel
-            </button>
-
-            <button type="button" class="btn-danger" onclick="submitDeleteSchedule()">
-                Delete
-            </button>
+            <button type="button" class="btn-cancel" onclick="closeModal('deleteScheduleModal')">Cancel</button>
+            <button type="button" class="btn-danger" onclick="submitDeleteSchedule()">Delete</button>
         </div>
     </div>
 </div>
 
 <script>
-    // --- Tabs & Filtering Logic ---
-    function selectTab(element, dayCode) {
-        // Update tab visuals
-        document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
-        element.classList.add('active');
-
-        let visibleCount = 0;
-        let listContainer = document.getElementById('scheduleListContainer');
-
-        // Remove animation to re-trigger it
-        listContainer.classList.remove('fade-list');
-        void listContainer.offsetWidth; // Force browser reflow
-
-        // Filter items
-        document.querySelectorAll('.class-list-item').forEach(row => {
-            if (row.getAttribute('data-daycode') === dayCode) {
-                row.style.display = 'flex';
-                visibleCount++;
-            } else {
-                row.style.display = 'none';
-            }
-        });
-
-        // Add animation back
-        listContainer.classList.add('fade-list');
-
-        // Handle Empty State
-        if (visibleCount > 0) {
-            document.getElementById('noClassesMessage').style.display = 'none';
-        } else {
-            document.getElementById('noClassesMessage').style.display = 'block';
-        }
-    }
-
     document.addEventListener("DOMContentLoaded", function () {
-        // Run logic once on load to default to MWF
-        let activeTab = document.querySelector('.day-tab.active');
-        if(activeTab) {
-            selectTab(activeTab, 'MWF');
-        }
-
-        // Room Fetching Logic
-        const daysInput = document.getElementById("SelectedDays");
+        // Room Fetching Logic for Checkboxes
+        const checkboxes = document.querySelectorAll('input[name="SelectedDays"]');
         const startInput = document.getElementById("StartTime");
         const endInput = document.getElementById("EndTime");
         const roomDropdown = document.getElementById("SelectedRoomId");
 
-        if (daysInput && startInput && endInput && roomDropdown) {
-            daysInput.addEventListener("change", fetchAvailableRooms);
+        // Event listeners for New Schedule
+        checkboxes.forEach(cb => cb.addEventListener("change", fetchAvailableRooms));
+        if (startInput && endInput && roomDropdown) {
             startInput.addEventListener("change", fetchAvailableRooms);
             endInput.addEventListener("change", fetchAvailableRooms);
         }
-
-        const editDaysInput = document.getElementById("editDays");
+        
+        // Event listeners for Edit Modal
+        const editCheckboxes = document.querySelectorAll('input[name="EditDays"]');
         const editStartInput = document.getElementById("editStartTime");
         const editEndInput = document.getElementById("editEndTime");
-
-        if (editDaysInput && editStartInput && editEndInput) {
-            editDaysInput.addEventListener("change", fetchAvailableRoomsForEdit);
+        
+        editCheckboxes.forEach(cb => cb.addEventListener("change", fetchAvailableRoomsForEdit));
+        if (editStartInput && editEndInput) {
             editStartInput.addEventListener("change", fetchAvailableRoomsForEdit);
             editEndInput.addEventListener("change", fetchAvailableRoomsForEdit);
         }
 
+        // Logic for fetching available rooms based on checked days
         function fetchAvailableRooms() {
-            const days = daysInput.value;
+            // Get all checked checkboxes
+            const checkedDays = Array.from(document.querySelectorAll('input[name="SelectedDays"]:checked')).map(cb => cb.value).join(", ");
             const start = startInput.value;
             const end = endInput.value;
 
-            if (days && start && end) {
+            if (checkedDays && start && end) {
                 roomDropdown.innerHTML = '<option value="">Searching for available rooms...</option>';
 
-                fetch(`?handler=AvailableRooms&days=${encodeURIComponent(days)}&startTime=${encodeURIComponent(start)}&endTime=${encodeURIComponent(end)}`)
+                fetch(`?handler=AvailableRooms&days=${encodeURIComponent(checkedDays)}&startTime=${encodeURIComponent(start)}&endTime=${encodeURIComponent(end)}`)
                     .then(response => response.json())
                     .then(data => {
                         roomDropdown.innerHTML = '';
-
                         if (!data || data.length === 0) {
-                            roomDropdown.innerHTML = '<option value="">-- No Rooms Available at this Time! --</option>';
+                            roomDropdown.innerHTML = '<option value="">-- No Rooms Available! --</option>';
                         } else {
                             roomDropdown.innerHTML = '<option value="">-- Select an Available Room --</option>';
-
                             data.forEach(room => {
                                 const option = document.createElement("option");
                                 option.value = room.roomId;
@@ -858,143 +818,119 @@
                         }
                     })
                     .catch(error => {
-                        console.error("Error fetching rooms:", error);
                         roomDropdown.innerHTML = '<option value="">-- Error loading rooms --</option>';
                     });
             }
         }
     });
 
-    function openEditScheduleModal(scheduleId, facultyId, subjectId, roomId, scheduleText, offerCode, academicYear) {
+    // Opening Edit Modal Logic (Now parses checkboxes correctly)
+    function openEditScheduleModal(scheduleId, facultyId, subjectId, roomId, scheduleText, offerCode, academicYear, semester) {
         document.getElementById("editScheduleId").value = scheduleId;
         document.getElementById("editFacultyId").value = facultyId;
         document.getElementById("editSubjectId").value = subjectId;
         document.getElementById("editRoomId").value = roomId || 0;
         document.getElementById("editOfferCode").value = offerCode ?? "";
         document.getElementById("editAcademicYear").value = academicYear || "";
+        document.getElementById("editSemester").value = semester || "";
 
         const parsed = parseScheduleText(scheduleText);
+        
+        // Clear all checkboxes first
+        document.querySelectorAll('input[name="EditDays"]').forEach(cb => cb.checked = false);
 
         if (parsed) {
-            document.getElementById("editDays").value = parsed.days;
+            // Check the appropriate boxes based on the parsed string
+            parsed.days.forEach(day => {
+               const checkbox = document.querySelector(`input[name="EditDays"][value="${day.trim()}"]`);
+               if(checkbox) checkbox.checked = true;
+            });
+            
             document.getElementById("editStartTime").value = parsed.startTime;
             document.getElementById("editEndTime").value = parsed.endTime;
         }
 
         openModal("editScheduleModal");
-
         fetchAvailableRoomsForEdit(roomId || 0);
     }
 
     function parseScheduleText(scheduleText) {
-        if (!scheduleText) {
-            return null;
+        if (!scheduleText) return null;
+
+        // E.g. "M, W, F 8:00 AM - 10:00 AM"
+        // Split by the space before the numbers start to separate Days from Time
+        const match = scheduleText.match(/^([A-Za-z,\s]+)\s(\d{1,2}:\d{2}\s(?:AM|PM))\s-\s(\d{1,2}:\d{2}\s(?:AM|PM))$/i);
+
+        if (match && match.length === 4) {
+             const daysArray = match[1].split(","); // Split "M, W, F" into ["M", " W", " F"]
+             return {
+                 days: daysArray,
+                 startTime: convertToTimeInputValue(match[2]),
+                 endTime: convertToTimeInputValue(match[3])
+             };
         }
-
-        const parts = scheduleText.trim().split(/\s+/);
-
-        if (parts.length < 6) {
-            return null;
-        }
-
-        const days = parts[0];
-        const startRaw = `${parts[1]} ${parts[2]}`;
-        const endRaw = `${parts[4]} ${parts[5]}`;
-
-        return {
-            days: days,
-            startTime: convertToTimeInputValue(startRaw),
-            endTime: convertToTimeInputValue(endRaw)
-        };
+        
+        return null;
     }
 
     function convertToTimeInputValue(timeText) {
         const date = new Date(`1970-01-01 ${timeText}`);
-
-        if (isNaN(date.getTime())) {
-            return "";
-        }
-
+        if (isNaN(date.getTime())) return "";
         const hours = String(date.getHours()).padStart(2, "0");
         const minutes = String(date.getMinutes()).padStart(2, "0");
-
         return `${hours}:${minutes}`;
     }
 
     function fetchAvailableRoomsForEdit(currentRoomId = null) {
         const scheduleId = document.getElementById("editScheduleId").value;
-        const days = document.getElementById("editDays").value;
+        const checkedEditDays = Array.from(document.querySelectorAll('input[name="EditDays"]:checked')).map(cb => cb.value).join(", ");
         const start = document.getElementById("editStartTime").value;
         const end = document.getElementById("editEndTime").value;
         const editRoomDropdown = document.getElementById("editRoomId");
-
         const previouslySelectedRoomId = currentRoomId || editRoomDropdown.value || 0;
 
-        if (!days || !start || !end) {
-            return;
-        }
+        if (!checkedEditDays || !start || !end) return;
 
-        editRoomDropdown.innerHTML = '<option value="">Searching for available rooms...</option>';
+        editRoomDropdown.innerHTML = '<option value="">Searching...</option>';
 
-        fetch(`?handler=AvailableRooms&days=${encodeURIComponent(days)}&startTime=${encodeURIComponent(start)}&endTime=${encodeURIComponent(end)}&excludeScheduleId=${encodeURIComponent(scheduleId)}`)
+        fetch(`?handler=AvailableRooms&days=${encodeURIComponent(checkedEditDays)}&startTime=${encodeURIComponent(start)}&endTime=${encodeURIComponent(end)}&excludeScheduleId=${encodeURIComponent(scheduleId)}`)
             .then(response => response.json())
             .then(data => {
                 editRoomDropdown.innerHTML = '<option value="0">No room assigned</option>';
-
                 if (!data || data.length === 0) {
-                    const option = document.createElement("option");
-                    option.value = "";
-                    option.textContent = "-- No Rooms Available at this Time! --";
-                    editRoomDropdown.appendChild(option);
+                    editRoomDropdown.innerHTML = '<option value="">-- No Rooms Available! --</option>';
                     return;
                 }
-
                 data.forEach(room => {
                     const option = document.createElement("option");
                     option.value = room.roomId;
                     option.textContent = room.name;
                     editRoomDropdown.appendChild(option);
                 });
-
                 editRoomDropdown.value = previouslySelectedRoomId;
-            })
-            .catch(error => {
-                console.error("Error fetching edit rooms:", error);
-                editRoomDropdown.innerHTML = '<option value="">-- Error loading rooms --</option>';
             });
     }
 
+    // Modal Handling Functions
     function openDeleteScheduleModal(scheduleId, courseCode) {
         document.getElementById("deleteScheduleId").value = scheduleId;
-
-        document.getElementById("deleteScheduleMessage").innerText =
-            `This will permanently delete the assigned schedule for ${courseCode}. This action cannot be undone.`;
-
+        document.getElementById("deleteScheduleMessage").innerText = `This will permanently delete the assigned schedule for ${courseCode}. This action cannot be undone.`;
         openModal("deleteScheduleModal");
     }
 
     function submitDeleteSchedule() {
         const form = document.getElementById("deleteScheduleForm");
-
-        if (form) {
-            form.submit();
-        }
+        if (form) form.submit();
     }
 
     function openModal(modalId) {
         const modal = document.getElementById(modalId);
-
-        if (modal) {
-            modal.style.display = "flex";
-        }
+        if (modal) modal.style.display = "flex";
     }
 
     function closeModal(modalId) {
         const modal = document.getElementById(modalId);
-
-        if (modal) {
-            modal.style.display = "none";
-        }
+        if (modal) modal.style.display = "none";
     }
 
     document.addEventListener("keydown", function (event) {
@@ -1007,13 +943,7 @@
     document.addEventListener("click", function (event) {
         const editModal = document.getElementById("editScheduleModal");
         const deleteModal = document.getElementById("deleteScheduleModal");
-
-        if (event.target === editModal) {
-            closeModal("editScheduleModal");
-        }
-
-        if (event.target === deleteModal) {
-            closeModal("deleteScheduleModal");
-        }
+        if (event.target === editModal) closeModal("editScheduleModal");
+        if (event.target === deleteModal) closeModal("deleteScheduleModal");
     });
 </script>
