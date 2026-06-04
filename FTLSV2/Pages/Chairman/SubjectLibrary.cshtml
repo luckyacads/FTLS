@@ -10,7 +10,6 @@
 }
 
 <style>
-    /* --- MODERN FORM INPUTS --- */
     .form-group label {
         display: block;
         margin-bottom: 6px;
@@ -35,7 +34,6 @@
             box-shadow: 0 0 0 3px rgba(7,54,45,0.1);
         }
 
-    /* --- RESPONSIVE GRID CARDS UI --- */
     .subject-grid-container {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -60,8 +58,18 @@
             border-color: #d1d5db;
             box-shadow: 0 10px 20px -5px rgba(0,0,0,0.08);
             transform: translateY(-4px);
-            border-top-color: #2ecc71;
         }
+
+        /* Deleted state style */
+        .subject-card.is-deleted {
+            background: #fdf0f0;
+            border-top-color: #c0392b;
+            opacity: 0.85;
+        }
+
+            .subject-card.is-deleted:hover {
+                transform: translateY(-2px);
+            }
 
     .card-header-row {
         display: flex;
@@ -87,14 +95,13 @@
 
     .card-footer-row {
         display: flex;
-        justify-content: flex-end; /* Changed to push buttons to right since badge is gone */
+        justify-content: flex-end;
         align-items: center;
         padding-top: 15px;
         border-top: 1px solid #f3f4f6;
         margin-top: auto;
     }
 
-    /* PILL BADGES */
     .badge-units {
         background: #eef2ff;
         color: #1d4ed8;
@@ -104,7 +111,6 @@
         font-size: 12px;
     }
 
-    /* --- ACTION BUTTONS --- */
     .btn-edit {
         padding: 6px 12px;
         border: 1px solid #dcdcdc;
@@ -138,7 +144,23 @@
             background: #fff1f1;
         }
 
-    /* --- MODAL STYLES --- */
+    /* Restore button specific style */
+    .btn-restore {
+        padding: 6px 12px;
+        border: 1px solid #10b981;
+        background: #f0fdf4;
+        color: #047857;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+        .btn-restore:hover {
+            background: #d1fae5;
+        }
+
     .modal-overlay {
         display: none;
         position: fixed;
@@ -185,22 +207,41 @@
         <div class="subject-grid-container">
             @foreach (var subject in Model.Subjects)
             {
-                <div class="subject-card">
+                bool isDeleted = subject.Is_delete;
+                var cardClass = isDeleted ? "subject-card is-deleted" : "subject-card";
+
+                <div class="@cardClass">
                     <div class="card-header-row">
-                        <div class="subject-code">@subject.Code</div>
+                        <div class="subject-code" style="@(isDeleted ? "color: #c0392b;" : "")">@subject.Code</div>
                         <span class="badge-units">@subject.Units Units</span>
                     </div>
 
-                    <div class="subject-title">@subject.Title</div>
+                    <div class="subject-title">
+                        @subject.Title
+                        @if (isDeleted)
+                        {
+                            <span style="color: #c0392b; font-size: 11px; font-weight: bold; margin-left: 8px; padding: 2px 6px; background: #fdf0f0; border-radius: 4px; border: 1px solid #f5c6cb;">DELETED</span>
+                        }
+                    </div>
 
                     <div class="card-footer-row">
                         <div style="display: flex; gap: 6px;">
-                            <button class="btn-edit" onclick="showEditForm(@subject.SubjectId, '@subject.Code', '@subject.Title', @subject.Units)">Edit</button>
+                            @if (isDeleted)
+                            {
+                                <form method="post" asp-page-handler="RestoreSubject" style="margin:0;">
+                                    <input type="hidden" name="subjectId" value="@subject.SubjectId" />
+                                    <button type="submit" class="btn-restore">Restore Subject</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <button class="btn-edit" onclick="showEditForm(@subject.SubjectId, '@subject.Code', '@subject.Title', @subject.Units)">Edit</button>
 
-                            <form method="post" asp-page-handler="DeleteSubject" style="margin:0;" onsubmit="return confirm('Are you sure you want to permanently delete @subject.Code?');">
-                                <input type="hidden" name="subjectId" value="@subject.SubjectId" />
-                                <button type="submit" class="btn-delete">Delete</button>
-                            </form>
+                                <form method="post" asp-page-handler="DeleteSubject" style="margin:0;" onsubmit="return confirm('Are you sure you want to flag @subject.Code as deleted?');">
+                                    <input type="hidden" name="subjectId" value="@subject.SubjectId" />
+                                    <button type="submit" class="btn-delete">Delete</button>
+                                </form>
+                            }
                         </div>
                     </div>
                 </div>
@@ -239,7 +280,6 @@
                     <label>Subject Title</label>
                     <input type="text" asp-for="NewSubjectTitle" class="input" placeholder="e.g. Network Administration" required />
                 </div>
-                
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 30px;">
@@ -275,7 +315,6 @@
                     <label>Subject Title</label>
                     <input type="text" asp-for="EditSubjectTitle" id="editSubjectTitle" class="input" required />
                 </div>
-                
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 30px;">
@@ -295,7 +334,6 @@
         document.getElementById(modalId).style.display = "none";
     }
 
-    // REMOVED departmentId parameter
     function showEditForm(id, code, title, units) {
         document.getElementById("editSubjectId").value = id;
         document.getElementById("editSubjectCode").value = code;

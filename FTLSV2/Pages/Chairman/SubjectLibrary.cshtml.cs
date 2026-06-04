@@ -20,22 +20,17 @@ namespace FTLSV2.Pages.Admin
 
         public List<Subject> Subjects { get; set; } = new List<Subject>();
 
-        // REMOVED: public List<Department> Departments { get; set; }
-
         [BindProperty] public string NewSubjectCode { get; set; }
         [BindProperty] public string NewSubjectTitle { get; set; }
         [BindProperty] public int NewSubjectUnits { get; set; }
-        // REMOVED: [BindProperty] public int NewSubjectDepartmentId { get; set; }
 
         [BindProperty] public int EditSubjectId { get; set; }
         [BindProperty] public string EditSubjectCode { get; set; }
         [BindProperty] public string EditSubjectTitle { get; set; }
         [BindProperty] public int EditSubjectUnits { get; set; }
-        // REMOVED: [BindProperty] public int EditSubjectDepartmentId { get; set; }
 
         public void OnGet()
         {
-            // REMOVED: .Include(s => s.Department) since we don't need it for the UI anymore
             Subjects = _db.Subjects
                 .OrderBy(s => s.Title)
                 .ToList();
@@ -43,7 +38,6 @@ namespace FTLSV2.Pages.Admin
 
         public IActionResult OnPostAddSubject()
         {
-            // CHANGED: Removed the department check
             if (!string.IsNullOrEmpty(NewSubjectCode) && !string.IsNullOrEmpty(NewSubjectTitle))
             {
                 var subject = new Subject
@@ -51,7 +45,7 @@ namespace FTLSV2.Pages.Admin
                     Code = NewSubjectCode,
                     Title = NewSubjectTitle,
                     Units = NewSubjectUnits,
-                    DepartmentId = null // Explicitly setting it to null
+                    DepartmentId = null
                 };
 
                 try
@@ -77,13 +71,12 @@ namespace FTLSV2.Pages.Admin
         {
             var subjectToEdit = _db.Subjects.FirstOrDefault(s => s.SubjectId == EditSubjectId);
 
-            // CHANGED: Removed the department check
             if (subjectToEdit != null)
             {
                 subjectToEdit.Code = EditSubjectCode;
                 subjectToEdit.Title = EditSubjectTitle;
                 subjectToEdit.Units = EditSubjectUnits;
-                subjectToEdit.DepartmentId = null; // Explicitly setting it to null
+                subjectToEdit.DepartmentId = null;
 
                 try
                 {
@@ -99,6 +92,7 @@ namespace FTLSV2.Pages.Admin
             return RedirectToPage();
         }
 
+        // --- DELETED (SOFT DELETE) ---
         public IActionResult OnPostDeleteSubject(int subjectId)
         {
             var subject = _db.Subjects.FirstOrDefault(s => s.SubjectId == subjectId);
@@ -106,14 +100,35 @@ namespace FTLSV2.Pages.Admin
             {
                 try
                 {
-                    _db.Subjects.Remove(subject);
+                    subject.Is_delete = true; // Flips the flag instead of removing
                     _db.SaveChanges();
-                    TempData["SuccessMessage"] = "Subject successfully deleted!";
+                    TempData["SuccessMessage"] = $"{subject.Code} has been flagged as deleted!";
                 }
                 catch (Exception ex)
                 {
                     var baseMsg = ex.GetBaseException()?.Message ?? ex.Message;
                     TempData["ErrorMessage"] = $"An error occurred while deleting the subject. {baseMsg}";
+                }
+            }
+            return RedirectToPage();
+        }
+
+        // --- RESTORE (REVERSE SOFT DELETE) ---
+        public IActionResult OnPostRestoreSubject(int subjectId)
+        {
+            var subject = _db.Subjects.FirstOrDefault(s => s.SubjectId == subjectId);
+            if (subject != null)
+            {
+                try
+                {
+                    subject.Is_delete = false; // Flips it back to active
+                    _db.SaveChanges();
+                    TempData["SuccessMessage"] = $"{subject.Code} has been successfully restored!";
+                }
+                catch (Exception ex)
+                {
+                    var baseMsg = ex.GetBaseException()?.Message ?? ex.Message;
+                    TempData["ErrorMessage"] = $"An error occurred while restoring the subject. {baseMsg}";
                 }
             }
             return RedirectToPage();

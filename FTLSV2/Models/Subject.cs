@@ -18,12 +18,14 @@ namespace FTLSV2.Models
         [Column("units")]
         public int Units { get; set; }
 
-        // CHANGED: Made DepartmentId nullable by adding a question mark
         [Column("department_id")]
         public int? DepartmentId { get; set; }
 
-        // CHANGED: Made the Department object nullable
         [ForeignKey("DepartmentId")]
         public Department? Department { get; set; }
+
+        // ---> ADDED: Soft Delete Flag
+        [Column("is_delete")]
+        public bool Is_delete { get; set; } = false;
     }
 }
