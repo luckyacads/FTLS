@@ -18,14 +18,14 @@
             justify-content: space-between;
             align-items: center;
             gap: 16px;
-            margin-bottom: 18px;
+            margin-bottom: 25px;
         }
 
         .room-utilization-title {
             margin: 0;
-            font-size: 28px;
-            font-weight: 800;
-            color: #07362d;
+            font-size: 26px;
+            font-weight: 700;
+            color: #111827;
         }
 
         .room-utilization-subtitle {
@@ -51,8 +51,8 @@
             background: #ffffff;
             border: 1px solid #e5e7eb;
             border-radius: 999px;
-            padding: 7px 11px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.04);
+            padding: 6px 14px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
 
         .legend-dot {
@@ -67,74 +67,113 @@
             border: 1px solid #8ee6b8;
         }
 
-        .chairman-card {
-            background: #ffffff;
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 8px 22px rgba(0,0,0,0.06);
+        /* --- MODERN ACCORDION ROWS UI --- */
+        .accordion-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .room-accordion {
-            margin-bottom: 18px;
-            background: transparent;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            overflow: hidden;
+            transition: all 0.2s ease;
         }
 
+            .room-accordion[open] {
+                box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.05);
+                border-color: #d1d5db;
+            }
+
             .room-accordion summary {
-                background: #ffe600;
-                padding: 15px 18px;
-                border-radius: 22px;
-                font-weight: 800;
-                color: #800000;
+                padding: 18px 24px;
+                background: #ffffff;
+                font-weight: 700;
+                color: #111827;
                 cursor: pointer;
                 list-style: none;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                box-shadow: 0 2px 6px rgba(0,0,0,0.10);
+                user-select: none;
             }
 
                 .room-accordion summary::-webkit-details-marker {
                     display: none;
                 }
 
-                .room-accordion summary::after {
-                    content: '▼';
-                    font-size: 1.1em;
-                    margin-left: 12px;
+                .room-accordion summary:hover {
+                    background-color: #f9fafb;
                 }
-
-            .room-accordion[open] summary::after {
-                content: '▲';
-            }
 
         .room-summary-left {
             display: flex;
-            flex-direction: column;
-            gap: 3px;
+            align-items: center;
+            gap: 16px;
         }
 
         .room-name {
             font-size: 16px;
+            font-weight: 800;
+            color: #07362d;
+            min-width: 90px;
         }
 
-        .room-meta {
+        /* PILL BADGES */
+        .badge-cap {
+            background-color: #f3f4f6;
+            color: #4b5563;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-classes {
+            background-color: #e1f5ee;
+            color: #0f6e56;
+            padding: 4px 10px;
+            border-radius: 6px;
             font-size: 12px;
             font-weight: 700;
-            color: #5f1b1b;
-            opacity: 0.85;
         }
 
+            .badge-classes.zero-load {
+                background-color: #f3f4f6;
+                color: #9ca3af;
+                font-weight: 600;
+            }
+
+        .chevron-icon {
+            font-size: 11px;
+            color: #6b7280;
+            transition: transform 0.2s ease;
+            font-weight: bold;
+        }
+
+        .room-accordion[open] summary .chevron-icon {
+            transform: rotate(180deg);
+        }
+
+        /* --- WEEKLY TIMELINE GRID --- */
         .calendar-wrapper {
-            margin-top: 14px;
-            overflow-x: auto;
-            border: 1px solid #e5e7eb;
-            border-radius: 14px;
+            padding: 0 24px 24px 24px;
             background: #ffffff;
+        }
+
+        .calendar-border-box {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #ffffff;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.01);
         }
 
         .calendar-grid {
             min-width: 1040px;
-            border-radius: 14px;
             overflow: hidden;
         }
 
@@ -142,19 +181,24 @@
             display: grid;
             grid-template-columns: 88px repeat(6, 1fr);
             border-bottom: 1px solid #e5e7eb;
-            background: #ffffff;
+            background: #f8fafc;
         }
 
         .time-header {
-            padding: 13px 12px;
-            font-size: 13px;
+            padding: 14px 12px;
+            font-size: 11px;
             font-weight: 800;
-            color: #374151;
+            color: #6b7280;
             border-right: 1px solid #e5e7eb;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .day-header {
-            padding: 11px 12px;
+            padding: 12px;
             text-align: center;
             border-right: 1px solid #e5e7eb;
         }
@@ -165,17 +209,18 @@
 
         .day-short {
             display: block;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 800;
-            color: #6b7280;
+            color: #9ca3af;
             letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
 
         .day-full {
             display: block;
-            margin-top: 3px;
+            margin-top: 2px;
             font-size: 13px;
-            font-weight: 800;
+            font-weight: 700;
             color: #111827;
         }
 
@@ -188,15 +233,16 @@
             height: var(--calendar-height);
             position: relative;
             border-right: 1px solid #e5e7eb;
-            background: #fbfbfc;
+            background: #f8fafc;
         }
 
         .time-marker {
             position: absolute;
             right: 12px;
             transform: translateY(-50%);
-            font-size: 12px;
-            color: #4b5563;
+            font-size: 11px;
+            font-weight: 600;
+            color: #6b7280;
             white-space: nowrap;
         }
 
@@ -205,7 +251,7 @@
             position: relative;
             border-right: 1px solid #e5e7eb;
             background-color: #ffffff;
-            background-image: linear-gradient(to bottom, #eef0f3 1px, transparent 1px);
+            background-image: linear-gradient(to bottom, #f1f5f9 1px, transparent 1px);
             background-size: 100% var(--half-hour-height);
         }
 
@@ -213,86 +259,82 @@
                 border-right: none;
             }
 
+        /* INTERNAL FLOATING SCHEDULE CARDS */
         .schedule-card {
             position: absolute;
-            left: 10px;
-            right: 10px;
-            background: #d5f8e6;
-            border: 1px solid #a7ebc7;
-            border-left: 5px solid #21a366;
-            border-radius: 10px;
-            padding: 11px 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.10);
+            left: 6px;
+            right: 6px;
+            background: #e1f5ee;
+            border: 1px solid #a7e1cb;
+            border-left: 4px solid #10b981;
+            border-radius: 8px;
+            padding: 8px 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
             overflow: hidden;
             color: #064e3b;
             box-sizing: border-box;
+            transition: transform 0.1s, box-shadow 0.1s;
         }
+
+            .schedule-card:hover {
+                z-index: 10;
+                transform: scale(1.02);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+            }
 
         .schedule-card-header {
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            gap: 6px;
+            gap: 2px;
             min-width: 0;
-            margin-bottom: 7px;
         }
 
         .schedule-title {
             display: block;
             width: 100%;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 800;
-            line-height: 1.25;
-            white-space: normal;
-            overflow: visible;
-            text-overflow: unset;
-            word-break: normal;
-            overflow-wrap: break-word;
-        }
-
-        .schedule-status {
-            display: inline-block;
-            font-size: 8px;
-            font-weight: 800;
-            color: #047857;
-            background: rgba(255,255,255,0.75);
-            border-radius: 999px;
-            padding: 3px 7px;
-            text-transform: uppercase;
+            line-height: 1.3;
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .schedule-time {
             display: block;
-            font-size: 12px;
-            font-weight: 700;
-            color: #065f46;
-            line-height: 1.35;
-            white-space: normal;
-            overflow: visible;
-            text-overflow: unset;
+            font-size: 11px;
+            font-weight: 600;
+            color: #047857;
+            margin-top: 2px;
         }
 
         .empty-room-note {
-            padding: 16px;
+            text-align: center;
+            padding: 50px 20px;
             color: #6b7280;
-            font-size: 14px;
-            font-weight: 600;
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px dashed #d1d5db;
         }
 
         @@media (max-width: 900px) {
-            .room-utilization-page {
-                padding: 18px 16px;
-            }
+            .room-utilization-page
 
-            .room-utilization-header {
-                align-items: flex-start;
-                flex-direction: column;
-            }
+        {
+            padding: 18px 16px;
+        }
 
-            .room-utilization-title {
-                font-size: 24px;
-            }
+        .room-utilization-header {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .room-utilization-title {
+            font-size: 22px;
+        }
+
         }
     </style>
 }
@@ -314,62 +356,70 @@
         </div>
     </div>
 
-    <div class="chairman-card">
+    <div class="accordion-container">
         @if (Model.Rooms.Any())
         {
             @foreach (var room in Model.Rooms)
             {
                 <details class="room-accordion">
                     <summary>
-                        <span class="room-summary-left">
+                        <div class="room-summary-left">
                             <span class="room-name">@room.RoomName</span>
-                            <span class="room-meta">Capacity: @room.Capacity | Scheduled classes: @room.TotalEvents</span>
-                        </span>
+                            <span class="badge-cap">Capacity: @room.Capacity</span>
+
+                            <span class="badge-classes @(room.TotalEvents == 0 ? "zero-load" : "")">
+                                @room.TotalEvents @(room.TotalEvents == 1 ? "Class" : "Classes") Scheduled
+                            </span>
+                        </div>
+                        <span class="chevron-icon">▼</span>
                     </summary>
 
                     <div class="calendar-wrapper">
-                        <div class="calendar-grid"
-                             style="--calendar-height: @(Model.CalendarHeightPixels)px; --half-hour-height: @(Model.HalfHourHeightPixels)px;">
-                            <div class="calendar-header">
-                                <div class="time-header">Time</div>
+                        <div class="calendar-border-box">
+                            <div class="calendar-wrapper-scroll" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                                <div class="calendar-grid"
+                                     style="--calendar-height: @(Model.CalendarHeightPixels)px; --half-hour-height: @(Model.HalfHourHeightPixels)px;">
 
-                                @foreach (var day in room.WeekDays)
-                                {
-                                    <div class="day-header">
-                                        <span class="day-short">@day.ShortLabel</span>
-                                        <span class="day-full">@day.Label</span>
-                                    </div>
-                                }
-                            </div>
+                                    <div class="calendar-header">
+                                        <div class="time-header">Time</div>
 
-                            <div class="calendar-body">
-                                <div class="time-column">
-                                    @foreach (var marker in Model.TimeMarkers)
-                                    {
-                                        <div class="time-marker" style="top: @(marker.TopPixels)px;">
-                                            @marker.Label
-                                        </div>
-                                    }
-                                </div>
-
-                                @foreach (var day in room.WeekDays)
-                                {
-                                    <div class="day-column">
-                                        @foreach (var schedule in day.Events)
+                                        @foreach (var day in room.WeekDays)
                                         {
-                                            <div class="schedule-card"
-                                                 title="@schedule.Title (@schedule.StartTimeText - @schedule.EndTimeText)"
-                                                 style="top: @(schedule.TopPixels)px; height: @(schedule.HeightPixels)px;">
-                                                <div class="schedule-card-header">
-                                                    <span class="schedule-title">@schedule.Title</span>
-                                                    <span class="schedule-status">Occupied</span>
-                                                </div>
-
-                                                <span class="schedule-time">@schedule.StartTimeText - @schedule.EndTimeText</span>
+                                            <div class="day-header">
+                                                <span class="day-short">@day.ShortLabel</span>
+                                                <span class="day-full">@day.Label</span>
                                             </div>
                                         }
                                     </div>
-                                }
+
+                                    <div class="calendar-body">
+                                        <div class="time-column">
+                                            @foreach (var marker in Model.TimeMarkers)
+                                            {
+                                                <div class="time-marker" style="top: @(marker.TopPixels)px;">
+                                                    @marker.Label
+                                                </div>
+                                            }
+                                        </div>
+
+                                        @foreach (var day in room.WeekDays)
+                                        {
+                                            <div class="day-column">
+                                                @foreach (var schedule in day.Events)
+                                                {
+                                                    <div class="schedule-card"
+                                                         title="@schedule.Title (@schedule.StartTimeText - @schedule.EndTimeText)"
+                                                         style="top: @(schedule.TopPixels)px; height: @(schedule.HeightPixels)px;">
+                                                        <div class="schedule-card-header">
+                                                            <span class="schedule-title">@schedule.Title</span>
+                                                        </div>
+                                                        <span class="schedule-time">@schedule.StartTimeText - @schedule.EndTimeText</span>
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -379,7 +429,10 @@
         else
         {
             <div class="empty-room-note">
-                No rooms found in the room registry.
+                <svg style="width: 40px; height: 40px; margin-bottom: 10px; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                </svg>
+                <p style="margin: 0; font-size: 15px; font-weight: 500;">No rooms found in the room registry.</p>
             </div>
         }
     </div>
