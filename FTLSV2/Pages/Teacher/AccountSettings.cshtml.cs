@@ -24,6 +24,10 @@ namespace FTLSV2.Pages.Teacher
         [BindProperty]
         public string NewPassword { get; set; }
 
+        // Binds the synchronized verification input
+        [BindProperty]
+        public string ConfirmNewPassword { get; set; }
+
         public string ErrorMessage { get; set; }
         public string SuccessMessage { get; set; }
 
@@ -32,10 +36,9 @@ namespace FTLSV2.Pages.Teacher
             var activeIdString = HttpContext.Session.GetString("ActiveUser");
             if (string.IsNullOrEmpty(activeIdString)) return RedirectToPage("/LoginPage");
 
-            // FIXED: Parse string to int to match FacultyId property type
             int activeId = int.Parse(activeIdString);
-
             LoggedInUser = _context.Users.FirstOrDefault(u => u.FacultyId == activeId);
+
             return Page();
         }
 
@@ -44,21 +47,33 @@ namespace FTLSV2.Pages.Teacher
             var activeIdString = HttpContext.Session.GetString("ActiveUser");
             if (string.IsNullOrEmpty(activeIdString)) return RedirectToPage("/LoginPage");
 
-            // FIXED: Parse string to int
             int activeId = int.Parse(activeIdString);
-
             LoggedInUser = _context.Users.FirstOrDefault(u => u.FacultyId == activeId);
 
             if (LoggedInUser == null) return RedirectToPage("/LoginPage");
 
-            // Check if they typed their old password correctly
+            // 1. Verify old password entry matches DB record
             if (LoggedInUser.Password != CurrentPassword)
             {
                 ErrorMessage = "Your current password is incorrect.";
                 return Page();
             }
 
-            // Save the new password
+            // 2. Bound limit condition check verifying safe password lengths
+            if (string.IsNullOrEmpty(NewPassword) || NewPassword.Length < 8)
+            {
+                ErrorMessage = "The new password must be at least 8 characters long.";
+                return Page();
+            }
+
+            // 3. Prevent typo lockouts by running verification match check
+            if (NewPassword != ConfirmNewPassword)
+            {
+                ErrorMessage = "The new password confirmation does not match.";
+                return Page();
+            }
+
+            // 4. Update data state safely
             LoggedInUser.Password = NewPassword;
             _context.SaveChanges();
 
