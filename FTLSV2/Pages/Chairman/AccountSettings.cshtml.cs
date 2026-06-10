@@ -24,6 +24,10 @@ namespace FTLSV2.Pages.Chairman
         [BindProperty]
         public string NewPassword { get; set; }
 
+        // NEW: Binding property parameter tracking confirm input state
+        [BindProperty]
+        public string ConfirmNewPassword { get; set; }
+
         public string ErrorMessage { get; set; }
         public string SuccessMessage { get; set; }
 
@@ -32,10 +36,9 @@ namespace FTLSV2.Pages.Chairman
             var activeIdString = HttpContext.Session.GetString("ActiveUser");
             if (string.IsNullOrEmpty(activeIdString)) return RedirectToPage("/LoginPage");
 
-            // FIXED: Parse the session string into an integer to match the FacultyId type
             int activeId = int.Parse(activeIdString);
-
             LoggedInUser = _context.Users.FirstOrDefault(u => u.FacultyId == activeId);
+
             return Page();
         }
 
@@ -44,19 +47,31 @@ namespace FTLSV2.Pages.Chairman
             var activeIdString = HttpContext.Session.GetString("ActiveUser");
             if (string.IsNullOrEmpty(activeIdString)) return RedirectToPage("/LoginPage");
 
-            // FIXED: Parse the session string into an integer
             int activeId = int.Parse(activeIdString);
-
             LoggedInUser = _context.Users.FirstOrDefault(u => u.FacultyId == activeId);
 
-            // Check if they typed their old password correctly
+            // 1. Verify old password matches record
             if (LoggedInUser.Password != CurrentPassword)
             {
                 ErrorMessage = "Your current password is incorrect.";
                 return Page();
             }
 
-            // Save the new password to NeonDB
+            // 2. NEW: Validation rule checking character boundary conditions
+            if (string.IsNullOrEmpty(NewPassword) || NewPassword.Length < 8)
+            {
+                ErrorMessage = "The new password must be at least 8 characters long.";
+                return Page();
+            }
+
+            // 3. NEW: Security logic matching verification parity state
+            if (NewPassword != ConfirmNewPassword)
+            {
+                ErrorMessage = "The new password confirmation does not match.";
+                return Page();
+            }
+
+            // 4. Update and commit to your DB database layer
             LoggedInUser.Password = NewPassword;
             _context.SaveChanges();
 
