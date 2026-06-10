@@ -9,40 +9,198 @@
     <link rel="stylesheet" href="~/css/chairman.css" />
 }
 
-<h1 class="chairman-title">Faculty Profiles</h1>
+<style>
+    /* --- CLEAN & MINIMAL SEARCH BAR --- */
+    .search-container {
+        margin-bottom: 20px;
+        max-width: 420px;
+        position: relative;
+    }
 
-<div class="chairman-card">
-    <h4>Faculty Directory</h4>
+    .search-input {
+        width: 100%;
+        height: 42px;
+        /* FIXED: Changed to 16px on the left, 42px on the right to make space for the icon */
+        padding: 10px 42px 10px 16px;
+        font-size: 14px;
+        color: #111827;
+        background-color: #ffffff;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        outline: none;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
 
-    <table class="table-light">
-        <thead>
-            <tr>
-                <th>Faculty ID</th>
-                <th>Name</th>
-                <th>Role</th>
-                <th>Current Units</th>
-            </tr>
-        </thead>
+        .search-input:focus {
+            border-color: #07362d;
+            box-shadow: 0 0 0 3px rgba(7, 54, 45, 0.08);
+            background-color: #ffffff;
+        }
 
-        <tbody>
-            @if (Model.FacultyList != null && Model.FacultyList.Any())
-            {
-                @foreach (var f in Model.FacultyList)
-                {
+    .search-icon {
+        position: absolute;
+        /* FIXED: Changed from left to right */
+        right: 14px;
+        top: 12px;
+        width: 18px;
+        height: 18px;
+        color: #9ca3af;
+        pointer-events: none;
+    }
+
+    /* --- MODERN COMPACT TABLE CARD --- */
+    .table-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+        overflow: hidden;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .modern-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        font-size: 14px;
+    }
+
+        .modern-table th {
+            background-color: #f8fafc;
+            color: #4b5563;
+            font-weight: 700;
+            padding: 16px 24px;
+            border-bottom: 2px solid #e5e7eb;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        .modern-table td {
+            padding: 16px 24px;
+            border-bottom: 1px solid #f3f4f6;
+            color: #111827;
+            vertical-align: middle;
+        }
+
+    .faculty-row {
+        transition: background-color 0.15s ease;
+    }
+
+        .faculty-row:hover {
+            background-color: #f9fafb;
+        }
+
+    /* --- PILL BADGES --- */
+    .badge-role {
+        background-color: #eef2ff;
+        color: #4338ca;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .badge-units {
+        background-color: #f3f4f6;
+        color: #1f2937;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 12px;
+        display: inline-block;
+    }
+
+    @@media (max-width: 768px) {
+        .search-container
+
+    {
+        max-width: 100%;
+    }
+
+    }
+</style>
+
+<div class="page-container">
+    <div style="margin-bottom: 20px;">
+        <h1 class="chairman-title" style="margin: 0; font-size: 26px; font-weight: 700; color: #111827;">Faculty Profiles</h1>
+    </div>
+
+    <div class="search-container">
+        <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <input type="text" id="facultySearchInput" onkeyup="filterFaculty()" placeholder="Search by ID, name, or role..." class="search-input" />
+    </div>
+
+    <div class="table-card">
+        <div style="padding: 18px 24px; border-bottom: 1px solid #e5e7eb; background: #ffffff;">
+            <h4 style="margin: 0; font-size: 16px; font-weight: 700; color: #111827;">Faculty Directory</h4>
+        </div>
+
+        <div class="table-responsive">
+            <table class="modern-table">
+                <thead>
                     <tr>
-                        <td>@f.FacultyId</td>
-                        <td>@f.Name</td>
-                        <td>@f.Role</td>
-                        <td>@f.CurrentUnitsDisplay</td>
+                        <th style="width: 20%;">Faculty ID</th>
+                        <th style="width: 45%;">Name</th>
+                        <th style="width: 20%;">Role</th>
+                        <th style="width: 15%; text-align: center;">Current Units</th>
                     </tr>
-                }
-            }
-            else
-            {
-                <tr>
-                    <td colspan="4" style="text-align: center;">No faculty members found.</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                </thead>
+                <tbody>
+                    @if (Model.FacultyList != null && Model.FacultyList.Any())
+                    {
+                        @foreach (var f in Model.FacultyList)
+                        {
+                            <tr class="faculty-row">
+                                <td style="font-weight: 700; color: #07362d;">@f.FacultyId</td>
+                                <td style="font-weight: 600;">@f.Name</td>
+                                <td>
+                                    <span class="badge-role">@f.Role</span>
+                                </td>
+                                <td style="text-align: center;">
+                                    <span class="badge-units">@f.CurrentUnitsDisplay</span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 50px 20px; color: #6b7280; font-size: 14px; background: #ffffff;">
+                                <svg style="width: 36px; height: 36px; margin-bottom: 8px; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                </svg>
+                                <p style="margin: 0;">No faculty members found in the directory.</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
+
+<script>
+    function filterFaculty() {
+        var input = document.getElementById("facultySearchInput");
+        var filter = input.value.toLowerCase();
+        var rows = document.querySelectorAll(".faculty-row");
+
+        rows.forEach(function(row) {
+            var text = row.textContent || row.innerText;
+            if (text.toLowerCase().indexOf(filter) > -1) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    }
+</script>
