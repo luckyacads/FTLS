@@ -51,7 +51,6 @@
         transition: all 0.2s ease;
         box-shadow: 0 2px 8px rgba(0,0,0,0.02);
         border-top: 5px solid #07362d;
-        /* The minimum height has been completely removed to collapse the empty space */
     }
 
         .subject-card:hover {
@@ -89,7 +88,7 @@
         font-size: 14px;
         font-weight: 500;
         line-height: 1.4;
-        margin-bottom: 12px; /* Reduced gap to pull buttons closer */
+        margin-bottom: 12px;
         flex-grow: 1;
     }
 
@@ -161,6 +160,22 @@
             background: #d1fae5;
         }
 
+    /* NEW: Danger button for the delete modal */
+    .btn-danger {
+        background-color: #dc2626;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+        .btn-danger:hover {
+            background-color: #b91c1c;
+        }
+
     .modal-overlay {
         display: none;
         position: fixed;
@@ -200,8 +215,9 @@
 
     <section style="background: transparent;">
         <div class="search-row" style="position: relative; max-width: 500px;">
-            <svg style="position: absolute; left: 14px; top: 12px; width: 18px; height: 18px; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            <input type="text" id="subjectSearchInput" onkeyup="filterSubjects()" placeholder="Search by code or title..." class="input" style="padding-left: 40px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);" />
+            <svg style="position: absolute; right: 14px; top: 12px; width: 18px; height: 18px; color: #9ca3af; pointer-events: none;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+
+            <input type="text" id="subjectSearchInput" onkeyup="filterSubjects()" placeholder="Search by code or title..." class="input" style="padding: 10px 40px 10px 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);" />
         </div>
 
         <div class="subject-grid-container">
@@ -237,10 +253,7 @@
                             {
                                 <button class="btn-edit" onclick="showEditForm(@subject.SubjectId, '@subject.Code', '@subject.Title', @subject.Units)">Edit</button>
 
-                                <form method="post" asp-page-handler="DeleteSubject" style="margin:0;" onsubmit="return confirm('Are you sure you want to flag @subject.Code as deleted?');">
-                                    <input type="hidden" name="subjectId" value="@subject.SubjectId" />
-                                    <button type="submit" class="btn-delete">Delete</button>
-                                </form>
+                                <button type="button" class="btn-delete" onclick="showDeleteModal(@subject.SubjectId, '@subject.Code')">Delete</button>
                             }
                         </div>
                     </div>
@@ -325,6 +338,27 @@
     </div>
 </div>
 
+<div id="deleteSubjectModal" class="modal-overlay">
+    <div class="card" style="width: 450px; max-width: 90%; border-left: 6px solid #dc2626; border-radius: 16px; padding: 30px; margin: 0; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+            <div>
+                <h3 style="margin: 0; color: #111827; font-size: 22px;">Confirm Deletion</h3>
+                <p style="margin: 8px 0 0 0; color: #4b5563; font-size: 14px;" id="deleteModalMessage">Are you sure you want to flag this subject as deleted?</p>
+            </div>
+            <button type="button" onclick="closeModal('deleteSubjectModal')" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #9ca3af; line-height: 1;">&times;</button>
+        </div>
+
+        <form method="post" asp-page-handler="DeleteSubject">
+            <input type="hidden" name="subjectId" id="deleteSubjectId" />
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 25px;">
+                <button type="button" onclick="closeModal('deleteSubjectModal')" style="padding: 10px 18px; border: none; border-radius: 8px; background: #f3f4f6; color: #4b5563; cursor: pointer; font-weight: 600;">Cancel</button>
+                <button type="submit" class="btn-danger">Yes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     function openModal(modalId) {
         document.getElementById(modalId).style.display = "flex";
@@ -341,6 +375,13 @@
         document.getElementById("editSubjectUnits").value = units;
 
         openModal('editSubjectModal');
+    }
+
+    // NEW: Function to open the beautiful delete confirmation modal
+    function showDeleteModal(id, code) {
+        document.getElementById("deleteSubjectId").value = id;
+        document.getElementById("deleteModalMessage").innerHTML = "Are you sure you want to flag <strong>" + code + "</strong> as deleted?";
+        openModal('deleteSubjectModal');
     }
 
     function filterSubjects() {
@@ -363,6 +404,7 @@
         if (event.key === "Escape") {
             closeModal("addSubjectModal");
             closeModal("editSubjectModal");
+            closeModal("deleteSubjectModal"); // FIXED: Also closes the delete modal on escape
         }
     });
 </script>
