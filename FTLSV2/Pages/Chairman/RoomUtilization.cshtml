@@ -172,9 +172,16 @@
             box-shadow: inset 0 1px 2px rgba(0,0,0,0.01);
         }
 
+        /* NEW: Added strict max-height and vertical scrolling */
+        .calendar-wrapper-scroll {
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 550px;
+            -webkit-overflow-scrolling: touch;
+        }
+
         .calendar-grid {
             min-width: 1040px;
-            overflow: hidden;
         }
 
         .calendar-header {
@@ -182,6 +189,11 @@
             grid-template-columns: 88px repeat(6, 1fr);
             border-bottom: 1px solid #e5e7eb;
             background: #f8fafc;
+            /* NEW: Sticky header properties */
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
 
         .time-header {
@@ -319,22 +331,19 @@
         }
 
         @@media (max-width: 900px) {
-            .room-utilization-page
+            .room-utilization-page {
+                padding: 18px 16px;
+            }
 
-        {
-            padding: 18px 16px;
-        }
+            .room-utilization-header {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 12px;
+            }
 
-        .room-utilization-header {
-            align-items: flex-start;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .room-utilization-title {
-            font-size: 22px;
-        }
-
+            .room-utilization-title {
+                font-size: 22px;
+            }
         }
     </style>
 }
@@ -376,7 +385,7 @@
 
                     <div class="calendar-wrapper">
                         <div class="calendar-border-box">
-                            <div class="calendar-wrapper-scroll" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                            <div class="calendar-wrapper-scroll">
                                 <div class="calendar-grid"
                                      style="--calendar-height: @(Model.CalendarHeightPixels)px; --half-hour-height: @(Model.HalfHourHeightPixels)px;">
 
