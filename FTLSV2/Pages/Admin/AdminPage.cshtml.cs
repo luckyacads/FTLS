@@ -20,12 +20,16 @@ namespace FTLSV2.Pages.Admin
             _context = context;
         }
 
-        public User? LoggedInUser { get; set; } // Updated with ? to resolve warning
+        public User? LoggedInUser { get; set; }
         public IList<User> DbUsers { get; set; } = new List<User>();
 
         public Dictionary<int, bool> UserHasSchedules { get; set; } = new();
 
         [BindProperty] public int InputMaxOverload { get; set; }
+
+        // Automatically binds to the URL query string (e.g., ?showDeleted=true)
+        [BindProperty(SupportsGet = true)]
+        public bool ShowDeleted { get; set; }
 
         public IActionResult OnGet()
         {
@@ -42,8 +46,10 @@ namespace FTLSV2.Pages.Admin
 
             int activeId = int.Parse(activeIdString);
 
+            // Filters users dynamically based on whether the "Deleted" tab is selected
             DbUsers = _context.Users
                 .Include(u => u.Department)
+                .Where(u => u.Is_delete == ShowDeleted)
                 .OrderByDescending(u => u.FacultyId)
                 .ToList();
 

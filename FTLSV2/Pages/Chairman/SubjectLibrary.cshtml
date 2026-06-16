@@ -143,7 +143,6 @@
             background: #fff1f1;
         }
 
-    /* Restore button specific style */
     .btn-restore {
         padding: 6px 12px;
         border: 1px solid #10b981;
@@ -160,7 +159,6 @@
             background: #d1fae5;
         }
 
-    /* NEW: Danger button for the delete modal */
     .btn-danger {
         background-color: #dc2626;
         color: white;
@@ -189,6 +187,39 @@
         justify-content: center;
         backdrop-filter: blur(2px);
     }
+
+    /* Filter Menu Tabs Navigation Styling */
+    .filter-container {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 22px;
+    }
+
+    .filter-tab {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        color: #555;
+        background: #e9ecef;
+        transition: all 0.2s ease-in-out;
+        border: 1px solid transparent;
+    }
+
+        .filter-tab:hover {
+            background: #dee2e6;
+        }
+
+        .filter-tab.active-filter {
+            background: #07362d;
+            color: white;
+        }
+    
+        .filter-tab.active-deleted {
+            background: #c0392b;
+            color: white;
+        }
 </style>
 
 <div class="page-container">
@@ -214,6 +245,15 @@
     }
 
     <section style="background: transparent;">
+        <div class="filter-container">
+            <a href="?showDeleted=false" class="filter-tab @(Model.ShowDeleted ? "" : "active-filter")">
+                Active Subjects Library
+            </a>
+            <a href="?showDeleted=true" class="filter-tab @(Model.ShowDeleted ? "active-deleted" : "")">
+                Deleted Filter Archives
+            </a>
+        </div>
+
         <div class="search-row" style="position: relative; max-width: 500px;">
             <svg style="position: absolute; right: 14px; top: 12px; width: 18px; height: 18px; color: #9ca3af; pointer-events: none;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
 
@@ -263,7 +303,7 @@
             @if (!Model.Subjects.Any())
             {
                 <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #6b7280; background: #f9fafb; border-radius: 12px; border: 1px dashed #d1d5db; margin-top: 10px;">
-                    <p style="margin: 0; font-size: 15px; font-weight: 500;">No subjects found in the library.</p>
+                    <p style="margin: 0; font-size: 15px; font-weight: 500;">No subjects found here.</p>
                 </div>
             }
         </div>
@@ -368,16 +408,20 @@
         document.getElementById(modalId).style.display = "none";
     }
 
+    var editSubjectId = document.getElementById("editSubjectId");
+    var editSubjectCode = document.getElementById("editSubjectCode");
+    var editSubjectTitle = document.getElementById("editSubjectTitle");
+    var editSubjectUnits = document.getElementById("editSubjectUnits");
+
     function showEditForm(id, code, title, units) {
-        document.getElementById("editSubjectId").value = id;
-        document.getElementById("editSubjectCode").value = code;
-        document.getElementById("editSubjectTitle").value = title;
-        document.getElementById("editSubjectUnits").value = units;
+        if(editSubjectId) editSubjectId.value = id;
+        if(editSubjectCode) editSubjectCode.value = code;
+        if(editSubjectTitle) editSubjectTitle.value = title;
+        if(editSubjectUnits) editSubjectUnits.value = units;
 
         openModal('editSubjectModal');
     }
 
-    // NEW: Function to open the beautiful delete confirmation modal
     function showDeleteModal(id, code) {
         document.getElementById("deleteSubjectId").value = id;
         document.getElementById("deleteModalMessage").innerHTML = "Are you sure you want to flag <strong>" + code + "</strong> as deleted?";
@@ -404,7 +448,7 @@
         if (event.key === "Escape") {
             closeModal("addSubjectModal");
             closeModal("editSubjectModal");
-            closeModal("deleteSubjectModal"); // FIXED: Also closes the delete modal on escape
+            closeModal("deleteSubjectModal");
         }
     });
 </script>

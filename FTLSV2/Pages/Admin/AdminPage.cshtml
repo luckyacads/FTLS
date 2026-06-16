@@ -212,6 +212,39 @@
         color: #c0392b;
         font-weight: 500;
     }
+
+    /* Filter Tabs Styling Layout */
+    .filter-container {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 22px;
+    }
+
+    .filter-tab {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        color: #555;
+        background: #e9ecef;
+        transition: all 0.2s ease-in-out;
+        border: 1px solid transparent;
+    }
+
+        .filter-tab:hover {
+            background: #dee2e6;
+        }
+
+        .filter-tab.active-filter {
+            background: #07362d;
+            color: white;
+        }
+    
+        .filter-tab.active-deleted {
+            background: #c0392b;
+            color: white;
+        }
 </style>
 
 <div class="container">
@@ -233,7 +266,19 @@
     }
 
     <section class="card">
-        <h3 style="margin-top: 0; margin-bottom: 20px;">Registered Accounts (@Model.DbUsers.Count)</h3>
+        <div class="filter-container">
+            <a href="?showDeleted=false" class="filter-tab @(Model.ShowDeleted ? "" : "active-filter")">
+                Registered Users
+            </a>
+            <a href="?showDeleted=true" class="filter-tab @(Model.ShowDeleted ? "active-deleted" : "")">
+                Deleted Users Filter
+            </a>
+        </div>
+
+        <h3 style="margin-top: 0; margin-bottom: 20px;">
+            @(Model.ShowDeleted ? "Deleted Users Records" : "Registered Accounts") (@Model.DbUsers.Count)
+        </h3>
+        
         <div style="overflow-x: auto;">
             <table class="admin-table">
                 <thead>
@@ -345,7 +390,6 @@
 
                                     @if (isDeleted)
                                     {
-                                        <!-- IF DELETED: Display Restore option instead -->
                                         <form method="post" asp-page-handler="RestoreUser" style="margin: 0;">
                                             <input type="hidden" name="facultyId" value="@user.FacultyId" />
                                             <button type="submit" class="dropdown-item-btn" style="color: green; font-weight: bold;">Restore User</button>
@@ -353,7 +397,6 @@
                                     }
                                     else
                                     {
-                                        <!-- IF ACTIVE: Display ordinary Delete configuration option -->
                                         <form id="deleteForm-@user.FacultyId" method="post" asp-page-handler="DeleteUser" style="margin: 0;">
                                             <input type="hidden" name="facultyId" value="@user.FacultyId" />
                                             <button type="button" class="dropdown-item-btn" style="color:red;" onclick="showDeleteModal('@user.FacultyId.ToString()', @hasSched.ToString().ToLower())">Delete User</button>

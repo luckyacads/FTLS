@@ -29,9 +29,15 @@ namespace FTLSV2.Pages.Admin
         [BindProperty] public string EditSubjectTitle { get; set; }
         [BindProperty] public int EditSubjectUnits { get; set; }
 
+        // Binds the URL query string parameter dynamically (?showDeleted=true)
+        [BindProperty(SupportsGet = true)]
+        public bool ShowDeleted { get; set; }
+
         public void OnGet()
         {
+            // Filter records based on whether the view state targets soft-deleted entries
             Subjects = _db.Subjects
+                .Where(s => s.Is_delete == ShowDeleted)
                 .OrderBy(s => s.Title)
                 .ToList();
         }
@@ -100,7 +106,7 @@ namespace FTLSV2.Pages.Admin
             {
                 try
                 {
-                    subject.Is_delete = true; // Flips the flag instead of removing
+                    subject.Is_delete = true;
                     _db.SaveChanges();
                     TempData["SuccessMessage"] = $"{subject.Code} has been flagged as deleted!";
                 }
@@ -121,7 +127,7 @@ namespace FTLSV2.Pages.Admin
             {
                 try
                 {
-                    subject.Is_delete = false; // Flips it back to active
+                    subject.Is_delete = false;
                     _db.SaveChanges();
                     TempData["SuccessMessage"] = $"{subject.Code} has been successfully restored!";
                 }
