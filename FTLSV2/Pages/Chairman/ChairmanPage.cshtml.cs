@@ -29,7 +29,6 @@ namespace FTLSV2.Pages.Chairman
         [BindProperty] public int SelectedSubjectId { get; set; }
         [BindProperty] public int SelectedRoomId { get; set; }
 
-        // CHANGED: SelectedDays is now a List to catch checkbox array
         [BindProperty] public List<string> SelectedDays { get; set; } = new List<string>();
 
         [BindProperty] public TimeSpan StartTime { get; set; }
@@ -37,7 +36,6 @@ namespace FTLSV2.Pages.Chairman
         [BindProperty] public int? SelectedOfferCode { get; set; }
         [BindProperty] public string SelectedAcademicYear { get; set; }
 
-        // ADDED: New property to catch the Semester dropdown
         [BindProperty] public string SelectedSemester { get; set; }
 
         [BindProperty] public int EditScheduleId { get; set; }
@@ -45,7 +43,6 @@ namespace FTLSV2.Pages.Chairman
         [BindProperty] public int EditSubjectId { get; set; }
         [BindProperty] public int EditRoomId { get; set; }
 
-        // CHANGED: EditDays is now a List for checkboxes in the Edit Modal
         [BindProperty] public List<string> EditDays { get; set; } = new List<string>();
 
         [BindProperty] public TimeSpan EditStartTime { get; set; }
@@ -53,7 +50,6 @@ namespace FTLSV2.Pages.Chairman
         [BindProperty] public int? EditOfferCode { get; set; }
         [BindProperty] public string EditAcademicYear { get; set; }
 
-        // ADDED: New property for Semester in the Edit Modal
         [BindProperty] public string EditSemester { get; set; }
 
         [BindProperty] public int DeleteScheduleId { get; set; }
@@ -67,6 +63,11 @@ namespace FTLSV2.Pages.Chairman
             if (string.IsNullOrEmpty(activeUserString)) return RedirectToPage("/LoginPage");
 
             LoadPageData();
+
+            // AUTOMATIC DEFAULT: Set the default selection to the calculated current school year
+            int currentYear = DateTime.Today.Year;
+            SelectedAcademicYear = $"{currentYear}-{currentYear + 1}";
+
             return Page();
         }
 
@@ -177,8 +178,8 @@ namespace FTLSV2.Pages.Chairman
             int officialSubjectUnits = targetSubject?.Units ?? 0;
 
             int currentTotalUnits = _context.Schedules
-                .Where(s => s.FacultyId == SelectedFacultyId 
-                            && s.AcademicYear == SelectedAcademicYear 
+                .Where(s => s.FacultyId == SelectedFacultyId
+                            && s.AcademicYear == SelectedAcademicYear
                             && s.Semester == SelectedSemester)
                 .Sum(s => s.AssignedUnits);
 
@@ -192,7 +193,6 @@ namespace FTLSV2.Pages.Chairman
                 return Page();
             }
 
-            // CHANGED: Convert the List of selected days into a comma-separated string
             string joinedDays = string.Join(", ", SelectedDays);
             string formattedTimeSlot = $"{joinedDays} {DateTime.Today.Add(StartTime):h:mm tt} - {DateTime.Today.Add(EndTime):h:mm tt}";
 
@@ -205,7 +205,7 @@ namespace FTLSV2.Pages.Chairman
                 AssignedUnits = officialSubjectUnits,
                 OfferCode = SelectedOfferCode,
                 AcademicYear = SelectedAcademicYear,
-                Semester = SelectedSemester // UPDATED to use dynamic semester dropdown
+                Semester = SelectedSemester
             };
 
             _context.Schedules.Add(newSchedule);
@@ -237,8 +237,8 @@ namespace FTLSV2.Pages.Chairman
             int officialSubjectUnits = targetSubject?.Units ?? 0;
 
             int currentTotalUnits = _context.Schedules
-                .Where(s => s.FacultyId == EditFacultyId 
-                            && s.AcademicYear == EditAcademicYear 
+                .Where(s => s.FacultyId == EditFacultyId
+                            && s.AcademicYear == EditAcademicYear
                             && s.Semester == EditSemester
                             && s.ScheduleId != EditScheduleId)
                 .Sum(s => s.AssignedUnits);
@@ -285,17 +285,19 @@ namespace FTLSV2.Pages.Chairman
             var settings = _context.SystemSettings.FirstOrDefault();
             GlobalMaxLimit = settings?.MaxOverload ?? 21;
 
-            ActiveFaculty = _context.Users.Where(u => u.Role == "Faculty" && u.Is_delete == false).ToList(); // Ensure deleted faculty aren't shown
+            ActiveFaculty = _context.Users.Where(u => u.Role == "Faculty" && u.Is_delete == false).ToList();
             ActiveSubjects = _context.Subjects.ToList();
             AllRooms = _context.Rooms.ToList();
 
-            AvailableAcademicYears = new List<string>
+            // --- AUTOMATIC CHOICE GENERATION ---
+            // Generates historical records down to 2023 along with the progressive year options automatically
+            int currentYear = DateTime.Today.Year;
+            AvailableAcademicYears = new List<string>();
+
+            for (int year = 2023; year <= currentYear + 1; year++)
             {
-                "2023-2024",
-                "2024-2025",
-                "2025-2026",
-                "2026-2027"
-            };
+                AvailableAcademicYears.Add($"{year}-{year + 1}");
+            }
 
             CurrentSchedules = _context.Schedules.Select(s => new AssignedLoad
             {

@@ -359,7 +359,6 @@
         font-size: 13px;
     }
 
-    /* --- NEW CHECKBOX STYLES --- */
     .checkbox-group {
         display: flex;
         gap: 12px;
@@ -368,7 +367,7 @@
         border: 1px solid #d1d5db;
         border-radius: 8px;
         padding: 8px 15px;
-        height: 100%; /* Matches the height of the time picker */
+        height: 100%;
         box-sizing: border-box;
     }
 
@@ -461,180 +460,178 @@
     </div>
 </div>
 
-<h2 style="margin-bottom: 15px; color: #07362d; font-size: 20px;">Teaching Load Management</h2>
+<div class="page-container">
+    <h2 style="margin-bottom: 15px; color: #07362d; font-size: 20px;">Teaching Load Management</h2>
 
-<div style="margin-bottom: 20px;">
-    <div class="chairman-card">
-        <h3>New Assignment</h3>
+    <div style="margin-bottom: 20px;">
+        <div class="chairman-card">
+            <h3>New Assignment</h3>
 
-        @if (TempData["ErrorMessage"] != null)
-        {
-            <div style="background-color: #f8d7da; color: #721c24; padding: 12px; margin-bottom: 20px; border-radius: 6px; border-left: 5px solid #dc3545; font-weight: bold;">
-                ⚠ @TempData["ErrorMessage"]
-            </div>
-        }
-
-        @if (TempData["SuccessMessage"] != null)
-        {
-            <div style="background-color: #d4edda; color: #155724; padding: 12px; margin-bottom: 20px; border-radius: 6px; border-left: 5px solid #28a745; font-weight: bold;">
-                ✓ @TempData["SuccessMessage"]
-            </div>
-        }
-
-        <form id="scheduleForm" method="post">
-            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-                <div class="form-group" style="flex: 1;">
-                    <label>Faculty Member</label>
-
-                    <select asp-for="SelectedFacultyId" required>
-                        <option value="">-- Select Faculty --</option>
-                        @if (Model.ActiveFaculty != null)
-                        {
-                            @foreach (var faculty in Model.ActiveFaculty)
-                            {
-                                <option value="@faculty.FacultyId">Engr. @faculty.FirstName @faculty.LastName</option>
-                            }
-                        }
-                    </select>
-                </div>
-
-                <div class="form-group" style="flex: 1;">
-                    <label>Course Selection</label>
-
-                    <select asp-for="SelectedSubjectId" required>
-                        <option value="">-- Select a Course --</option>
-                        @if (Model.ActiveSubjects != null)
-                        {
-                            @foreach (var subject in Model.ActiveSubjects)
-                            {
-                                <option value="@subject.SubjectId">@subject.Code - @subject.Title</option>
-                            }
-                        }
-                    </select>
-                </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-
-                <div class="form-group" style="margin-bottom: 20px; width: 100%;">
-                    <label style="display: block; font-weight: bold; color: #07362d; margin-bottom: 8px;">Schedule Days</label>
-                    <div class="checkbox-group" id="daysCheckboxGroup">
-                        <label class="checkbox-label"><input type="checkbox" name="SelectedDays" value="M"> M</label>
-                        <label class="checkbox-label"><input type="checkbox" name="SelectedDays" value="T"> T</label>
-                        <label class="checkbox-label"><input type="checkbox" name="SelectedDays" value="W"> W</label>
-                        <label class="checkbox-label"><input type="checkbox" name="SelectedDays" value="Th"> Th</label>
-                        <label class="checkbox-label"><input type="checkbox" name="SelectedDays" value="F"> F</label>
-                        <label class="checkbox-label"><input type="checkbox" name="SelectedDays" value="S"> S</label>
-                    </div>
-                </div>
-
-                <div class="form-group" style="margin-bottom: 20px; width: 100%;">
-                    <label style="display: block; font-weight: bold; color: #07362d; margin-bottom: 8px;">Time Slot</label>
-                    <div class="modern-time-container">
-                        <input type="time" asp-for="StartTime" required class="modern-time-input" onclick="this.showPicker()" title="Start Time" />
-                        <div class="time-separator">TO</div>
-                        <input type="time" asp-for="EndTime" required class="modern-time-input" onclick="this.showPicker()" title="End Time" />
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Assigned Room</label>
-                    <select asp-for="SelectedRoomId" required style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-                        <option value="">-- Select a Room --</option>
-                        @if (Model.AllRooms != null)
-                        {
-                            @foreach (var room in Model.AllRooms)
-                            {
-                                <option value="@room.RoomId">@room.Name</option>
-                            }
-                        }
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Offer Code</label>
-                    <input type="number"
-                           asp-for="SelectedOfferCode"
-                           required
-                           style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;"
-                           placeholder="Enter offer code" />
-                </div>
-
-                <div class="form-group">
-                    <label>Semester</label>
-                    <select asp-for="SelectedSemester" required style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-                        <option value="">-- Select Semester --</option>
-                        <option value="1st Semester">1st Semester</option>
-                        <option value="2nd Semester">2nd Semester</option>
-                        <option value="Summer">Summer</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Academic Year</label>
-                    <select asp-for="SelectedAcademicYear" required style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-                        <option value="">-- Select Academic Year --</option>
-                        @if (Model.AvailableAcademicYears != null)
-                        {
-                            @foreach (var year in Model.AvailableAcademicYears)
-                            {
-                                <option value="@year">@year</option>
-                            }
-                        }
-                    </select>
-                </div>
-            </div>
-
-            <button type="submit" class="btn-primary">Assign Schedule</button>
-        </form>
-    </div>
-</div>
-
-<div class="chairman-card" style="margin-top: 20px; width: 100%; background: #fdfdfd;" id="printableArea">
-
-    <div class="schedule-header-area">
-        <h3 style="margin: 0; font-size: 20px; color: #111827;">Assigned Teaching Loads</h3>
-    </div>
-
-    <div class="class-list-container" id="scheduleListContainer">
-        @if (Model.CurrentSchedules != null && Model.CurrentSchedules.Any())
-        {
-            @foreach (var load in Model.CurrentSchedules)
+            @if (TempData["ErrorMessage"] != null)
             {
-                <div class="class-list-item">
-                    <div class="class-time">@load.Schedule</div>
-
-                    <div class="class-info">
-                        <div class="class-code" style="display: flex; align-items: center;">
-                            @load.CourseCode
-                            <span style="font-weight:normal; color:#6b7280; font-size:12px; margin-left:6px;">(Offer: @(load.OfferCode ?? 0))</span>
-                            <span style="background: #e1f5ee; color: #0f6e56; padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase; margin-left: 10px; letter-spacing: 0.5px;">Assigned</span>
-                        </div>
-
-                        <div class="class-title">@load.FacultyName • @load.Semester (@load.AcademicYear)</div>
-                    </div>
-
-                    <div class="class-meta">
-                        <div class="class-room">@load.RoomName</div>
-
-                        <div style="display: flex; gap: 8px;">
-                            <button type="button" class="btn-edit" onclick='openEditScheduleModal(@load.ScheduleId, @load.FacultyId, @load.SubjectId, @(load.RoomId ?? 0), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.Schedule ?? "")), @(load.OfferCode ?? 0), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.AcademicYear ?? "")), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.Semester ?? "")))'>
-                                Edit
-                            </button>
-                            <button type="button" class="btn-delete" onclick='openDeleteScheduleModal(@load.ScheduleId, @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.CourseCode ?? "this course")))'>
-                                Delete
-                            </button>
-                        </div>
-                    </div>
+                <div style="background-color: #f8d7da; color: #721c24; padding: 12px; margin-bottom: 20px; border-radius: 6px; border-left: 5px solid #dc3545; font-weight: bold;">
+                    ⚠ @TempData["ErrorMessage"]
                 </div>
             }
-        }
-        else
-        {
-            <div id="noClassesMessage" style="text-align: center; padding: 60px 20px; color: #6b7280; background: #f9fafb; border-radius: 12px; border: 1px dashed #d1d5db; margin-top: 10px;">
-                <p style="margin: 0; font-size: 15px; font-weight: 500;">No schedules assigned yet.</p>
-            </div>
-        }
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div style="background-color: #d4edda; color: #155724; padding: 12px; margin-bottom: 20px; border-radius: 6px; border-left: 5px solid #28a745; font-weight: bold;">
+                    ✓ @TempData["SuccessMessage"]
+                </div>
+            }
+
+            <form id="scheduleForm" method="post">
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Faculty Member</label>
+                        <select asp-for="SelectedFacultyId" required>
+                            <option value="">-- Select Faculty --</option>
+                            @if (Model.ActiveFaculty != null)
+                            {
+                                @foreach (var faculty in Model.ActiveFaculty)
+                                {
+                                    <option value="@faculty.FacultyId">Engr. @faculty.FirstName @faculty.LastName</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="flex: 1;">
+                        <label>Course Selection</label>
+                        <select asp-for="SelectedSubjectId" required>
+                            <option value="">-- Select a Course --</option>
+                            @if (Model.ActiveSubjects != null)
+                            {
+                                @foreach (var subject in Model.ActiveSubjects)
+                                {
+                                    <option value="@subject.SubjectId">@subject.Code - @subject.Title</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div class="form-group" style="margin-bottom: 20px; width: 100%;">
+                        <label style="display: block; font-weight: bold; color: #07362d; margin-bottom: 8px;">Schedule Days</label>
+                        <div class="checkbox-group" id="daysCheckboxGroup">
+                            <label class="checkbox-label"><input type="checkbox" name="SelectedDays" value="M"> M</label>
+                            <label class="checkbox-label"><input type="checkbox" name="SelectedDays" value="T"> T</label>
+                            <label class="checkbox-label"><input type="checkbox" name="SelectedDays" value="W"> W</label>
+                            <label class="checkbox-label"><input type="checkbox" name="SelectedDays" value="Th"> Th</label>
+                            <label class="checkbox-label"><input type="checkbox" name="SelectedDays" value="F"> F</label>
+                            <label class="checkbox-label"><input type="checkbox" name="SelectedDays" value="S"> S</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 20px; width: 100%;">
+                        <label style="display: block; font-weight: bold; color: #07362d; margin-bottom: 8px;">Time Slot</label>
+                        <div class="modern-time-container">
+                            <input type="time" asp-for="StartTime" required class="modern-time-input" onclick="this.showPicker()" title="Start Time" />
+                            <div class="time-separator">TO</div>
+                            <input type="time" asp-for="EndTime" required class="modern-time-input" onclick="this.showPicker()" title="End Time" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Assigned Room</label>
+                        <select asp-for="SelectedRoomId" required style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                            <option value="">-- Select a Room --</option>
+                            @if (Model.AllRooms != null)
+                            {
+                                @foreach (var room in Model.AllRooms)
+                                {
+                                    <option value="@room.RoomId">@room.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Offer Code</label>
+                        <input type="number"
+                               asp-for="SelectedOfferCode"
+                               required
+                               style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;"
+                               placeholder="Enter offer code" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Semester</label>
+                        <select asp-for="SelectedSemester" required style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                            <option value="">-- Select Semester --</option>
+                            <option value="1st Semester">1st Semester</option>
+                            <option value="2nd Semester">2nd Semester</option>
+                            <option value="Summer">Summer</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Academic Year</label>
+                        <select asp-for="SelectedAcademicYear" required style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                            <option value="">-- Select Academic Year --</option>
+                            @if (Model.AvailableAcademicYears != null)
+                            {
+                                @foreach (var year in Model.AvailableAcademicYears)
+                                {
+                                    <option value="@year">@year</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary">Assign Schedule</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="chairman-card" style="margin-top: 20px; width: 100%; background: #fdfdfd;" id="printableArea">
+        <div class="schedule-header-area">
+            <h3 style="margin: 0; font-size: 20px; color: #111827;">Assigned Teaching Loads</h3>
+        </div>
+
+        <div class="class-list-container" id="scheduleListContainer">
+            @if (Model.CurrentSchedules != null && Model.CurrentSchedules.Any())
+            {
+                @foreach (var load in Model.CurrentSchedules)
+                {
+                    <div class="class-list-item">
+                        <div class="class-time">@load.Schedule</div>
+
+                        <div class="class-info">
+                            <div class="class-code" style="display: flex; align-items: center;">
+                                @load.CourseCode
+                                <span style="font-weight:normal; color:#6b7280; font-size:12px; margin-left:6px;">(Offer: @(load.OfferCode ?? 0))</span>
+                                <span style="background: #e1f5ee; color: #0f6e56; padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase; margin-left: 10px; letter-spacing: 0.5px;">Assigned</span>
+                            </div>
+
+                            <div class="class-title">@load.FacultyName • @load.Semester (@load.AcademicYear)</div>
+                        </div>
+
+                        <div class="class-meta">
+                            <div class="class-room">@load.RoomName</div>
+
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" class="btn-edit" onclick='openEditScheduleModal(@load.ScheduleId, @load.FacultyId, @load.SubjectId, @(load.RoomId ?? 0), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.Schedule ?? "")), @(load.OfferCode ?? 0), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.AcademicYear ?? "")), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.Semester ?? "")))'>
+                                    Edit
+                                </button>
+                                <button type="button" class="btn-delete" onclick='openDeleteScheduleModal(@load.ScheduleId, @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.CourseCode ?? "this course")))'>
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div id="noClassesMessage" style="text-align: center; padding: 60px 20px; color: #6b7280; background: #f9fafb; border-radius: 12px; border: 1px dashed #d1d5db; margin-top: 10px;">
+                    <p style="margin: 0; font-size: 15px; font-weight: 500;">No schedules assigned yet.</p>
+                </div>
+            }
+        </div>
     </div>
 </div>
 
@@ -767,20 +764,17 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        // Room Fetching Logic for Checkboxes
         const checkboxes = document.querySelectorAll('input[name="SelectedDays"]');
         const startInput = document.getElementById("StartTime");
         const endInput = document.getElementById("EndTime");
         const roomDropdown = document.getElementById("SelectedRoomId");
 
-        // Event listeners for New Schedule
         checkboxes.forEach(cb => cb.addEventListener("change", fetchAvailableRooms));
         if (startInput && endInput && roomDropdown) {
             startInput.addEventListener("change", fetchAvailableRooms);
             endInput.addEventListener("change", fetchAvailableRooms);
         }
 
-        // Event listeners for Edit Modal
         const editCheckboxes = document.querySelectorAll('input[name="EditDays"]');
         const editStartInput = document.getElementById("editStartTime");
         const editEndInput = document.getElementById("editEndTime");
@@ -791,9 +785,7 @@
             editEndInput.addEventListener("change", fetchAvailableRoomsForEdit);
         }
 
-        // Logic for fetching available rooms based on checked days
         function fetchAvailableRooms() {
-            // Get all checked checkboxes
             const checkedDays = Array.from(document.querySelectorAll('input[name="SelectedDays"]:checked')).map(cb => cb.value).join(", ");
             const start = startInput.value;
             const end = endInput.value;
@@ -824,7 +816,6 @@
         }
     });
 
-    // Opening Edit Modal Logic (Now parses checkboxes correctly)
     function openEditScheduleModal(scheduleId, facultyId, subjectId, roomId, scheduleText, offerCode, academicYear, semester) {
         document.getElementById("editScheduleId").value = scheduleId;
         document.getElementById("editFacultyId").value = facultyId;
@@ -836,11 +827,9 @@
 
         const parsed = parseScheduleText(scheduleText);
 
-        // Clear all checkboxes first
         document.querySelectorAll('input[name="EditDays"]').forEach(cb => cb.checked = false);
 
         if (parsed) {
-            // Check the appropriate boxes based on the parsed string
             parsed.days.forEach(day => {
                const checkbox = document.querySelector(`input[name="EditDays"][value="${day.trim()}"]`);
                if(checkbox) checkbox.checked = true;
@@ -857,12 +846,10 @@
     function parseScheduleText(scheduleText) {
         if (!scheduleText) return null;
 
-        // E.g. "M, W, F 8:00 AM - 10:00 AM"
-        // Split by the space before the numbers start to separate Days from Time
         const match = scheduleText.match(/^([A-Za-z,\s]+)\s(\d{1,2}:\d{2}\s(?:AM|PM))\s-\s(\d{1,2}:\d{2}\s(?:AM|PM))$/i);
 
         if (match && match.length === 4) {
-             const daysArray = match[1].split(","); // Split "M, W, F" into ["M", " W", " F"]
+             const daysArray = match[1].split(",");
              return {
                  days: daysArray,
                  startTime: convertToTimeInputValue(match[2]),
@@ -895,8 +882,8 @@
         const end = document.getElementById("editEndTime").value;
         const editRoomDropdown = document.getElementById("editRoomId");
         
-        const targetRoomId = (currentRoomId !== null && !(currentRoomId instanceof Event)) 
-            ? currentRoomId 
+        const targetRoomId = (currentRoomId !== null && !(currentRoomId instanceof Event))
+            ? currentRoomId
             : editRoomDropdown.value;
 
         if (!checkedEditDays || !start || !end) return;
@@ -921,7 +908,6 @@
             });
     }
 
-    // Modal Handling Functions
     function openDeleteScheduleModal(scheduleId, courseCode) {
         document.getElementById("deleteScheduleId").value = scheduleId;
         document.getElementById("deleteScheduleMessage").innerText = `This will permanently delete the assigned schedule for ${courseCode}. This action cannot be undone.`;
