@@ -46,13 +46,28 @@ namespace FTLSV2.Pages.Chairman
                 return;
             }
 
-            // FIXED: Parse session string into int to match the User.FacultyId integer type
             int chairmanFacultyId = int.Parse(chairmanFacultyIdString);
 
             var user = _db.Users.FirstOrDefault(u => u.FacultyId == chairmanFacultyId);
             if (user == null)
             {
                 return;
+            }
+
+            // DYNAMIC CHOICE GENERATION: Automatically build years based on calendar clocks
+            int currentYear = DateTime.Today.Year;
+            AvailableYears = new List<string>();
+            for (int year = 2023; year <= currentYear + 1; year++)
+            {
+                AvailableYears.Add($"{year}-{year + 1}");
+            }
+            // Sort choices descending to show newest terms first
+            AvailableYears = AvailableYears.OrderByDescending(y => y).ToList();
+
+            // DEFAULT INJECTOR: Set filter default configuration state targeting current school year
+            if (string.IsNullOrEmpty(SelectedYear))
+            {
+                SelectedYear = $"{currentYear}-{currentYear + 1}";
             }
 
             var schedules = _db.Schedules
@@ -115,13 +130,6 @@ namespace FTLSV2.Pages.Chairman
                 .AsNoTracking()
                 .ToList();
 
-            AvailableYears = allSchedulesWithSubjects
-                .Select(ps => ps.Schedule.AcademicYear ?? "N/A")
-                .Where(year => year != "N/A")
-                .Distinct()
-                .OrderByDescending(y => y)
-                .ToList();
-
             var filteredSubjects = allSchedulesWithSubjects;
             if (!string.IsNullOrEmpty(SelectedYear) && SelectedYear != "All")
             {
@@ -149,7 +157,7 @@ namespace FTLSV2.Pages.Chairman
 
             TotalClasses = MWFSchedules.Count + TTHSchedules.Count;
             TotalUnits = MWFSchedules.Sum(s => int.Parse(s.Units ?? "0")) + TTHSchedules.Sum(s => int.Parse(s.Units ?? "0"));
-            CurrentAcademicYear = schedules.FirstOrDefault()?.AcademicYear ?? "N/A";
+            CurrentAcademicYear = $"{currentYear}-{currentYear + 1}";
         }
 
         private DateTime ParseStartTime(string timeSlot)

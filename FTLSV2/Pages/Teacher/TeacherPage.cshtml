@@ -93,7 +93,7 @@
             border: 1px solid #e5e7eb;
             padding: 25px;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
-            min-height: 400px; /* Keeps the right side from jumping up/down */
+            min-height: 400px;
         }
 
         .schedule-content-header {
@@ -161,7 +161,6 @@
             color: #07362d;
         }
 
-        /* Animation for changing days */
         .fade-in {
             animation: fadeIn 0.3s ease-in-out;
         }
@@ -178,7 +177,6 @@
             }
         }
 
-        /* Responsive Fixes */
         @@media (max-width: 900px) {
             .schedule-split-view {
                 flex-direction: column;
@@ -284,26 +282,26 @@
     </div>
 </div>
 
-@if (Model.SubjectHistory.Any())
-{
-    <div class="schedule-card" style="margin-top: 10px; background: white; padding: 25px; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f3f4f6; padding-bottom: 15px; margin-bottom: 20px;">
-            <h3 style="color: #111827; margin: 0; font-size: 20px;">Subject History</h3>
+<div class="schedule-card" style="margin-top: 10px; background: white; padding: 25px; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f3f4f6; padding-bottom: 15px; margin-bottom: 20px;">
+        <h3 style="color: #111827; margin: 0; font-size: 20px;">Subject History</h3>
 
-            <form method="get" style="display: flex; gap: 10px; align-items: center;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <label style="font-weight: 600; font-size: 13px; color: #4b5563;">Academic Year:</label>
-                    <select asp-for="SelectedYear" onchange="this.form.submit()" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5db; min-width: 150px; font-size: 13px; color: #111827; background: #f9fafb;">
-                        <option value="">All Years</option>
-                        @foreach (var year in Model.AvailableYears)
-                        {
-                            <option value="@year">@year</option>
-                        }
-                    </select>
-                </div>
-            </form>
-        </div>
+        <form method="get" style="display: flex; gap: 10px; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <label style="font-weight: 600; font-size: 13px; color: #4b5563;">Academic Year:</label>
+                <select asp-for="SelectedYear" onchange="this.form.submit()" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5db; min-width: 150px; font-size: 13px; color: #111827; background: #f9fafb;">
+                    <option value="All">All Years</option>
+                    @foreach (var year in Model.AvailableYears)
+                    {
+                        <option value="@year">@year</option>
+                    }
+                </select>
+            </div>
+        </form>
+    </div>
 
+    @if (Model.SubjectHistory.Any())
+    {
         @foreach (var historyGroup in Model.SubjectHistory)
         {
             <div class="semester-section" style="margin-bottom: 15px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
@@ -345,28 +343,30 @@
                 </div>
             </div>
         }
-    </div>
-}
+    }
+    else
+    {
+        <div style="text-align: center; padding: 40px 20px; color: #6b7280; background: #f9fafb; border-radius: 8px;">
+            <p style="margin: 0; font-size: 14px; font-weight: 500;">No historical tracking information available for this year setting.</p>
+        </div>
+    }
+</div>
 
 @section Scripts {
     <script>
         // --- Split-View Logic ---
         function selectDay(element, dayName, dayCode) {
-            // 1. Update active styling on the boxes
             document.querySelectorAll('.day-box').forEach(box => box.classList.remove('active'));
             element.classList.add('active');
 
-            // 2. Update the Title
             document.getElementById('selectedDayTitle').innerText = dayName + "'s Schedule";
 
-            // 3. Filter the Table Rows
             let rows = document.querySelectorAll('.schedule-row');
             let visibleCount = 0;
 
-            // Remove animation class to restart it
             let tableBody = document.getElementById('scheduleTableBody');
             tableBody.classList.remove('fade-in');
-            void tableBody.offsetWidth; // Trigger reflow to restart animation
+            void tableBody.offsetWidth;
 
             rows.forEach(row => {
                 if(row.getAttribute('data-daycode') === dayCode) {
@@ -377,10 +377,8 @@
                 }
             });
 
-            // Re-add animation
             tableBody.classList.add('fade-in');
 
-            // 4. Toggle empty state message
             if (visibleCount > 0) {
                 document.getElementById('scheduleTableWrapper').style.display = 'block';
                 document.getElementById('noClassesMessage').style.display = 'none';
@@ -395,9 +393,7 @@
             content.style.display = (content.style.display === 'none') ? 'block' : 'none';
         }
 
-        // Updated print logic to show ALL schedules properly when printing
         function printSchedule() {
-            // Temporarily show ALL rows and hide the sidebar for printing
             document.querySelectorAll('.schedule-row').forEach(row => row.style.display = '');
             document.getElementById('scheduleTableWrapper').style.display = 'block';
             document.getElementById('noClassesMessage').style.display = 'none';
@@ -410,7 +406,6 @@
 
             window.print();
 
-            // Restore original content
             document.body.innerHTML = originalContent;
             window.location.reload();
         }
@@ -431,7 +426,6 @@
                 sessionStorage.removeItem("scrollPosition");
             }
 
-            // Run logic once on load to ensure Monday is showing correctly
             let activeBox = document.querySelector('.day-box.active');
             if(activeBox) {
                 selectDay(activeBox, 'Monday', 'MWF');

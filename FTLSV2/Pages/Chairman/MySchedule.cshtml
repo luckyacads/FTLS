@@ -52,7 +52,7 @@
 
         .schedule-cards-grid {
             display: flex;
-            flex-direction: column; /* Forces a single column */
+            flex-direction: column;
             gap: 15px;
         }
 
@@ -77,7 +77,6 @@
                 border-color: #d1d5db;
             }
 
-            /* Color-coded side accent bars */
             .class-card.mwf-card::before {
                 content: '';
                 position: absolute;
@@ -98,7 +97,6 @@
                 background-color: #f59e0b;
             }
 
-        /* Grouping layout inside the horizontal card */
         .card-main-info {
             display: flex;
             flex-direction: column;
@@ -122,7 +120,7 @@
 
         .card-details-group {
             display: flex;
-            gap: 24px; /* Spacing between time, subject, room */
+            gap: 24px;
             font-size: 13px;
             color: #4b5563;
         }
@@ -147,7 +145,6 @@
             margin-left: 20px;
         }
 
-        /* Responsive Fixes for smaller screens */
         @@media (max-width: 768px) {
             .stats-row {
                 grid-template-columns: 1fr;
@@ -281,26 +278,26 @@
     </div>
 </div>
 
-@if (Model.SubjectHistory.Any())
-{
-    <div class="schedule-card" style="margin-top: 30px; background: white; padding: 25px; border-radius: 12px; border: 1px solid #e5e7eb; box-sizing: border-box; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f3f4f6; padding-bottom: 15px; margin-bottom: 20px;">
-            <h3 style="color: #111827; margin: 0; font-size: 20px;">Subject History</h3>
+<div class="schedule-card" style="margin-top: 30px; background: white; padding: 25px; border-radius: 12px; border: 1px solid #e5e7eb; box-sizing: border-box; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f3f4f6; padding-bottom: 15px; margin-bottom: 20px;">
+        <h3 style="color: #111827; margin: 0; font-size: 20px;">Subject History</h3>
 
-            <form method="get" style="display: flex; gap: 10px; align-items: center;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <label style="font-weight: 600; font-size: 13px; color: #4b5563;">Academic Year:</label>
-                    <select asp-for="SelectedYear" onchange="this.form.submit()" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5db; min-width: 150px; font-size: 13px; color: #111827; background: #f9fafb;">
-                        <option value="">All Years</option>
-                        @foreach (var year in Model.AvailableYears)
-                        {
-                            <option value="@year">@year</option>
-                        }
-                    </select>
-                </div>
-            </form>
-        </div>
+        <form method="get" style="display: flex; gap: 10px; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <label style="font-weight: 600; font-size: 13px; color: #4b5563;">Academic Year:</label>
+                <select asp-for="SelectedYear" onchange="this.form.submit()" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5db; min-width: 150px; font-size: 13px; color: #111827; background: #f9fafb;">
+                    <option value="All">All Years</option>
+                    @foreach (var year in Model.AvailableYears)
+                    {
+                        <option value="@year">@year</option>
+                    }
+                </select>
+            </div>
+        </form>
+    </div>
 
+    @if (Model.SubjectHistory.Any())
+    {
         @foreach (var historyGroup in Model.SubjectHistory)
         {
             <div class="semester-section" style="margin-bottom: 15px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
@@ -342,8 +339,14 @@
                 </div>
             </div>
         }
-    </div>
-}
+    }
+    else
+    {
+        <div style="text-align: center; padding: 40px 20px; color: #6b7280; background: #f9fafb; border-radius: 8px;">
+            <p style="margin: 0; font-size: 14px; font-weight: 500;">No historical tracking information available for this year setting.</p>
+        </div>
+    }
+</div>
 
 @section Scripts {
     <script>

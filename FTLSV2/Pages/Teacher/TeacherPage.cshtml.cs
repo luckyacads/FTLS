@@ -36,23 +36,34 @@ namespace FTLSV2.Pages.Teacher
             var activeIdString = HttpContext.Session.GetString("ActiveUser");
             if (string.IsNullOrEmpty(activeIdString)) return RedirectToPage("/LoginPage");
 
-            // FIX: Convert the session string to an integer
             int activeId = int.Parse(activeIdString);
 
-            // FIX: Compare integer to integer
             LoggedInUser = _context.Users.FirstOrDefault(u => u.FacultyId == activeId);
             if (LoggedInUser == null) return RedirectToPage("/LoginPage");
 
-            // FIX: Compare integer to integer here as well
+            // --- AUTOMATIC CHOICE GENERATION ---
+            // Automatically scales from 2023 up to progressive relative values via system clock
+            int currentYear = DateTime.Today.Year;
+            AvailableYears = new List<string>();
+            for (int year = 2023; year <= currentYear + 1; year++)
+            {
+                AvailableYears.Add($"{year}-{year + 1}");
+            }
+            AvailableYears = AvailableYears.OrderByDescending(y => y).ToList();
+
+            // --- AUTOMATIC DEFAULT SELECTION ---
+            // Forces filter landing calculation logic to lock directly to current active year parameters
+            if (string.IsNullOrEmpty(SelectedYear))
+            {
+                SelectedYear = $"{currentYear}-{currentYear + 1}";
+            }
+
             var allSchedules = _context.Schedules
                 .Where(s => s.FacultyId == activeId)
                 .Include(s => s.Subject)
                 .Include(s => s.Room)
                 .AsNoTracking()
                 .ToList();
-
-            // Populate filter dropdown data
-            AvailableYears = allSchedules.Select(s => s.AcademicYear).Where(y => y != null).Distinct().OrderByDescending(y => y).ToList();
 
             // Map Current View
             MWFSchedules = allSchedules.Where(s => s.TimeSlot != null && s.TimeSlot.StartsWith("MWF"))
@@ -65,7 +76,7 @@ namespace FTLSV2.Pages.Teacher
 
             // Apply Filters
             var historyData = allSchedules;
-            if (!string.IsNullOrEmpty(SelectedYear))
+            if (!string.IsNullOrEmpty(SelectedYear) && SelectedYear != "All")
             {
                 historyData = historyData.Where(s => s.AcademicYear == SelectedYear).ToList();
             }
@@ -81,7 +92,7 @@ namespace FTLSV2.Pages.Teacher
 
             TotalClasses = MWFSchedules.Count + TTHSchedules.Count;
             TotalUnits = allSchedules.Sum(s => s.AssignedUnits);
-            CurrentAcademicYear = allSchedules.OrderByDescending(s => s.AcademicYear).FirstOrDefault()?.AcademicYear ?? "N/A";
+            CurrentAcademicYear = $"{currentYear}-{currentYear + 1}";
 
             return Page();
         }
