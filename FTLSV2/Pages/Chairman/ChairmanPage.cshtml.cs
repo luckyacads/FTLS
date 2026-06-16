@@ -72,12 +72,86 @@ namespace FTLSV2.Pages.Chairman
 
         public IActionResult OnGetAvailableRooms(string days, string startTime, string endTime, int? excludeScheduleId)
         {
-            var rooms = _context.Rooms.Select(r => new {
-                roomId = r.RoomId,
-                name = r.Name
-            }).ToList();
+            if (string.IsNullOrEmpty(days) || string.IsNullOrEmpty(startTime) || string.IsNullOrEmpty(endTime))
+            {
+                return new JsonResult(new List<object>());
+            }
 
-            return new JsonResult(rooms);
+            if (!TimeSpan.TryParse(startTime, out TimeSpan start) || !TimeSpan.TryParse(endTime, out TimeSpan end))
+            {
+                return new JsonResult(new List<object>());
+            }
+
+            var daysList = days.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                               .Select(d => d.Trim())
+                               .ToList();
+
+            var allRooms = _context.Rooms.ToList();
+            var allSchedules = _context.Schedules.ToList();
+
+            var occupiedRoomIds = allSchedules
+                .Where(s => s.RoomId.HasValue && (excludeScheduleId == null || s.ScheduleId != excludeScheduleId))
+                .Where(s => CheckOverlap(s.TimeSlot, daysList, start, end))
+                .Select(s => s.RoomId.Value)
+                .Distinct()
+                .ToList();
+
+            var availableRooms = allRooms
+                .Where(r => !occupiedRoomIds.Contains(r.RoomId))
+                .Select(r => new {
+                    roomId = r.RoomId,
+                    name = r.Name
+                })
+                .ToList();
+
+            return new JsonResult(availableRooms);
+        }
+
+        private bool CheckOverlap(string timeSlot1, List<string> days2, TimeSpan start2, TimeSpan end2)
+        {
+            if (string.IsNullOrWhiteSpace(timeSlot1)) return false;
+
+            var parts = timeSlot1.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length < 6) return false;
+
+            int timeStartIndex = -1;
+            for (int i = 0; i < parts.Length; i++)
+            {
+                if (char.IsDigit(parts[i][0]))
+                {
+                    timeStartIndex = i;
+                    break;
+                }
+            }
+            if (timeStartIndex <= 0) return false;
+
+            var days1Part = string.Join(" ", parts.Take(timeStartIndex));
+            var days1 = days1Part.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                                 .Select(d => d.Trim())
+                                 .ToList();
+
+            bool daysOverlap = days1.Any(d1 => days2.Contains(d1));
+            if (!daysOverlap) return false;
+
+            var timePart = string.Join(" ", parts.Skip(timeStartIndex));
+            var timeMatch = System.Text.RegularExpressions.Regex.Match(
+                timePart,
+                @"(\d{1,2}:\d{2}\s*[aApP][mM])\s*-\s*(\d{1,2}:\d{2}\s*[aApP][mM])",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase
+            );
+
+            if (!timeMatch.Success) return false;
+
+            if (DateTime.TryParse(timeMatch.Groups[1].Value, out DateTime s1) &&
+                DateTime.TryParse(timeMatch.Groups[2].Value, out DateTime e1))
+            {
+                TimeSpan start1 = s1.TimeOfDay;
+                TimeSpan end1 = e1.TimeOfDay;
+
+                return start1 < end2 && start2 < end1;
+            }
+
+            return false;
         }
 
         public IActionResult OnPost()
@@ -103,7 +177,9 @@ namespace FTLSV2.Pages.Chairman
             int officialSubjectUnits = targetSubject?.Units ?? 0;
 
             int currentTotalUnits = _context.Schedules
-                .Where(s => s.FacultyId == SelectedFacultyId)
+                .Where(s => s.FacultyId == SelectedFacultyId 
+                            && s.AcademicYear == SelectedAcademicYear 
+                            && s.Semester == SelectedSemester)
                 .Sum(s => s.AssignedUnits);
 
             var settings = _context.SystemSettings.FirstOrDefault();
@@ -111,7 +187,7 @@ namespace FTLSV2.Pages.Chairman
 
             if ((currentTotalUnits + officialSubjectUnits) > globalMaxLimit)
             {
-                TempData["ErrorMessage"] = "Assignment exceeds Max Overload limit.";
+                TempData["ErrorMessage"] = $"Assignment exceeds Max Overload limit. Current units for this semester: {currentTotalUnits}. This course units: {officialSubjectUnits}. Max limit: {globalMaxLimit}.";
                 LoadPageData();
                 return Page();
             }
@@ -151,19 +227,45 @@ namespace FTLSV2.Pages.Chairman
                 return RedirectToPage();
             }
 
+            if (EditEndTime <= EditStartTime)
+            {
+                TempData["ErrorMessage"] = "Invalid time range.";
+                return RedirectToPage();
+            }
+
+            var targetSubject = _context.Subjects.FirstOrDefault(s => s.SubjectId == EditSubjectId);
+            int officialSubjectUnits = targetSubject?.Units ?? 0;
+
+            int currentTotalUnits = _context.Schedules
+                .Where(s => s.FacultyId == EditFacultyId 
+                            && s.AcademicYear == EditAcademicYear 
+                            && s.Semester == EditSemester
+                            && s.ScheduleId != EditScheduleId)
+                .Sum(s => s.AssignedUnits);
+
+            var settings = _context.SystemSettings.FirstOrDefault();
+            int globalMaxLimit = settings?.MaxOverload ?? 21;
+
+            if ((currentTotalUnits + officialSubjectUnits) > globalMaxLimit)
+            {
+                TempData["ErrorMessage"] = $"Assignment exceeds Max Overload limit. Current units for this semester: {currentTotalUnits}. This course units: {officialSubjectUnits}. Max limit: {globalMaxLimit}.";
+                return RedirectToPage();
+            }
+
             schedule.FacultyId = EditFacultyId;
             schedule.SubjectId = EditSubjectId;
             schedule.RoomId = EditRoomId > 0 ? EditRoomId : null;
+            schedule.AssignedUnits = officialSubjectUnits;
 
-            // CHANGED: Convert List of edited days back into a string
             string joinedEditDays = string.Join(", ", EditDays);
             schedule.TimeSlot = $"{joinedEditDays} {DateTime.Today.Add(EditStartTime):h:mm tt} - {DateTime.Today.Add(EditEndTime):h:mm tt}";
 
             schedule.OfferCode = EditOfferCode;
             schedule.AcademicYear = EditAcademicYear;
-            schedule.Semester = EditSemester; // Save the updated Semester
+            schedule.Semester = EditSemester;
 
             _context.SaveChanges();
+            TempData["SuccessMessage"] = "Schedule successfully updated!";
             return RedirectToPage();
         }
 
