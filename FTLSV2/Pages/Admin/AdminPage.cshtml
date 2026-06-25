@@ -271,12 +271,12 @@
                 Registered Users
             </a>
             <a href="?showDeleted=true" class="filter-tab @(Model.ShowDeleted ? "active-deleted" : "")">
-                Deleted Users Filter
+                Deleted Users
             </a>
         </div>
 
         <h3 style="margin-top: 0; margin-bottom: 20px;">
-            @(Model.ShowDeleted ? "Deleted Users Records" : "Registered Accounts") (@Model.DbUsers.Count)
+            @(Model.ShowDeleted ? "Deleted Users " : "Registered Accounts") (@Model.DbUsers.Count)
         </h3>
         
         <div style="overflow-x: auto;">
