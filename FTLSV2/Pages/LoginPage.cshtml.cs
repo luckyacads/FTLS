@@ -30,7 +30,7 @@ namespace FTLSV2.Pages
         public IActionResult OnPost()
         {
             Username = Username?.Trim() ?? string.Empty;
-            Password = Password?.Trim() ?? string.Empty;
+            Password = Password ?? string.Empty;
 
             if (string.IsNullOrEmpty(Username) || Username.Length != 5 || !Username.All(char.IsDigit))
             {
@@ -41,7 +41,7 @@ namespace FTLSV2.Pages
             int activeUserId = int.Parse(Username);
 
             var dbUser = _context.Users
-                .Where(u => u.FacultyId == activeUserId && u.Password == Password)
+                .Where(u => u.FacultyId == activeUserId && u.Password == Password && !u.Is_delete)
                 .Select(u => new
                 {
                     FacultyId = u.FacultyId,
@@ -56,6 +56,12 @@ namespace FTLSV2.Pages
             if (dbUser == null)
             {
                 ErrorMessage = "Invalid Faculty ID or Password.";
+                return Page();
+            }
+
+            if (dbUser.Status == "Pending")
+            {
+                ErrorMessage = "Your account is pending approval. Please wait for Administrator confirmation.";
                 return Page();
             }
 
