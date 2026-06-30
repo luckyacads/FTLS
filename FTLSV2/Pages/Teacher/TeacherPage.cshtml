@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model FTLSV2.Pages.Teacher.TeacherPageModel
 @{
     ViewData["Title"] = "Faculty Portal";
@@ -223,12 +223,12 @@
 <div class="schedule-split-view" id="printableArea">
 
     <div class="day-sidebar" id="printSidebar">
-        <div class="day-box active" onclick="selectDay(this, 'Monday', 'MWF')">Monday</div>
-        <div class="day-box" onclick="selectDay(this, 'Tuesday', 'TTH')">Tuesday</div>
-        <div class="day-box" onclick="selectDay(this, 'Wednesday', 'MWF')">Wednesday</div>
-        <div class="day-box" onclick="selectDay(this, 'Thursday', 'TTH')">Thursday</div>
-        <div class="day-box" onclick="selectDay(this, 'Friday', 'MWF')">Friday</div>
-        <div class="day-box" onclick="selectDay(this, 'Saturday', 'SAT')">Saturday</div>
+        <div class="day-box active" onclick="selectDay(this, 'Monday')">Monday</div>
+        <div class="day-box" onclick="selectDay(this, 'Tuesday')">Tuesday</div>
+        <div class="day-box" onclick="selectDay(this, 'Wednesday')">Wednesday</div>
+        <div class="day-box" onclick="selectDay(this, 'Thursday')">Thursday</div>
+        <div class="day-box" onclick="selectDay(this, 'Friday')">Friday</div>
+        <div class="day-box" onclick="selectDay(this, 'Saturday')">Saturday</div>
     </div>
 
     <div class="schedule-content">
@@ -246,22 +246,9 @@
                     </tr>
                 </thead>
                 <tbody id="scheduleTableBody">
-                    @foreach (var schedule in Model.MWFSchedules)
+                    @foreach (var schedule in Model.Schedules)
                     {
-                        <tr class="schedule-row" data-daycode="MWF">
-                            <td class="col-time">@schedule.TimeSlot</td>
-                            <td class="col-code">@schedule.SubjectCode</td>
-                            <td>@schedule.SubjectTitle</td>
-                            <td>@schedule.RoomName</td>
-                            <td style="text-align: center;">
-                                <span style="background: #f3f4f6; color: #374151; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 12px;">@schedule.Units Units</span>
-                            </td>
-                        </tr>
-                    }
-
-                    @foreach (var schedule in Model.TTHSchedules)
-                    {
-                        <tr class="schedule-row" data-daycode="TTH" style="display: none;">
+                        <tr class="schedule-row" data-days="@schedule.DaysCsv" style="display: none;">
                             <td class="col-time">@schedule.TimeSlot</td>
                             <td class="col-code">@schedule.SubjectCode</td>
                             <td>@schedule.SubjectTitle</td>
@@ -355,7 +342,7 @@
 @section Scripts {
     <script>
         // --- Split-View Logic ---
-        function selectDay(element, dayName, dayCode) {
+        function selectDay(element, dayName) {
             document.querySelectorAll('.day-box').forEach(box => box.classList.remove('active'));
             element.classList.add('active');
 
@@ -369,7 +356,9 @@
             void tableBody.offsetWidth;
 
             rows.forEach(row => {
-                if(row.getAttribute('data-daycode') === dayCode) {
+                let daysCsv = row.getAttribute('data-days') || "";
+                let daysList = daysCsv.split(',');
+                if(daysList.includes(dayName)) {
                     row.style.display = '';
                     visibleCount++;
                 } else {
@@ -428,7 +417,7 @@
 
             let activeBox = document.querySelector('.day-box.active');
             if(activeBox) {
-                selectDay(activeBox, 'Monday', 'MWF');
+                selectDay(activeBox, 'Monday');
             }
         });
     </script>

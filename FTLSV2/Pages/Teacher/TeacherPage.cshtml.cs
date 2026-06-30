@@ -20,12 +20,11 @@ namespace FTLSV2.Pages.Teacher
         public List<string> AvailableYears { get; set; } = new();
         [BindProperty(SupportsGet = true)] public string SelectedYear { get; set; }
 
-        public record ScheduleView(string TimeSlot, string SubjectCode, string SubjectTitle, string RoomName, string Units, int? OfferCode);
+        public record ScheduleView(string TimeSlot, string SubjectCode, string SubjectTitle, string RoomName, string Units, int? OfferCode, string DaysCsv);
         public record SubjectGroup(string HeaderName, List<SubjectDetail> Subjects);
         public record SubjectDetail(string SubjectCode, string SubjectTitle, string Units, int? OfferCode);
 
-        public List<ScheduleView> MWFSchedules { get; set; } = new();
-        public List<ScheduleView> TTHSchedules { get; set; } = new();
+        public List<ScheduleView> Schedules { get; set; } = new();
         public List<SubjectGroup> SubjectHistory { get; set; } = new();
         public int TotalUnits { get; set; }
         public int TotalClasses { get; set; }
@@ -65,14 +64,55 @@ namespace FTLSV2.Pages.Teacher
                 .AsNoTracking()
                 .ToList();
 
-            // Map Current View
-            MWFSchedules = allSchedules.Where(s => s.TimeSlot != null && s.TimeSlot.StartsWith("MWF"))
-                .Select(s => new ScheduleView(s.TimeSlot, s.Subject.Code, s.Subject.Title, s.Room?.Name ?? "TBA", s.AssignedUnits.ToString(), s.OfferCode))
-                .OrderBy(s => ParseStartTime(s.TimeSlot)).ToList();
+            // Map Current View dynamically parsing the days
+            Schedules = allSchedules
+                .Select(s => {
+                    var days = new List<string>();
+                    var timeSlot = s.TimeSlot ?? "";
+                    
+                    // Parse day tokens by splitting before the first digit (which starts the time range)
+                    int firstDigit = timeSlot.IndexOfAny("0123456789".ToCharArray());
+                    string daysPart = firstDigit != -1 ? timeSlot.Substring(0, firstDigit) : timeSlot;
+                    
+                    var tokens = daysPart.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                                         .Select(t => t.Trim())
+                                         .ToList();
 
-            TTHSchedules = allSchedules.Where(s => s.TimeSlot != null && (s.TimeSlot.StartsWith("TTh") || s.TimeSlot.StartsWith("TTH")))
-                .Select(s => new ScheduleView(s.TimeSlot, s.Subject.Code, s.Subject.Title, s.Room?.Name ?? "TBA", s.AssignedUnits.ToString(), s.OfferCode))
-                .OrderBy(s => ParseStartTime(s.TimeSlot)).ToList();
+                    foreach (var t in tokens)
+                    {
+                        if (t == "M" || t.Equals("Mon", StringComparison.OrdinalIgnoreCase) || t.Equals("MWF", StringComparison.OrdinalIgnoreCase)) days.Add("Monday");
+                        if (t == "T" || t.Equals("Tue", StringComparison.OrdinalIgnoreCase) || t.Equals("TTH", StringComparison.OrdinalIgnoreCase) || t.Equals("TTh", StringComparison.OrdinalIgnoreCase)) days.Add("Tuesday");
+                        if (t == "W" || t.Equals("Wed", StringComparison.OrdinalIgnoreCase)) days.Add("Wednesday");
+                        if (t == "Th" || t.Equals("Thu", StringComparison.OrdinalIgnoreCase)) days.Add("Thursday");
+                        if (t == "F" || t.Equals("Fri", StringComparison.OrdinalIgnoreCase)) days.Add("Friday");
+                        if (t == "S" || t.Equals("Sat", StringComparison.OrdinalIgnoreCase) || t.Equals("SAT", StringComparison.OrdinalIgnoreCase)) days.Add("Saturday");
+                    }
+                    
+                    // Fallbacks for older formats
+                    if (daysPart.Contains("MWF", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (!days.Contains("Monday")) days.Add("Monday");
+                        if (!days.Contains("Wednesday")) days.Add("Wednesday");
+                        if (!days.Contains("Friday")) days.Add("Friday");
+                    }
+                    if (daysPart.Contains("TTH", StringComparison.OrdinalIgnoreCase) || daysPart.Contains("TTh", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (!days.Contains("Tuesday")) days.Add("Tuesday");
+                        if (!days.Contains("Thursday")) days.Add("Thursday");
+                    }
+
+                    return new ScheduleView(
+                        timeSlot,
+                        s.Subject.Code,
+                        s.Subject.Title,
+                        s.Room?.Name ?? "TBA",
+                        s.AssignedUnits.ToString(),
+                        s.OfferCode,
+                        string.Join(",", days)
+                    );
+                })
+                .OrderBy(s => ParseStartTime(s.TimeSlot ?? ""))
+                .ToList();
 
             // Apply Filters
             var historyData = allSchedules;
@@ -90,7 +130,7 @@ namespace FTLSV2.Pages.Teacher
                 ))
                 .OrderByDescending(g => g.HeaderName).ToList();
 
-            TotalClasses = MWFSchedules.Count + TTHSchedules.Count;
+            TotalClasses = Schedules.Count;
             TotalUnits = allSchedules.Sum(s => s.AssignedUnits);
             CurrentAcademicYear = $"{currentYear}-{currentYear + 1}";
 
