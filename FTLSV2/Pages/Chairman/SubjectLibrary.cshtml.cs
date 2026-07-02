@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.Collections.Generic;
@@ -19,15 +19,23 @@ namespace FTLSV2.Pages.Admin
         }
 
         public List<Subject> Subjects { get; set; } = new List<Subject>();
+        public List<Department> Departments { get; set; } = new List<Department>();
+        public Dictionary<int, Curriculum> SubjectCurriculums { get; set; } = new Dictionary<int, Curriculum>();
 
         [BindProperty] public string NewSubjectCode { get; set; }
         [BindProperty] public string NewSubjectTitle { get; set; }
         [BindProperty] public int NewSubjectUnits { get; set; }
+        [BindProperty] public int? NewSubjectDepartmentId { get; set; }
+        [BindProperty] public string NewSubjectYearLevel { get; set; }
+        [BindProperty] public string NewSubjectSemester { get; set; }
 
         [BindProperty] public int EditSubjectId { get; set; }
         [BindProperty] public string EditSubjectCode { get; set; }
         [BindProperty] public string EditSubjectTitle { get; set; }
         [BindProperty] public int EditSubjectUnits { get; set; }
+        [BindProperty] public int? EditSubjectDepartmentId { get; set; }
+        [BindProperty] public string EditSubjectYearLevel { get; set; }
+        [BindProperty] public string EditSubjectSemester { get; set; }
 
         // Binds the URL query string parameter dynamically (?showDeleted=true)
         [BindProperty(SupportsGet = true)]
@@ -40,25 +48,43 @@ namespace FTLSV2.Pages.Admin
                 .Where(s => s.Is_delete == ShowDeleted)
                 .OrderBy(s => s.Title)
                 .ToList();
+
+            var subjectIds = Subjects.Select(s => s.SubjectId).ToList();
+            SubjectCurriculums = _db.Curriculums
+                .Where(c => subjectIds.Contains(c.SubjectId))
+                .ToDictionary(c => c.SubjectId);
+
+            Departments = _db.Departments.OrderBy(d => d.Name).ToList();
         }
 
         public IActionResult OnPostAddSubject()
         {
-            if (!string.IsNullOrEmpty(NewSubjectCode) && !string.IsNullOrEmpty(NewSubjectTitle))
+            if (!string.IsNullOrEmpty(NewSubjectCode) && !string.IsNullOrEmpty(NewSubjectTitle) && NewSubjectDepartmentId.HasValue && !string.IsNullOrEmpty(NewSubjectYearLevel) && !string.IsNullOrEmpty(NewSubjectSemester))
             {
                 var subject = new Subject
                 {
                     Code = NewSubjectCode,
                     Title = NewSubjectTitle,
                     Units = NewSubjectUnits,
-                    DepartmentId = null
+                    DepartmentId = NewSubjectDepartmentId
                 };
 
                 try
                 {
                     _db.Subjects.Add(subject);
                     _db.SaveChanges();
-                    TempData["SuccessMessage"] = "Subject successfully added!";
+
+                    var curriculum = new Curriculum
+                    {
+                        SubjectId = subject.SubjectId,
+                        DepartmentId = NewSubjectDepartmentId.Value,
+                        YearLevel = NewSubjectYearLevel,
+                        Semester = NewSubjectSemester
+                    };
+                    _db.Curriculums.Add(curriculum);
+                    _db.SaveChanges();
+
+                    TempData["SuccessMessage"] = "Subject successfully added and mapped to curriculum!";
                 }
                 catch (Exception ex)
                 {
@@ -68,7 +94,7 @@ namespace FTLSV2.Pages.Admin
             }
             else
             {
-                TempData["ErrorMessage"] = "Please fill in all required fields.";
+                TempData["ErrorMessage"] = "Please fill in all required fields, including Department, Year Level, and Semester.";
             }
             return RedirectToPage();
         }
@@ -82,12 +108,29 @@ namespace FTLSV2.Pages.Admin
                 subjectToEdit.Code = EditSubjectCode;
                 subjectToEdit.Title = EditSubjectTitle;
                 subjectToEdit.Units = EditSubjectUnits;
-                subjectToEdit.DepartmentId = null;
+                subjectToEdit.DepartmentId = EditSubjectDepartmentId;
 
                 try
                 {
+                    var curriculum = _db.Curriculums.FirstOrDefault(c => c.SubjectId == subjectToEdit.SubjectId);
+                    if (curriculum == null)
+                    {
+                        curriculum = new Curriculum
+                        {
+                            SubjectId = subjectToEdit.SubjectId
+                        };
+                        _db.Curriculums.Add(curriculum);
+                    }
+
+                    if (EditSubjectDepartmentId.HasValue)
+                    {
+                        curriculum.DepartmentId = EditSubjectDepartmentId.Value;
+                    }
+                    curriculum.YearLevel = EditSubjectYearLevel ?? "";
+                    curriculum.Semester = EditSubjectSemester ?? "";
+
                     _db.SaveChanges();
-                    TempData["SuccessMessage"] = "Subject successfully updated!";
+                    TempData["SuccessMessage"] = "Subject and curriculum mapping successfully updated!";
                 }
                 catch (Exception ex)
                 {

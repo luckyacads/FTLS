@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model FTLSV2.Pages.Admin.SubjectLibraryModel
 @{
     Layout = "/Pages/Shared/_ChairmanLayout.cshtml";
@@ -266,6 +266,11 @@
                 bool isDeleted = subject.Is_delete;
                 var cardClass = isDeleted ? "subject-card is-deleted" : "subject-card";
 
+                Model.SubjectCurriculums.TryGetValue(subject.SubjectId, out var curr);
+                var deptId = curr?.DepartmentId ?? subject.DepartmentId ?? 0;
+                var yearLevel = curr?.YearLevel ?? "";
+                var semester = curr?.Semester ?? "";
+
                 <div class="@cardClass">
                     <div class="card-header-row">
                         <div class="subject-code" style="@(isDeleted ? "color: #c0392b;" : "")">@subject.Code</div>
@@ -291,7 +296,7 @@
                             }
                             else
                             {
-                                <button class="btn-edit" onclick="showEditForm(@subject.SubjectId, '@subject.Code', '@subject.Title', @subject.Units)">Edit</button>
+                                <button class="btn-edit" onclick="showEditForm(@subject.SubjectId, '@subject.Code', '@subject.Title', @subject.Units, @deptId, '@yearLevel', '@semester')">Edit</button>
 
                                 <button type="button" class="btn-delete" onclick="showDeleteModal(@subject.SubjectId, '@subject.Code')">Delete</button>
                             }
@@ -316,7 +321,6 @@
             <h3 style="margin: 0; color: #111827; font-size: 22px;">Add New Subject</h3>
             <button type="button" onclick="closeModal('addSubjectModal')" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #9ca3af; line-height: 1;">&times;</button>
         </div>
-
         <form method="post" asp-page-handler="AddSubject">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                 <div class="form-group">
@@ -332,6 +336,38 @@
                 <div class="form-group" style="grid-column: span 2;">
                     <label>Subject Title</label>
                     <input type="text" asp-for="NewSubjectTitle" class="input" placeholder="e.g. Network Administration" required />
+                </div>
+
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Department</label>
+                    <select asp-for="NewSubjectDepartmentId" class="input" required>
+                        <option value="">-- Select Department --</option>
+                        @foreach (var dept in Model.Departments)
+                        {
+                            <option value="@dept.Id">@dept.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Year Level</label>
+                    <select asp-for="NewSubjectYearLevel" class="input" required>
+                        <option value="">-- Select Year Level --</option>
+                        <option value="1st Year">1st Year</option>
+                        <option value="2nd Year">2nd Year</option>
+                        <option value="3rd Year">3rd Year</option>
+                        <option value="4th Year">4th Year</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Semester</label>
+                    <select asp-for="NewSubjectSemester" class="input" required>
+                        <option value="">-- Select Semester --</option>
+                        <option value="1st Sem">1st Semester</option>
+                        <option value="2nd Sem">2nd Semester</option>
+                        <option value="Summer">Summer</option>
+                    </select>
                 </div>
             </div>
 
@@ -367,6 +403,38 @@
                 <div class="form-group" style="grid-column: span 2;">
                     <label>Subject Title</label>
                     <input type="text" asp-for="EditSubjectTitle" id="editSubjectTitle" class="input" required />
+                </div>
+
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Department</label>
+                    <select asp-for="EditSubjectDepartmentId" id="editSubjectDepartmentId" class="input" required>
+                        <option value="">-- Select Department --</option>
+                        @foreach (var dept in Model.Departments)
+                        {
+                            <option value="@dept.Id">@dept.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Year Level</label>
+                    <select asp-for="EditSubjectYearLevel" id="editSubjectYearLevel" class="input" required>
+                        <option value="">-- Select Year Level --</option>
+                        <option value="1st Year">1st Year</option>
+                        <option value="2nd Year">2nd Year</option>
+                        <option value="3rd Year">3rd Year</option>
+                        <option value="4th Year">4th Year</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Semester</label>
+                    <select asp-for="EditSubjectSemester" id="editSubjectSemester" class="input" required>
+                        <option value="">-- Select Semester --</option>
+                        <option value="1st Sem">1st Semester</option>
+                        <option value="2nd Sem">2nd Semester</option>
+                        <option value="Summer">Summer</option>
+                    </select>
                 </div>
             </div>
 
@@ -413,11 +481,19 @@
     var editSubjectTitle = document.getElementById("editSubjectTitle");
     var editSubjectUnits = document.getElementById("editSubjectUnits");
 
-    function showEditForm(id, code, title, units) {
+    function showEditForm(id, code, title, units, deptId, yearLevel, semester) {
         if(editSubjectId) editSubjectId.value = id;
         if(editSubjectCode) editSubjectCode.value = code;
         if(editSubjectTitle) editSubjectTitle.value = title;
         if(editSubjectUnits) editSubjectUnits.value = units;
+
+        var deptSelect = document.getElementById("editSubjectDepartmentId");
+        var yearSelect = document.getElementById("editSubjectYearLevel");
+        var semSelect = document.getElementById("editSubjectSemester");
+
+        if (deptSelect) deptSelect.value = deptId || "";
+        if (yearSelect) yearSelect.value = yearLevel || "";
+        if (semSelect) semSelect.value = semester || "";
 
         openModal('editSubjectModal');
     }
