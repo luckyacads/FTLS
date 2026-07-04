@@ -20,7 +20,7 @@ namespace FTLSV2.Pages.Teacher
         public List<string> AvailableYears { get; set; } = new();
         [BindProperty(SupportsGet = true)] public string SelectedYear { get; set; }
 
-        public record ScheduleView(string TimeSlot, string SubjectCode, string SubjectTitle, string RoomName, string Units, int? OfferCode, string DaysCsv);
+        public record ScheduleView(string Day, string TimeOnly, string SubjectCode, string SubjectTitle, string RoomName, string Units, int? OfferCode, string DaysCsv);
         public record SubjectGroup(string HeaderName, List<SubjectDetail> Subjects);
         public record SubjectDetail(string SubjectCode, string SubjectTitle, string Units, int? OfferCode);
 
@@ -66,6 +66,7 @@ namespace FTLSV2.Pages.Teacher
 
             // Map Current View dynamically parsing the days
             Schedules = allSchedules
+                .OrderBy(s => ParseStartTime(s.TimeSlot ?? ""))
                 .Select(s => {
                     var days = new List<string>();
                     var timeSlot = s.TimeSlot ?? "";
@@ -101,8 +102,12 @@ namespace FTLSV2.Pages.Teacher
                         if (!days.Contains("Thursday")) days.Add("Thursday");
                     }
 
+                    string dayText = daysPart.Trim().TrimEnd(',');
+                    string timeOnly = firstDigit != -1 ? timeSlot.Substring(firstDigit).Trim() : "";
+
                     return new ScheduleView(
-                        timeSlot,
+                        dayText,
+                        timeOnly,
                         s.Subject.Code,
                         s.Subject.Title,
                         s.Room?.Name ?? "TBA",
@@ -111,7 +116,6 @@ namespace FTLSV2.Pages.Teacher
                         string.Join(",", days)
                     );
                 })
-                .OrderBy(s => ParseStartTime(s.TimeSlot ?? ""))
                 .ToList();
 
             // Apply Filters
