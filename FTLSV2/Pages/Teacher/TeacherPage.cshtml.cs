@@ -102,7 +102,21 @@ namespace FTLSV2.Pages.Teacher
                         if (!days.Contains("Thursday")) days.Add("Thursday");
                     }
 
-                    string dayText = daysPart.Trim().TrimEnd(',');
+                    var displayDays = tokens.Select(t => {
+                        var clean = t.Trim();
+                        if (clean == "M") return "Mon";
+                        if (clean == "T") return "Tue";
+                        if (clean == "W") return "Wed";
+                        if (clean == "Th") return "Thu";
+                        if (clean == "F") return "Fri";
+                        if (clean == "S") return "Sat";
+                        return clean;
+                    });
+                    string dayText = string.Join(", ", displayDays);
+                    if (string.IsNullOrWhiteSpace(dayText))
+                    {
+                        dayText = daysPart.Trim().TrimEnd(',');
+                    }
                     string timeOnly = firstDigit != -1 ? timeSlot.Substring(firstDigit).Trim() : "";
 
                     return new ScheduleView(
