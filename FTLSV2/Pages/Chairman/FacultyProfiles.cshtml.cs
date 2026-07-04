@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
 using FTLSV2.Data;
 using Microsoft.AspNetCore.Http;
+using System;
 
 namespace FTLSV2.Pages.Chairman
 {
@@ -20,10 +22,17 @@ namespace FTLSV2.Pages.Chairman
             int FacultyId,
             string Name,
             string Role,
+            int TotalUnits,
+            int MaxUnits,
+            bool IsOverloaded,
             string CurrentUnitsDisplay
         );
 
         public List<FacultyView> FacultyList { get; set; } = new();
+
+        public string SelectedAcademicYear { get; set; } = string.Empty;
+
+        public string CurrentTermDisplay { get; set; } = string.Empty;
 
         public void OnGet()
         {
@@ -62,18 +71,39 @@ namespace FTLSV2.Pages.Chairman
                 )
                 .ToList();
 
+            // Calculate Academic Year dynamically based on calendar
+            int currentYear = DateTime.Today.Year;
+            int month = DateTime.Today.Month;
+            if (month >= 1 && month <= 5)
+            {
+                SelectedAcademicYear = $"{currentYear - 1}-{currentYear}";
+            }
+            else
+            {
+                SelectedAcademicYear = $"{currentYear}-{currentYear + 1}";
+            }
+
+            CurrentTermDisplay = $"A.Y. {SelectedAcademicYear}";
+
             FacultyList = departmentUsers
                 .Select(u =>
                 {
-                    var totalUnits = _db.Schedules
-                        .Where(s => s.FacultyId == u.FacultyId)
-                        .Sum(s => (int?)s.AssignedUnits);
+                    int totalUnits = _db.Schedules
+                        .Where(s => s.FacultyId == u.FacultyId 
+                                    && s.AcademicYear == SelectedAcademicYear)
+                        .Sum(s => s.AssignedUnits);
+
+                    int maxUnits = u.MaxUnits;
+                    bool isOverloaded = totalUnits > maxUnits;
 
                     return new FacultyView(
                         u.FacultyId,
                         $"{u.FirstName} {u.LastName}",
                         u.Role,
-                        totalUnits == null ? "Pending" : $"{totalUnits} units"
+                        totalUnits,
+                        maxUnits,
+                        isOverloaded,
+                        $"{totalUnits} / {maxUnits} units"
                     );
                 })
                 .OrderBy(f => f.Name)

@@ -6,6 +6,10 @@
 }
 
 <style>
+    .alert-message {
+        transition: opacity 0.5s ease-out;
+    }
+
     .btn-edit {
         padding: 7px 12px;
         border: 1px solid #dcdcdc;
@@ -463,20 +467,44 @@
 <div class="page-container">
     <h2 style="margin-bottom: 15px; color: #07362d; font-size: 20px;">Teaching Load Management</h2>
 
+    @if (Model.OverloadedFacultyAlerts != null && Model.OverloadedFacultyAlerts.Any())
+    {
+        <div style="background-color: #fff3cd; color: #856404; padding: 15px; margin-bottom: 20px; border-radius: 8px; border-left: 5px solid #ffc107; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <h4 style="margin: 0 0 8px 0; font-size: 15px; color: #856404; display: flex; align-items: center; gap: 8px;">
+                ⚠ <strong>Faculty Unit Overload Alert(s)</strong>
+            </h4>
+            <ul style="margin: 0; padding-left: 20px; font-size: 13px;">
+                @foreach (var alert in Model.OverloadedFacultyAlerts)
+                {
+                    <li style="margin-bottom: 4px;">
+                        <strong>@alert.FacultyName</strong> is overloaded for A.Y. <strong>@alert.AcademicYear</strong> with <strong>@alert.AssignedUnits</strong> units (Regular Limit: @alert.MaxUnits units).
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+
     <div style="margin-bottom: 20px;">
         <div class="chairman-card">
             <h3>New Assignment</h3>
 
             @if (TempData["ErrorMessage"] != null)
             {
-                <div style="background-color: #f8d7da; color: #721c24; padding: 12px; margin-bottom: 20px; border-radius: 6px; border-left: 5px solid #dc3545; font-weight: bold;">
+                <div class="alert-message" style="background-color: #f8d7da; color: #721c24; padding: 12px; margin-bottom: 20px; border-radius: 6px; border-left: 5px solid #dc3545; font-weight: bold;">
                     ⚠ @TempData["ErrorMessage"]
+                </div>
+            }
+
+            @if (TempData["WarningMessage"] != null)
+            {
+                <div class="alert-message" style="background-color: #fff3cd; color: #856404; padding: 12px; margin-bottom: 20px; border-radius: 6px; border-left: 5px solid #ffc107; font-weight: bold;">
+                    ⚠ @TempData["WarningMessage"]
                 </div>
             }
 
             @if (TempData["SuccessMessage"] != null)
             {
-                <div style="background-color: #d4edda; color: #155724; padding: 12px; margin-bottom: 20px; border-radius: 6px; border-left: 5px solid #28a745; font-weight: bold;">
+                <div class="alert-message" style="background-color: #d4edda; color: #155724; padding: 12px; margin-bottom: 20px; border-radius: 6px; border-left: 5px solid #28a745; font-weight: bold;">
                     ✓ @TempData["SuccessMessage"]
                 </div>
             }
@@ -941,5 +969,17 @@
         const deleteModal = document.getElementById("deleteScheduleModal");
         if (event.target === editModal) closeModal("editScheduleModal");
         if (event.target === deleteModal) closeModal("deleteScheduleModal");
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const alerts = document.querySelectorAll('.alert-message');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                alert.style.opacity = '0';
+                setTimeout(() => {
+                    alert.remove();
+                }, 500);
+            }, 2000);
+        });
     });
 </script>

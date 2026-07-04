@@ -205,6 +205,13 @@
     <button class="btn-print" onclick="printSchedule()" style="background: #10b981; color: white; border: none; padding: 10px 18px; border-radius: 6px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);">Print Load</button>
 </div>
 
+@if (Model.TotalUnits > Model.LoggedInUser.MaxUnits)
+{
+    <div style="background-color: #fff3cd; color: #856404; padding: 15px; margin-bottom: 20px; border-radius: 8px; border-left: 5px solid #ffc107; font-weight: 500; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        ⚠ <strong>Overload Alert:</strong> Your current assigned teaching load of <strong>@Model.TotalUnits</strong> units exceeds your regular limit of <strong>@Model.LoggedInUser.MaxUnits</strong> units. The Chairman has been notified.
+    </div>
+}
+
 <div class="stats-row">
     <div class="stat-card">
         <h4>Total Classes</h4>

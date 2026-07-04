@@ -3,6 +3,7 @@ using FTLSV2.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +24,8 @@ namespace FTLSV2.Pages.Chairman
         public IList<Subject> ActiveSubjects { get; set; } = new List<Subject>();
         public IList<Room> AllRooms { get; set; } = new List<Room>();
         public IList<string> AvailableAcademicYears { get; set; } = new List<string>();
+        public record OverloadAlertView(int FacultyId, string FacultyName, string AcademicYear, string Semester, int AssignedUnits, int MaxUnits);
+        public List<OverloadAlertView> OverloadedFacultyAlerts { get; set; } = new List<OverloadAlertView>();
 
         // --- FORM INPUTS ---
         [BindProperty] public int SelectedFacultyId { get; set; }
@@ -179,18 +182,34 @@ namespace FTLSV2.Pages.Chairman
 
             int currentTotalUnits = _context.Schedules
                 .Where(s => s.FacultyId == SelectedFacultyId
-                            && s.AcademicYear == SelectedAcademicYear
-                            && s.Semester == SelectedSemester)
+                            && s.AcademicYear == SelectedAcademicYear)
                 .Sum(s => s.AssignedUnits);
+
+            var faculty = _context.Users.FirstOrDefault(u => u.FacultyId == SelectedFacultyId);
+            int facultyMaxUnits = faculty?.MaxUnits ?? 18;
+            int allowedMaxOverload = facultyMaxUnits + 2;
+
+            int newTotalUnits = currentTotalUnits + officialSubjectUnits;
 
             var settings = _context.SystemSettings.FirstOrDefault();
             int globalMaxLimit = settings?.MaxOverload ?? 21;
 
-            if ((currentTotalUnits + officialSubjectUnits) > globalMaxLimit)
+            if (newTotalUnits > allowedMaxOverload)
             {
-                TempData["ErrorMessage"] = $"Assignment exceeds Max Overload limit. Current units for this semester: {currentTotalUnits}. This course units: {officialSubjectUnits}. Max limit: {globalMaxLimit}.";
+                TempData["ErrorMessage"] = $"Assignment exceeds the allowed overload limit. Current units for this Academic Year: {currentTotalUnits}. This course: {officialSubjectUnits} units. Regular load: {facultyMaxUnits} units (max 2 units overload allowed).";
                 LoadPageData();
                 return Page();
+            }
+            else if (newTotalUnits > globalMaxLimit)
+            {
+                TempData["ErrorMessage"] = $"Assignment exceeds Max Overload limit. Current units for this Academic Year: {currentTotalUnits}. This course units: {officialSubjectUnits}. Max limit: {globalMaxLimit}.";
+                LoadPageData();
+                return Page();
+            }
+
+            if (newTotalUnits > facultyMaxUnits)
+            {
+                TempData["WarningMessage"] = $"Warning: Faculty regular load ({facultyMaxUnits} units) is exceeded. Assigned load is now {newTotalUnits} units.";
             }
 
             string joinedDays = string.Join(", ", SelectedDays);
@@ -239,17 +258,32 @@ namespace FTLSV2.Pages.Chairman
             int currentTotalUnits = _context.Schedules
                 .Where(s => s.FacultyId == EditFacultyId
                             && s.AcademicYear == EditAcademicYear
-                            && s.Semester == EditSemester
                             && s.ScheduleId != EditScheduleId)
                 .Sum(s => s.AssignedUnits);
+
+            var faculty = _context.Users.FirstOrDefault(u => u.FacultyId == EditFacultyId);
+            int facultyMaxUnits = faculty?.MaxUnits ?? 18;
+            int allowedMaxOverload = facultyMaxUnits + 2;
+
+            int newTotalUnits = currentTotalUnits + officialSubjectUnits;
 
             var settings = _context.SystemSettings.FirstOrDefault();
             int globalMaxLimit = settings?.MaxOverload ?? 21;
 
-            if ((currentTotalUnits + officialSubjectUnits) > globalMaxLimit)
+            if (newTotalUnits > allowedMaxOverload)
             {
-                TempData["ErrorMessage"] = $"Assignment exceeds Max Overload limit. Current units for this semester: {currentTotalUnits}. This course units: {officialSubjectUnits}. Max limit: {globalMaxLimit}.";
+                TempData["ErrorMessage"] = $"Assignment exceeds the allowed overload limit. Current units for this Academic Year: {currentTotalUnits}. This course: {officialSubjectUnits} units. Regular load: {facultyMaxUnits} units (max 2 units overload allowed).";
                 return RedirectToPage();
+            }
+            else if (newTotalUnits > globalMaxLimit)
+            {
+                TempData["ErrorMessage"] = $"Assignment exceeds Max Overload limit. Current units for this Academic Year: {currentTotalUnits}. This course units: {officialSubjectUnits}. Max limit: {globalMaxLimit}.";
+                return RedirectToPage();
+            }
+
+            if (newTotalUnits > facultyMaxUnits)
+            {
+                TempData["WarningMessage"] = $"Warning: Faculty regular load ({facultyMaxUnits} units) is exceeded. Assigned load is now {newTotalUnits} units.";
             }
 
             schedule.FacultyId = EditFacultyId;
@@ -288,6 +322,28 @@ namespace FTLSV2.Pages.Chairman
             ActiveFaculty = _context.Users.Where(u => u.Role == "Faculty" && u.Is_delete == false).ToList();
             ActiveSubjects = _context.Subjects.ToList();
             AllRooms = _context.Rooms.ToList();
+
+            // Calculate overloaded faculty alerts
+            OverloadedFacultyAlerts = _context.Schedules
+                .Include(s => s.Faculty)
+                .AsNoTracking()
+                .ToList()
+                .GroupBy(s => new { s.FacultyId, s.AcademicYear })
+                .Select(g => {
+                    var faculty = g.First().Faculty;
+                    int assignedUnits = g.Sum(s => s.AssignedUnits);
+                    int maxUnits = faculty?.MaxUnits ?? 18;
+                    return new OverloadAlertView(
+                        g.Key.FacultyId,
+                        "Engr. " + (faculty?.FirstName ?? "") + " " + (faculty?.LastName ?? ""),
+                        g.Key.AcademicYear ?? "TBA",
+                        "Whole Year",
+                        assignedUnits,
+                        maxUnits
+                    );
+                })
+                .Where(a => a.AssignedUnits > a.MaxUnits)
+                .ToList();
 
             // --- AUTOMATIC CHOICE GENERATION ---
             // Generates historical records down to 2023 along with the progressive year options automatically
