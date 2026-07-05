@@ -1,7 +1,7 @@
 @page
-@model FTLSV2.Pages.Teacher.CurriculumViewModel
+@model FTLSV2.Pages.Teacher.CurriculumCatalogModel
 @{
-    ViewData["Title"] = "Curriculum View";
+    ViewData["Title"] = "Curriculum Catalog";
 }
 <style>
     .curriculum-badge {
@@ -27,21 +27,22 @@
         color: #07362d; /* Your theme's dark green */
         border: 1px solid #c8e6c9;
     }
+
+    .badge-curr-year {
+        background-color: #e8f4fd; /* Soft blue */
+        color: #1d4ed8; /* Blue text */
+        border: 1px solid #bfdbfe;
+    }
 </style>
 
 <header>
-    <h1>Curriculum Overview</h1>
+    <h1>Curriculum Catalog</h1>
 </header>
 
 <section class="card" style="margin-bottom: 20px;">
     <h3 style="margin-bottom: 15px; margin-top: 0; color: #07362d;">Filter Curriculum</h3>
 
     <div style="display: flex; flex-direction: row; gap: 20px; align-items: flex-end; flex-wrap: wrap;">
-
-        <div class="form-group" style="flex: 2; min-width: 250px;">
-            <label style="font-weight: bold; font-size: 12px; color: #7f8c8d; text-transform: uppercase; margin-bottom: 5px; display: block;">Search Subject</label>
-            <input type="text" id="subjectSearch" onkeyup="filterSubjects()" placeholder="Search code or title..." style="width: 100%; height: 40px; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px;">
-        </div>
 
         <div class="form-group" style="flex: 1; min-width: 200px;">
             <label style="font-weight: bold; font-size: 12px; color: #7f8c8d; text-transform: uppercase; margin-bottom: 5px; display: block;">School</label>
@@ -72,6 +73,16 @@
         </div>
 
         <div class="form-group" style="flex: 1; min-width: 150px;">
+            <label style="font-weight: bold; font-size: 12px; color: #7f8c8d; text-transform: uppercase; margin-bottom: 5px; display: block;">Curriculum Year</label>
+            <select id="curriculumYearFilter" onchange="filterSubjects()" style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <option value="All">All Years</option>
+                <option value="2023">2023</option>
+                <option value="2025">2025</option>
+                <option value="2027">2027</option>
+            </select>
+        </div>
+
+        <div class="form-group" style="flex: 1; min-width: 150px;">
             <label style="font-weight: bold; font-size: 12px; color: #7f8c8d; text-transform: uppercase; margin-bottom: 5px; display: block;">Year Level</label>
             <select id="yearFilter" onchange="filterSubjects()" style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
                 <option value="All">All Years</option>
@@ -96,7 +107,7 @@
             <button class="btn-ghost" onclick="resetFilters()" style="height: 40px; padding: 0 20px; border: 1px solid #ccc; background: #f8f9fa; border-radius: 4px; cursor: pointer; font-weight: bold; color: #07362d;">Reset Filters</button>
         </div>
 
-    </div>
+     </div>
 </section>
 
 <section class="card full-width">
@@ -125,7 +136,8 @@
                     <tr class="subject-row"
                         data-semester="@yearAndSem"
                         data-department="@item.Department?.Name"
-                        data-school="@rowSchoolName">
+                        data-school="@rowSchoolName"
+                        data-curriculum-year="@item.CurriculumYear">
 
                         <td style="font-weight: bold; color: #07362d;">@item.Subject?.Code</td>
                         <td>@item.Subject?.Title</td>
@@ -140,6 +152,11 @@
                             @if (!string.IsNullOrEmpty(item.Semester))
                             {
                                 <span class="curriculum-badge badge-sem">@item.Semester</span>
+                            }
+
+                            @if (!string.IsNullOrEmpty(item.CurriculumYear))
+                            {
+                                <span class="curriculum-badge badge-curr-year">@item.CurriculumYear</span>
                             }
                         </td>
 
@@ -162,12 +179,12 @@
 @section Scripts {
     <script>
         function filterSubjects() {
-            var searchQuery = document.getElementById("subjectSearch").value.toLowerCase();
             var selectedSchool = document.getElementById("schoolFilter").value;
             var selectedDepartment = document.getElementById("departmentFilter").value;
             // REMOVED PROGRAM FILTER VALUE FETCH
             var selectedYear = document.getElementById("yearFilter").value;
             var selectedSem = document.getElementById("semFilter").value;
+            var selectedCurriculumYear = document.getElementById("curriculumYearFilter").value;
  
             var rows = document.querySelectorAll(".subject-row");
  
@@ -175,20 +192,17 @@
                 var rowSemester = row.getAttribute("data-semester") || "";
                 var rowDepartment = row.getAttribute("data-department") || "";
                 var rowSchool = row.getAttribute("data-school") || "";
+                var rowCurriculumYear = row.getAttribute("data-curriculum-year") || "";
  
-                // Get code and title text
-                var codeCell = row.cells[0]?.innerText.toLowerCase() || "";
-                var titleCell = row.cells[1]?.innerText.toLowerCase() || "";
- 
-                var matchSearch = (codeCell.includes(searchQuery) || titleCell.includes(searchQuery));
                 var matchSchool = (selectedSchool === "All" || rowSchool === selectedSchool);
                 var matchDepartment = (selectedDepartment === "All" || rowDepartment.includes(selectedDepartment));
                 // REMOVED PROGRAM MATCH CHECK
                 var matchYear = (selectedYear === "All" || rowSemester.includes(selectedYear));
                 var matchSem = (selectedSem === "All" || rowSemester.includes(selectedSem));
+                var matchCurriculumYear = (selectedCurriculumYear === "All" || rowCurriculumYear === selectedCurriculumYear);
  
                 // REMOVED matchProgram FROM THE IF CONDITION
-                if (matchSearch && matchSchool && matchDepartment && matchYear && matchSem) {
+                if (matchSchool && matchDepartment && matchYear && matchSem && matchCurriculumYear) {
                     row.style.display = "";
                 } else {
                     row.style.display = "none";
@@ -197,12 +211,12 @@
         }
  
         function resetFilters() {
-            document.getElementById("subjectSearch").value = "";
             document.getElementById("schoolFilter").value = "All";
             document.getElementById("departmentFilter").value = "All";
             // REMOVED PROGRAM FILTER RESET
             document.getElementById("yearFilter").value = "All";
             document.getElementById("semFilter").value = "All";
+            document.getElementById("curriculumYearFilter").value = "All";
             filterSubjects();
         }
     </script>

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using FTLSV2.Models;
 
 namespace FTLSV2.Data
@@ -157,6 +157,7 @@ namespace FTLSV2.Data
                 entity.Property(e => e.DepartmentId).HasColumnName("department_id");
                 entity.Property(e => e.YearLevel).HasColumnName("year_level");
                 entity.Property(e => e.Semester).HasColumnName("semester");
+                entity.Property(e => e.CurriculumYear).HasColumnName("curriculum_year");
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
                 entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
 

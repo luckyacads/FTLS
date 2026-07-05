@@ -21,7 +21,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// --- NEONDB QUICK CONNECTION TEST ---
+// --- NEONDB QUICK CONNECTION TEST & SEEDING ---
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<FtlsDbContext>();
@@ -30,6 +30,7 @@ using (var scope = app.Services.CreateScope())
         if (dbContext.Database.CanConnect())
         {
             System.Diagnostics.Debug.WriteLine("\nSUCCESS: Successfully connected to NeonDB!\n");
+            DbSeeder.Seed(dbContext);
         }
     }
     catch (System.Exception ex)

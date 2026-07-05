@@ -20,7 +20,7 @@ namespace FTLSV2.Pages.Admin
 
         public List<Subject> Subjects { get; set; } = new List<Subject>();
         public List<Department> Departments { get; set; } = new List<Department>();
-        public Dictionary<int, Curriculum> SubjectCurriculums { get; set; } = new Dictionary<int, Curriculum>();
+        public Dictionary<int, List<Curriculum>> SubjectCurriculums { get; set; } = new Dictionary<int, List<Curriculum>>();
 
         [BindProperty] public string NewSubjectCode { get; set; }
         [BindProperty] public string NewSubjectTitle { get; set; }
@@ -28,6 +28,7 @@ namespace FTLSV2.Pages.Admin
         [BindProperty] public int? NewSubjectDepartmentId { get; set; }
         [BindProperty] public string NewSubjectYearLevel { get; set; }
         [BindProperty] public string NewSubjectSemester { get; set; }
+        [BindProperty] public string NewSubjectCurriculumYear { get; set; }
 
         [BindProperty] public int EditSubjectId { get; set; }
         [BindProperty] public string EditSubjectCode { get; set; }
@@ -36,6 +37,7 @@ namespace FTLSV2.Pages.Admin
         [BindProperty] public int? EditSubjectDepartmentId { get; set; }
         [BindProperty] public string EditSubjectYearLevel { get; set; }
         [BindProperty] public string EditSubjectSemester { get; set; }
+        [BindProperty] public string EditSubjectCurriculumYear { get; set; }
 
         // Binds the URL query string parameter dynamically (?showDeleted=true)
         [BindProperty(SupportsGet = true)]
@@ -52,7 +54,9 @@ namespace FTLSV2.Pages.Admin
             var subjectIds = Subjects.Select(s => s.SubjectId).ToList();
             SubjectCurriculums = _db.Curriculums
                 .Where(c => subjectIds.Contains(c.SubjectId))
-                .ToDictionary(c => c.SubjectId);
+                .AsEnumerable()
+                .GroupBy(c => c.SubjectId)
+                .ToDictionary(g => g.Key, g => g.ToList());
 
             Departments = _db.Departments.OrderBy(d => d.Name).ToList();
         }
@@ -79,7 +83,8 @@ namespace FTLSV2.Pages.Admin
                         SubjectId = subject.SubjectId,
                         DepartmentId = NewSubjectDepartmentId.Value,
                         YearLevel = NewSubjectYearLevel,
-                        Semester = NewSubjectSemester
+                        Semester = NewSubjectSemester,
+                        CurriculumYear = NewSubjectCurriculumYear ?? "2023"
                     };
                     _db.Curriculums.Add(curriculum);
                     _db.SaveChanges();
@@ -128,9 +133,10 @@ namespace FTLSV2.Pages.Admin
                     }
                     curriculum.YearLevel = EditSubjectYearLevel ?? "";
                     curriculum.Semester = EditSubjectSemester ?? "";
+                    curriculum.CurriculumYear = EditSubjectCurriculumYear ?? "2023";
 
                     _db.SaveChanges();
-                    TempData["SuccessMessage"] = "Subject and curriculum mapping successfully updated!";
+                    TempData["SuccessMessage"] = "Subject and curriculum successfully updated!";
                 }
                 catch (Exception ex)
                 {

@@ -33,6 +33,9 @@ namespace FTLSV2.Models
         [Column("semester")]
         public string Semester { get; set; }
 
+        [Column("curriculum_year")]
+        public string CurriculumYear { get; set; } = "2023";
+
        [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

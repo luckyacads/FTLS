@@ -9,11 +9,11 @@ using FTLSV2.Models;
 
 namespace FTLSV2.Pages.Teacher
 {
-    public class CurriculumViewModel : PageModel
+    public class CurriculumCatalogModel : PageModel
     {
         private readonly FtlsDbContext _context;
 
-        public CurriculumViewModel(FtlsDbContext context)
+        public CurriculumCatalogModel(FtlsDbContext context)
         {
             _context = context;
         }
@@ -30,7 +30,6 @@ namespace FTLSV2.Pages.Teacher
             var activeIdString = HttpContext.Session.GetString("ActiveUser");
             if (string.IsNullOrEmpty(activeIdString)) return RedirectToPage("/LoginPage");
 
-            // FIXED: Parse the session string into an integer to match FacultyId
             int activeId = int.Parse(activeIdString);
 
             LoggedInUser = _context.Users.FirstOrDefault(u => u.FacultyId == activeId);

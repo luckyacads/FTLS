@@ -266,10 +266,11 @@
                 bool isDeleted = subject.Is_delete;
                 var cardClass = isDeleted ? "subject-card is-deleted" : "subject-card";
 
-                Model.SubjectCurriculums.TryGetValue(subject.SubjectId, out var curr);
-                var deptId = curr?.DepartmentId ?? subject.DepartmentId ?? 0;
-                var yearLevel = curr?.YearLevel ?? "";
-                var semester = curr?.Semester ?? "";
+                Model.SubjectCurriculums.TryGetValue(subject.SubjectId, out var currList);
+                var firstCurr = currList?.FirstOrDefault();
+                var deptId = firstCurr?.DepartmentId ?? subject.DepartmentId ?? 0;
+                var yearLevel = firstCurr?.YearLevel ?? "";
+                var semester = firstCurr?.Semester ?? "";
 
                 <div class="@cardClass">
                     <div class="card-header-row">
@@ -285,7 +286,21 @@
                         }
                     </div>
 
-                    <div class="card-footer-row">
+                    @if (currList != null && currList.Any())
+                    {
+                        <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 6px;">
+                            @foreach (var mapping in currList)
+                            {
+                                <div style="display: flex; gap: 4px; flex-wrap: wrap; align-items: center; background: #f8fafc; padding: 4px 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                    <span style="font-size: 10px; background: #f1f3f5; color: #495057; padding: 2px 6px; border-radius: 4px; border: 1px solid #dee2e6; font-weight: 600; white-space: nowrap;">@mapping.YearLevel</span>
+                                    <span style="font-size: 10px; background: #eafbf1; color: #07362d; padding: 2px 6px; border-radius: 4px; border: 1px solid #c8e6c9; font-weight: 600; white-space: nowrap;">@mapping.Semester</span>
+                                    <span style="font-size: 10px; background: #e8f4fd; color: #1d4ed8; padding: 2px 6px; border-radius: 4px; border: 1px solid #bfdbfe; font-weight: 600; white-space: nowrap;">@mapping.CurriculumYear</span>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <div class="card-footer-row" style="margin-top: 15px;">
                         <div style="display: flex; gap: 6px;">
                             @if (isDeleted)
                             {
@@ -296,7 +311,7 @@
                             }
                             else
                             {
-                                <button class="btn-edit" onclick="showEditForm(@subject.SubjectId, '@subject.Code', '@subject.Title', @subject.Units, @deptId, '@yearLevel', '@semester')">Edit</button>
+                                <button type="button" class="btn-edit" onclick="showEditForm(@subject.SubjectId, '@subject.Code', '@subject.Title', @subject.Units, @deptId, '@yearLevel', '@semester', '@(firstCurr?.CurriculumYear ?? "2023")')">Edit</button>
 
                                 <button type="button" class="btn-delete" onclick="showDeleteModal(@subject.SubjectId, '@subject.Code')">Delete</button>
                             }
@@ -369,6 +384,15 @@
                         <option value="Summer">Summer</option>
                     </select>
                 </div>
+
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Curriculum Year</label>
+                    <select asp-for="NewSubjectCurriculumYear" class="input" required>
+                        <option value="2023">2023</option>
+                        <option value="2025">2025</option>
+                        <option value="2027">2027</option>
+                    </select>
+                </div>
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 30px;">
@@ -436,6 +460,15 @@
                         <option value="Summer">Summer</option>
                     </select>
                 </div>
+
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Curriculum Year</label>
+                    <select asp-for="EditSubjectCurriculumYear" id="editSubjectCurriculumYear" class="input" required>
+                        <option value="2023">2023</option>
+                        <option value="2025">2025</option>
+                        <option value="2027">2027</option>
+                    </select>
+                </div>
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 30px;">
@@ -481,7 +514,7 @@
     var editSubjectTitle = document.getElementById("editSubjectTitle");
     var editSubjectUnits = document.getElementById("editSubjectUnits");
 
-    function showEditForm(id, code, title, units, deptId, yearLevel, semester) {
+    function showEditForm(id, code, title, units, deptId, yearLevel, semester, curriculumYear) {
         if(editSubjectId) editSubjectId.value = id;
         if(editSubjectCode) editSubjectCode.value = code;
         if(editSubjectTitle) editSubjectTitle.value = title;
@@ -490,10 +523,12 @@
         var deptSelect = document.getElementById("editSubjectDepartmentId");
         var yearSelect = document.getElementById("editSubjectYearLevel");
         var semSelect = document.getElementById("editSubjectSemester");
+        var currYearSelect = document.getElementById("editSubjectCurriculumYear");
 
         if (deptSelect) deptSelect.value = deptId || "";
         if (yearSelect) yearSelect.value = yearLevel || "";
         if (semSelect) semSelect.value = semester || "";
+        if (currYearSelect) currYearSelect.value = curriculumYear || "2023";
 
         openModal('editSubjectModal');
     }
@@ -525,6 +560,22 @@
             closeModal("addSubjectModal");
             closeModal("editSubjectModal");
             closeModal("deleteSubjectModal");
+        }
+    });
+
+    // Save scroll position before the page unloads/reloads
+    window.addEventListener("beforeunload", function () {
+        sessionStorage.setItem("subjectLibraryScroll", window.scrollY);
+    });
+
+    // Restore scroll position on page load
+    window.addEventListener("load", function () {
+        var scrollPos = sessionStorage.getItem("subjectLibraryScroll");
+        if (scrollPos) {
+            setTimeout(function () {
+                window.scrollTo(0, parseInt(scrollPos));
+                sessionStorage.removeItem("subjectLibraryScroll");
+            }, 50);
         }
     });
 </script>

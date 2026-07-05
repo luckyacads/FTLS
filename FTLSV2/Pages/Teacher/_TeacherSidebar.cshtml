@@ -1,4 +1,4 @@
-﻿@using FTLSV2.Data
+@using FTLSV2.Data
 @using FTLSV2.Models
 @inject FtlsDbContext _context
 
@@ -169,9 +169,9 @@
                         My Schedule
                     </a>
 
-                    <a asp-page="/Teacher/CurriculumView"
-                           class="@(path.StartsWith("/Teacher/CurriculumView", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">
-                        Curriculum View
+                    <a asp-page="/Teacher/CurriculumCatalog"
+                           class="@(path.StartsWith("/Teacher/CurriculumCatalog", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                        Curriculum Catalog
                     </a>
 
                     <a asp-page="/Teacher/AccountSettings"
