@@ -38,6 +38,7 @@ namespace FTLSV2.Pages.Admin
         [BindProperty] public string EditSubjectYearLevel { get; set; }
         [BindProperty] public string EditSubjectSemester { get; set; }
         [BindProperty] public string EditSubjectCurriculumYear { get; set; }
+        [BindProperty] public int EditCurriculumId { get; set; }
 
         // Binds the URL query string parameter dynamically (?showDeleted=true)
         [BindProperty(SupportsGet = true)]
@@ -65,31 +66,47 @@ namespace FTLSV2.Pages.Admin
         {
             if (!string.IsNullOrEmpty(NewSubjectCode) && !string.IsNullOrEmpty(NewSubjectTitle) && NewSubjectDepartmentId.HasValue && !string.IsNullOrEmpty(NewSubjectYearLevel) && !string.IsNullOrEmpty(NewSubjectSemester))
             {
-                var subject = new Subject
-                {
-                    Code = NewSubjectCode,
-                    Title = NewSubjectTitle,
-                    Units = NewSubjectUnits,
-                    DepartmentId = NewSubjectDepartmentId
-                };
-
                 try
                 {
-                    _db.Subjects.Add(subject);
-                    _db.SaveChanges();
+                    // Find if the subject already exists (by Code and not deleted)
+                    var subject = _db.Subjects.FirstOrDefault(s => s.Code == NewSubjectCode && !s.Is_delete);
 
-                    var curriculum = new Curriculum
+                    if (subject == null)
                     {
-                        SubjectId = subject.SubjectId,
-                        DepartmentId = NewSubjectDepartmentId.Value,
-                        YearLevel = NewSubjectYearLevel,
-                        Semester = NewSubjectSemester,
-                        CurriculumYear = NewSubjectCurriculumYear ?? "2023"
-                    };
-                    _db.Curriculums.Add(curriculum);
-                    _db.SaveChanges();
+                        subject = new Subject
+                        {
+                            Code = NewSubjectCode,
+                            Title = NewSubjectTitle,
+                            Units = NewSubjectUnits,
+                            DepartmentId = NewSubjectDepartmentId
+                        };
+                        _db.Subjects.Add(subject);
+                        _db.SaveChanges();
+                    }
 
-                    TempData["SuccessMessage"] = "Subject successfully added and mapped to curriculum!";
+                    // Check if a mapping for the target curriculum year already exists for this subject
+                    var targetYear = NewSubjectCurriculumYear ?? "2023";
+                    var existingMapping = _db.Curriculums.FirstOrDefault(c => c.SubjectId == subject.SubjectId && c.CurriculumYear == targetYear);
+
+                    if (existingMapping == null)
+                    {
+                        var curriculum = new Curriculum
+                        {
+                            SubjectId = subject.SubjectId,
+                            DepartmentId = NewSubjectDepartmentId.Value,
+                            YearLevel = NewSubjectYearLevel,
+                            Semester = NewSubjectSemester,
+                            CurriculumYear = targetYear
+                        };
+                        _db.Curriculums.Add(curriculum);
+                        _db.SaveChanges();
+
+                        TempData["SuccessMessage"] = "Subject successfully added to the curriculum!";
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = "This subject already exists in the selected curriculum year!";
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -117,7 +134,17 @@ namespace FTLSV2.Pages.Admin
 
                 try
                 {
-                    var curriculum = _db.Curriculums.FirstOrDefault(c => c.SubjectId == subjectToEdit.SubjectId);
+                    // Find the specific curriculum mapping by EditCurriculumId if provided
+                    var curriculum = EditCurriculumId > 0
+                        ? _db.Curriculums.FirstOrDefault(c => c.CurriculumId == EditCurriculumId)
+                        : null;
+
+                    // Fallback to the first mapping if specific mapping is not found or not provided
+                    if (curriculum == null)
+                    {
+                        curriculum = _db.Curriculums.FirstOrDefault(c => c.SubjectId == subjectToEdit.SubjectId);
+                    }
+
                     if (curriculum == null)
                     {
                         curriculum = new Curriculum

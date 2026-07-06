@@ -52,7 +52,8 @@
                 {
                     @foreach (var school in Model.AllSchools)
                     {
-                        <option value="@school.Name">@school.Name</option>
+                        var isSelected = school.Name == Model.LoggedInUser.School?.Name;
+                        <option value="@school.Name" selected="@(isSelected ? "selected" : null)">@school.Name</option>
                     }
                 }
             </select>
@@ -66,7 +67,8 @@
                 {
                     @foreach (var dept in Model.AllDepartments)
                     {
-                        <option value="@dept.Name">@dept.Name</option>
+                        var isSelected = dept.Name == Model.LoggedInUser.Department?.Name;
+                        <option value="@dept.Name" selected="@(isSelected ? "selected" : null)">@dept.Name</option>
                     }
                 }
             </select>
@@ -219,5 +221,9 @@
             document.getElementById("curriculumYearFilter").value = "All";
             filterSubjects();
         }
+
+        window.addEventListener("DOMContentLoaded", function () {
+            filterSubjects();
+        });
     </script>
 }

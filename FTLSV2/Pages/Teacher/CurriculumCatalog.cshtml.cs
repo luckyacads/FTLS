@@ -32,7 +32,10 @@ namespace FTLSV2.Pages.Teacher
 
             int activeId = int.Parse(activeIdString);
 
-            LoggedInUser = _context.Users.FirstOrDefault(u => u.FacultyId == activeId);
+            LoggedInUser = _context.Users
+                .Include(u => u.School)
+                .Include(u => u.Department)
+                .FirstOrDefault(u => u.FacultyId == activeId);
             if (LoggedInUser == null) return RedirectToPage("/LoginPage");
 
             // 1. Fetch Curriculum & Departments from DB

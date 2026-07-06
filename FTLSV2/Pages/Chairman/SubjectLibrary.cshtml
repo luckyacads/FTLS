@@ -254,10 +254,20 @@
             </a>
         </div>
 
-        <div class="search-row" style="position: relative; max-width: 500px;">
-            <svg style="position: absolute; right: 14px; top: 12px; width: 18px; height: 18px; color: #9ca3af; pointer-events: none;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        <div style="display: flex; gap: 15px; align-items: center; max-width: 700px; flex-wrap: wrap;">
+            <div class="search-row" style="position: relative; flex: 2; min-width: 250px; margin: 0;">
+                <svg style="position: absolute; right: 14px; top: 12px; width: 18px; height: 18px; color: #9ca3af; pointer-events: none;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <input type="text" id="subjectSearchInput" onkeyup="filterSubjects()" placeholder="Search by code or title..." class="input" style="padding: 10px 40px 10px 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); width: 100%;" />
+            </div>
 
-            <input type="text" id="subjectSearchInput" onkeyup="filterSubjects()" placeholder="Search by code or title..." class="input" style="padding: 10px 40px 10px 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);" />
+            <div style="position: relative; flex: 1; min-width: 180px;">
+                <select id="curriculumYearFilter" onchange="filterSubjects()" class="input" style="box-shadow: 0 1px 3px rgba(0,0,0,0.05); height: 40px; padding: 8px 12px; cursor: pointer; width: 100%;">
+                    <option value="All">All Curriculum Years</option>
+                    <option value="2023">2023</option>
+                    <option value="2025">2025</option>
+                    <option value="2027">2027</option>
+                </select>
+            </div>
         </div>
 
         <div class="subject-grid-container">
@@ -272,7 +282,7 @@
                 var yearLevel = firstCurr?.YearLevel ?? "";
                 var semester = firstCurr?.Semester ?? "";
 
-                <div class="@cardClass">
+                <div class="@cardClass" data-curriculum-years="@(currList != null ? string.Join(",", currList.Select(c => c.CurriculumYear)) : "")">
                     <div class="card-header-row">
                         <div class="subject-code" style="@(isDeleted ? "color: #c0392b;" : "")">@subject.Code</div>
                         <span class="badge-units">@subject.Units Units</span>
@@ -291,10 +301,15 @@
                         <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 6px;">
                             @foreach (var mapping in currList)
                             {
-                                <div style="display: flex; gap: 4px; flex-wrap: wrap; align-items: center; background: #f8fafc; padding: 4px 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
-                                    <span style="font-size: 10px; background: #f1f3f5; color: #495057; padding: 2px 6px; border-radius: 4px; border: 1px solid #dee2e6; font-weight: 600; white-space: nowrap;">@mapping.YearLevel</span>
-                                    <span style="font-size: 10px; background: #eafbf1; color: #07362d; padding: 2px 6px; border-radius: 4px; border: 1px solid #c8e6c9; font-weight: 600; white-space: nowrap;">@mapping.Semester</span>
-                                    <span style="font-size: 10px; background: #e8f4fd; color: #1d4ed8; padding: 2px 6px; border-radius: 4px; border: 1px solid #bfdbfe; font-weight: 600; white-space: nowrap;">@mapping.CurriculumYear</span>
+                                <div style="display: flex; gap: 4px; flex-wrap: wrap; align-items: center; background: #f8fafc; padding: 4px 8px; border-radius: 6px; border: 1px solid #e2e8f0; justify-content: space-between;">
+                                    <div style="display: flex; gap: 4px; flex-wrap: wrap; align-items: center;">
+                                        <span style="font-size: 10px; background: #f1f3f5; color: #495057; padding: 2px 6px; border-radius: 4px; border: 1px solid #dee2e6; font-weight: 600; white-space: nowrap;">@mapping.YearLevel</span>
+                                        <span style="font-size: 10px; background: #eafbf1; color: #07362d; padding: 2px 6px; border-radius: 4px; border: 1px solid #c8e6c9; font-weight: 600; white-space: nowrap;">@mapping.Semester</span>
+                                        <span style="font-size: 10px; background: #e8f4fd; color: #1d4ed8; padding: 2px 6px; border-radius: 4px; border: 1px solid #bfdbfe; font-weight: 600; white-space: nowrap;">@mapping.CurriculumYear</span>
+                                    </div>
+                                    <button type="button" class="btn-edit-badge" onclick="showEditForm(@subject.SubjectId, '@subject.Code', '@subject.Title', @subject.Units, @mapping.DepartmentId, '@mapping.YearLevel', '@mapping.Semester', '@mapping.CurriculumYear', @mapping.CurriculumId)" style="background: none; border: none; padding: 2px; cursor: pointer; color: #10b981; display: flex; align-items: center; justify-content: center; margin-left: 6px;" title="Edit this mapping">
+                                        <svg style="width: 13px; height: 13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    </button>
                                 </div>
                             }
                         </div>
@@ -311,7 +326,10 @@
                             }
                             else
                             {
-                                <button type="button" class="btn-edit" onclick="showEditForm(@subject.SubjectId, '@subject.Code', '@subject.Title', @subject.Units, @deptId, '@yearLevel', '@semester', '@(firstCurr?.CurriculumYear ?? "2023")')">Edit</button>
+                                if (currList == null || !currList.Any())
+                                {
+                                    <button type="button" class="btn-edit" onclick="showEditForm(@subject.SubjectId, '@subject.Code', '@subject.Title', @subject.Units, @deptId, '@yearLevel', '@semester', '@(firstCurr?.CurriculumYear ?? "2023")', @(firstCurr?.CurriculumId ?? 0))">Edit</button>
+                                }
 
                                 <button type="button" class="btn-delete" onclick="showDeleteModal(@subject.SubjectId, '@subject.Code')">Delete</button>
                             }
@@ -412,6 +430,7 @@
 
         <form method="post" asp-page-handler="EditSubject">
             <input type="hidden" asp-for="EditSubjectId" id="editSubjectId" />
+            <input type="hidden" asp-for="EditCurriculumId" id="editCurriculumId" />
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                 <div class="form-group">
@@ -514,11 +533,14 @@
     var editSubjectTitle = document.getElementById("editSubjectTitle");
     var editSubjectUnits = document.getElementById("editSubjectUnits");
 
-    function showEditForm(id, code, title, units, deptId, yearLevel, semester, curriculumYear) {
+    function showEditForm(id, code, title, units, deptId, yearLevel, semester, curriculumYear, currId) {
         if(editSubjectId) editSubjectId.value = id;
         if(editSubjectCode) editSubjectCode.value = code;
         if(editSubjectTitle) editSubjectTitle.value = title;
         if(editSubjectUnits) editSubjectUnits.value = units;
+
+        var editCurrId = document.getElementById("editCurriculumId");
+        if(editCurrId) editCurrId.value = currId || 0;
 
         var deptSelect = document.getElementById("editSubjectDepartmentId");
         var yearSelect = document.getElementById("editSubjectYearLevel");
@@ -542,12 +564,17 @@
     function filterSubjects() {
         var input = document.getElementById("subjectSearchInput");
         var filter = input.value.toLowerCase();
+        var selectedYear = document.getElementById("curriculumYearFilter").value;
         var cards = document.querySelectorAll(".subject-card");
 
         cards.forEach(function(card) {
             var cardText = card.textContent || card.innerText;
+            var cardYears = card.getAttribute("data-curriculum-years") || "";
 
-            if (cardText.toLowerCase().indexOf(filter) > -1) {
+            var matchSearch = cardText.toLowerCase().indexOf(filter) > -1;
+            var matchYear = (selectedYear === "All" || cardYears.split(",").includes(selectedYear));
+
+            if (matchSearch && matchYear) {
                 card.style.display = "flex";
             } else {
                 card.style.display = "none";
