@@ -254,20 +254,10 @@
             </a>
         </div>
 
-        <div style="display: flex; gap: 15px; align-items: center; max-width: 700px; flex-wrap: wrap;">
-            <div class="search-row" style="position: relative; flex: 2; min-width: 250px; margin: 0;">
-                <svg style="position: absolute; right: 14px; top: 12px; width: 18px; height: 18px; color: #9ca3af; pointer-events: none;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                <input type="text" id="subjectSearchInput" onkeyup="filterSubjects()" placeholder="Search by code or title..." class="input" style="padding: 10px 40px 10px 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); width: 100%;" />
-            </div>
+        <div class="search-row" style="position: relative; max-width: 500px;">
+            <svg style="position: absolute; right: 14px; top: 12px; width: 18px; height: 18px; color: #9ca3af; pointer-events: none;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
 
-            <div style="position: relative; flex: 1; min-width: 180px;">
-                <select id="curriculumYearFilter" onchange="filterSubjects()" class="input" style="box-shadow: 0 1px 3px rgba(0,0,0,0.05); height: 40px; padding: 8px 12px; cursor: pointer; width: 100%;">
-                    <option value="All">All Curriculum Years</option>
-                    <option value="2023">2023</option>
-                    <option value="2025">2025</option>
-                    <option value="2027">2027</option>
-                </select>
-            </div>
+            <input type="text" id="subjectSearchInput" onkeyup="filterSubjects()" placeholder="Search by code or title..." class="input" style="padding: 10px 40px 10px 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);" />
         </div>
 
         <div class="subject-grid-container">
@@ -282,7 +272,7 @@
                 var yearLevel = firstCurr?.YearLevel ?? "";
                 var semester = firstCurr?.Semester ?? "";
 
-                <div class="@cardClass" data-curriculum-years="@(currList != null ? string.Join(",", currList.Select(c => c.CurriculumYear)) : "")">
+                <div class="@cardClass">
                     <div class="card-header-row">
                         <div class="subject-code" style="@(isDeleted ? "color: #c0392b;" : "")">@subject.Code</div>
                         <span class="badge-units">@subject.Units Units</span>
@@ -564,17 +554,12 @@
     function filterSubjects() {
         var input = document.getElementById("subjectSearchInput");
         var filter = input.value.toLowerCase();
-        var selectedYear = document.getElementById("curriculumYearFilter").value;
         var cards = document.querySelectorAll(".subject-card");
 
         cards.forEach(function(card) {
             var cardText = card.textContent || card.innerText;
-            var cardYears = card.getAttribute("data-curriculum-years") || "";
 
-            var matchSearch = cardText.toLowerCase().indexOf(filter) > -1;
-            var matchYear = (selectedYear === "All" || cardYears.split(",").includes(selectedYear));
-
-            if (matchSearch && matchYear) {
+            if (cardText.toLowerCase().indexOf(filter) > -1) {
                 card.style.display = "flex";
             } else {
                 card.style.display = "none";
