@@ -41,8 +41,10 @@ namespace FTLSV2.Pages.Teacher
             // 1. Fetch Curriculum & Departments from DB
             MySubjects = _context.Curriculums
                 .Include(c => c.Department)
-                .OrderBy(c => c.YearLevel)
+                .OrderBy(c => c.CurriculumYear)
+                .ThenBy(c => c.YearLevel)
                 .ThenBy(c => c.Semester)
+                .ThenBy(c => c.CurriculumId)
                 .ToList();
 
             // 2. Manually link Subjects in C#

@@ -33,6 +33,12 @@
         color: #1d4ed8; /* Blue text */
         border: 1px solid #bfdbfe;
     }
+
+    .badge-container {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+    }
 </style>
 
 <header>
@@ -127,6 +133,7 @@
         <tbody>
             @if (Model.MySubjects != null && Model.MySubjects.Any())
             {
+                string lastGroupKey = null;
                 @foreach (var item in Model.MySubjects)
                 {
                     // Safely looks up the School Name based on the Department's School ID
@@ -135,34 +142,51 @@
                     // COMBINED YEAR AND SEMESTER FOR THE FILTER
                     var yearAndSem = $"{item.YearLevel} {item.Semester}";
 
+                    var yearLevelClean = item.YearLevel?.Replace(" ", "") ?? "";
+                    var semesterClean = item.Semester?.Replace(" ", "") ?? "";
+                    var currentGroupKey = $"{item.CurriculumYear}_{yearLevelClean}_{semesterClean}";
+
+                    @if (lastGroupKey != currentGroupKey)
+                    {
+                        lastGroupKey = currentGroupKey;
+                        <tr class="group-header-row" id="header-@currentGroupKey">
+                            <td colspan="5" style="background-color: #eafbf1; color: #07362d; font-weight: bold; padding: 12px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #c8e6c9;">
+                                @item.CurriculumYear Curriculum — @item.YearLevel — @item.Semester
+                            </td>
+                        </tr>
+                    }
+
                     <tr class="subject-row"
                         data-semester="@yearAndSem"
                         data-department="@item.Department?.Name"
                         data-school="@rowSchoolName"
-                        data-curriculum-year="@item.CurriculumYear">
+                        data-curriculum-year="@item.CurriculumYear"
+                        data-group="header-@currentGroupKey">
 
                         <td style="font-weight: bold; color: #07362d;">@item.Subject?.Code</td>
                         <td>@item.Subject?.Title</td>
                         <td>@item.Subject?.Units</td>
 
                         <td>
-                            @if (!string.IsNullOrEmpty(item.YearLevel))
-                            {
-                                <span class="curriculum-badge badge-year">@item.YearLevel</span>
-                            }
+                            <div class="badge-container">
+                                @if (!string.IsNullOrEmpty(item.YearLevel))
+                                {
+                                    <span class="curriculum-badge badge-year">@item.YearLevel</span>
+                                }
 
-                            @if (!string.IsNullOrEmpty(item.Semester))
-                            {
-                                <span class="curriculum-badge badge-sem">@item.Semester</span>
-                            }
+                                @if (!string.IsNullOrEmpty(item.Semester))
+                                {
+                                    <span class="curriculum-badge badge-sem">@item.Semester</span>
+                                }
 
-                            @if (!string.IsNullOrEmpty(item.CurriculumYear))
-                            {
-                                <span class="curriculum-badge badge-curr-year">@item.CurriculumYear</span>
-                            }
+                                @if (!string.IsNullOrEmpty(item.CurriculumYear))
+                                {
+                                    <span class="curriculum-badge badge-curr-year">@item.CurriculumYear</span>
+                                }
+                            </div>
                         </td>
 
-                        <td style="color: #7f8c8d;">@item.Department?.Name</td>
+                        <td style="color: #7f8c8d; white-space: nowrap;">@item.Department?.Name</td>
                     </tr>
                 }
             }
@@ -208,6 +232,24 @@
                     row.style.display = "";
                 } else {
                     row.style.display = "none";
+                }
+            });
+
+            // Filter header rows based on visible subject rows under them
+            var headers = document.querySelectorAll(".group-header-row");
+            headers.forEach(header => {
+                var id = header.id;
+                var hasVisibleSubject = false;
+                var relatedRows = document.querySelectorAll(`.subject-row[data-group="${id}"]`);
+                relatedRows.forEach(r => {
+                    if (r.style.display !== "none") {
+                        hasVisibleSubject = true;
+                    }
+                });
+                if (hasVisibleSubject) {
+                    header.style.display = "";
+                } else {
+                    header.style.display = "none";
                 }
             });
         }
