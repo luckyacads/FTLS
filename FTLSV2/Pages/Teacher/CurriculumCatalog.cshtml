@@ -17,20 +17,26 @@
     }
 
     .badge-year {
-        background-color: #f1f3f5; /* Light professional gray */
-        color: #495057; /* Dark gray text */
+        background-color: #f1f3f5;
+        /* Light professional gray */
+        color: #495057;
+        /* Dark gray text */
         border: 1px solid #dee2e6;
     }
 
     .badge-sem {
-        background-color: #eafbf1; /* Soft green */
-        color: #07362d; /* Your theme's dark green */
+        background-color: #eafbf1;
+        /* Soft green */
+        color: #07362d;
+        /* Your theme's dark green */
         border: 1px solid #c8e6c9;
     }
 
     .badge-curr-year {
-        background-color: #e8f4fd; /* Soft blue */
-        color: #1d4ed8; /* Blue text */
+        background-color: #e8f4fd;
+        /* Soft blue */
+        color: #1d4ed8;
+        /* Blue text */
         border: 1px solid #bfdbfe;
     }
 
@@ -54,11 +60,13 @@
         <div class="form-group" style="flex: 1; min-width: 200px;">
             <label style="font-weight: bold; font-size: 12px; color: #7f8c8d; text-transform: uppercase; margin-bottom: 5px; display: block;">School</label>
             <select id="schoolFilter" onchange="filterSubjects()" style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+
                 <option value="All">All Schools</option>
                 @if (Model.AllSchools != null)
                 {
                     @foreach (var school in Model.AllSchools)
                     {
+
                         var isSelected = school.Name == Model.LoggedInUser.School?.Name;
                         <option value="@school.Name" selected="@(isSelected ? "selected" : null)">@school.Name</option>
                     }
@@ -68,6 +76,7 @@
 
         <div class="form-group" style="flex: 1; min-width: 200px;">
             <label style="font-weight: bold; font-size: 12px; color: #7f8c8d; text-transform: uppercase; margin-bottom: 5px; display: block;">Department</label>
+
             <select id="departmentFilter" onchange="filterSubjects()" style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
                 <option value="All">All Departments</option>
                 @if (Model.AllDepartments != null)
@@ -90,6 +99,7 @@
             </select>
         </div>
 
+   
         <div class="form-group" style="flex: 1; min-width: 150px;">
             <label style="font-weight: bold; font-size: 12px; color: #7f8c8d; text-transform: uppercase; margin-bottom: 5px; display: block;">Year Level</label>
             <select id="yearFilter" onchange="filterSubjects()" style="width: 100%; height: 40px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
@@ -97,6 +107,7 @@
                 <option value="1st Year">1st Year</option>
                 <option value="2nd Year">2nd Year</option>
                 <option value="3rd Year">3rd Year</option>
+
                 <option value="4th Year">4th Year</option>
             </select>
         </div>
@@ -109,13 +120,14 @@
                 <option value="2nd Sem">2nd Semester</option>
                 <option value="Summer">Summer</option>
             </select>
+
         </div>
 
         <div>
             <button class="btn-ghost" onclick="resetFilters()" style="height: 40px; padding: 0 20px; border: 1px solid #ccc; background: #f8f9fa; border-radius: 4px; cursor: pointer; font-weight: bold; color: #07362d;">Reset Filters</button>
         </div>
 
-     </div>
+    </div>
 </section>
 
 <section class="card full-width">
@@ -126,6 +138,7 @@
                 <th>Code</th>
                 <th>Subject</th>
                 <th>Units</th>
+
                 <th>Year & Semester</th>
                 <th>Department</th>
             </tr>
@@ -133,6 +146,14 @@
         <tbody>
             @if (Model.MySubjects != null && Model.MySubjects.Any())
             {
+                // Pre-calculates the initial total units for each Curriculum grouping directly using the integer values
+                var groupUnitsMap = Model.MySubjects
+                    .GroupBy(item => $"{item.CurriculumYear}_{item.YearLevel?.Replace(" ", "")}_{item.Semester?.Replace(" ", "")}")
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Sum(item => item.Subject?.Units ?? 0)
+                    );
+
                 string lastGroupKey = null;
                 @foreach (var item in Model.MySubjects)
                 {
@@ -141,17 +162,22 @@
 
                     // COMBINED YEAR AND SEMESTER FOR THE FILTER
                     var yearAndSem = $"{item.YearLevel} {item.Semester}";
-
                     var yearLevelClean = item.YearLevel?.Replace(" ", "") ?? "";
                     var semesterClean = item.Semester?.Replace(" ", "") ?? "";
                     var currentGroupKey = $"{item.CurriculumYear}_{yearLevelClean}_{semesterClean}";
-
                     @if (lastGroupKey != currentGroupKey)
                     {
                         lastGroupKey = currentGroupKey;
-                        <tr class="group-header-row" id="header-@currentGroupKey">
+                        var initialGroupUnits = groupUnitsMap.ContainsKey(currentGroupKey) ? groupUnitsMap[currentGroupKey] : 0;
+
+                        <tr class="group-header-row" id="header-@currentGroupKey" data-group-key="@currentGroupKey">
                             <td colspan="5" style="background-color: #eafbf1; color: #07362d; font-weight: bold; padding: 12px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #c8e6c9;">
-                                @item.CurriculumYear Curriculum — @item.YearLevel — @item.Semester
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>@item.CurriculumYear Curriculum — @item.YearLevel — @item.Semester</span>
+                                    <span style="background-color: #07362d; color: #ffffff; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold;">
+                                        Total Units: <span class="group-total-units">@initialGroupUnits</span>
+                                    </span>
+                                </div>
                             </td>
                         </tr>
                     }
@@ -161,24 +187,30 @@
                         data-department="@item.Department?.Name"
                         data-school="@rowSchoolName"
                         data-curriculum-year="@item.CurriculumYear"
+                        data-units="@(item.Subject?.Units ?? 0)"
                         data-group="header-@currentGroupKey">
 
+ 
                         <td style="font-weight: bold; color: #07362d;">@item.Subject?.Code</td>
                         <td>@item.Subject?.Title</td>
                         <td>@item.Subject?.Units</td>
 
                         <td>
+
                             <div class="badge-container">
                                 @if (!string.IsNullOrEmpty(item.YearLevel))
                                 {
+
                                     <span class="curriculum-badge badge-year">@item.YearLevel</span>
                                 }
 
                                 @if (!string.IsNullOrEmpty(item.Semester))
+
                                 {
                                     <span class="curriculum-badge badge-sem">@item.Semester</span>
                                 }
 
+  
                                 @if (!string.IsNullOrEmpty(item.CurriculumYear))
                                 {
                                     <span class="curriculum-badge badge-curr-year">@item.CurriculumYear</span>
@@ -186,6 +218,7 @@
                             </div>
                         </td>
 
+               
                         <td style="color: #7f8c8d; white-space: nowrap;">@item.Department?.Name</td>
                     </tr>
                 }
@@ -193,6 +226,7 @@
             else
             {
                 <tr>
+
                     <td colspan="5" style="text-align: center; padding: 20px; color: #7f8c8d;">
                         No curriculum subjects found.
                     </td>
@@ -204,30 +238,28 @@
 
 @section Scripts {
     <script>
+
         function filterSubjects() {
             var selectedSchool = document.getElementById("schoolFilter").value;
             var selectedDepartment = document.getElementById("departmentFilter").value;
-            // REMOVED PROGRAM FILTER VALUE FETCH
             var selectedYear = document.getElementById("yearFilter").value;
             var selectedSem = document.getElementById("semFilter").value;
             var selectedCurriculumYear = document.getElementById("curriculumYearFilter").value;
+
  
             var rows = document.querySelectorAll(".subject-row");
- 
+
             rows.forEach(row => {
                 var rowSemester = row.getAttribute("data-semester") || "";
                 var rowDepartment = row.getAttribute("data-department") || "";
                 var rowSchool = row.getAttribute("data-school") || "";
                 var rowCurriculumYear = row.getAttribute("data-curriculum-year") || "";
- 
+
                 var matchSchool = (selectedSchool === "All" || rowSchool === selectedSchool);
                 var matchDepartment = (selectedDepartment === "All" || rowDepartment.includes(selectedDepartment));
-                // REMOVED PROGRAM MATCH CHECK
                 var matchYear = (selectedYear === "All" || rowSemester.includes(selectedYear));
                 var matchSem = (selectedSem === "All" || rowSemester.includes(selectedSem));
                 var matchCurriculumYear = (selectedCurriculumYear === "All" || rowCurriculumYear === selectedCurriculumYear);
- 
-                // REMOVED matchProgram FROM THE IF CONDITION
                 if (matchSchool && matchDepartment && matchYear && matchSem && matchCurriculumYear) {
                     row.style.display = "";
                 } else {
@@ -235,29 +267,39 @@
                 }
             });
 
-            // Filter header rows based on visible subject rows under them
+            // Filter header rows and dynamically update displayed unit totals
             var headers = document.querySelectorAll(".group-header-row");
             headers.forEach(header => {
                 var id = header.id;
+                var runningUnitCount = 0;
                 var hasVisibleSubject = false;
                 var relatedRows = document.querySelectorAll(`.subject-row[data-group="${id}"]`);
+
                 relatedRows.forEach(r => {
                     if (r.style.display !== "none") {
                         hasVisibleSubject = true;
+                        var rowUnits = parseInt(r.getAttribute("data-units")) || 0;
+                        runningUnitCount += rowUnits;
                     }
                 });
+
+                // Update total units count in UI
+                var totalBadgeText = header.querySelector(".group-total-units");
+                if (totalBadgeText) {
+                    totalBadgeText.textContent = runningUnitCount;
+                }
+
                 if (hasVisibleSubject) {
-                    header.style.display = "";
+                     header.style.display = "";
                 } else {
                     header.style.display = "none";
                 }
             });
         }
- 
+
         function resetFilters() {
             document.getElementById("schoolFilter").value = "All";
             document.getElementById("departmentFilter").value = "All";
-            // REMOVED PROGRAM FILTER RESET
             document.getElementById("yearFilter").value = "All";
             document.getElementById("semFilter").value = "All";
             document.getElementById("curriculumYearFilter").value = "2023";
