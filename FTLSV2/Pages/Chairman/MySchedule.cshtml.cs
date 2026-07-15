@@ -70,10 +70,21 @@ namespace FTLSV2.Pages.Chairman
                 SelectedYear = $"{currentYear}-{currentYear + 1}";
             }
 
-            var schedules = _db.Schedules
-                .Where(s => s.FacultyId == user.FacultyId)
-                .AsNoTracking()
-                .ToList();
+            // Filter schedules for the Weekly Schedule view and totals based on the SelectedYear
+            var schedulesQuery = _db.Schedules
+                .Where(s => s.FacultyId == user.FacultyId);
+
+            if (!string.IsNullOrEmpty(SelectedYear) && SelectedYear != "All")
+            {
+                schedulesQuery = schedulesQuery.Where(s => s.AcademicYear == SelectedYear);
+            }
+            else if (SelectedYear == "All")
+            {
+                string defaultCurrentYear = $"{currentYear}-{currentYear + 1}";
+                schedulesQuery = schedulesQuery.Where(s => s.AcademicYear == defaultCurrentYear);
+            }
+
+            var schedules = schedulesQuery.AsNoTracking().ToList();
 
             if (!schedules.Any())
             {
@@ -157,7 +168,7 @@ namespace FTLSV2.Pages.Chairman
 
             TotalClasses = MWFSchedules.Count + TTHSchedules.Count;
             TotalUnits = MWFSchedules.Sum(s => int.Parse(s.Units ?? "0")) + TTHSchedules.Sum(s => int.Parse(s.Units ?? "0"));
-            CurrentAcademicYear = $"{currentYear}-{currentYear + 1}";
+            CurrentAcademicYear = (SelectedYear == "All") ? $"{currentYear}-{currentYear + 1}" : SelectedYear;
         }
 
         private DateTime ParseStartTime(string timeSlot)

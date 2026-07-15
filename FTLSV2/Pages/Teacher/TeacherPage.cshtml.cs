@@ -64,8 +64,20 @@ namespace FTLSV2.Pages.Teacher
                 .AsNoTracking()
                 .ToList();
 
+            // Filter schedules for the Weekly Schedule view and totals based on the SelectedYear
+            var weeklySchedules = allSchedules;
+            if (!string.IsNullOrEmpty(SelectedYear) && SelectedYear != "All")
+            {
+                weeklySchedules = weeklySchedules.Where(s => s.AcademicYear == SelectedYear).ToList();
+            }
+            else if (SelectedYear == "All")
+            {
+                string defaultCurrentYear = $"{currentYear}-{currentYear + 1}";
+                weeklySchedules = weeklySchedules.Where(s => s.AcademicYear == defaultCurrentYear).ToList();
+            }
+
             // Map Current View dynamically parsing the days
-            Schedules = allSchedules
+            Schedules = weeklySchedules
                 .OrderBy(s => ParseStartTime(s.TimeSlot ?? ""))
                 .Select(s => {
                     var days = new List<string>();
@@ -149,8 +161,8 @@ namespace FTLSV2.Pages.Teacher
                 .OrderByDescending(g => g.HeaderName).ToList();
 
             TotalClasses = Schedules.Count;
-            TotalUnits = allSchedules.Sum(s => s.AssignedUnits);
-            CurrentAcademicYear = $"{currentYear}-{currentYear + 1}";
+            TotalUnits = weeklySchedules.Sum(s => s.AssignedUnits);
+            CurrentAcademicYear = (SelectedYear == "All") ? $"{currentYear}-{currentYear + 1}" : SelectedYear;
 
             return Page();
         }
