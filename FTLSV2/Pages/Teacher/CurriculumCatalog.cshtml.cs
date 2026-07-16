@@ -47,8 +47,11 @@ namespace FTLSV2.Pages.Teacher
                 .ThenBy(c => c.CurriculumId)
                 .ToList();
 
-            // 2. Manually link Subjects in C#
-            var allSubjects = _context.Subjects.ToList();
+            // 2. Manually link Subjects in C# along with their respective departments
+            var allSubjects = _context.Subjects
+                .Include(s => s.Department)
+                .ToList();
+
             foreach (var item in MySubjects)
             {
                 item.Subject = allSubjects.FirstOrDefault(s => s.SubjectId == item.SubjectId);

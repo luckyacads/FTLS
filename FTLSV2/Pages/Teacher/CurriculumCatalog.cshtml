@@ -157,8 +157,8 @@
                 string lastGroupKey = null;
                 @foreach (var item in Model.MySubjects)
                 {
-                    // Safely looks up the School Name based on the Department's School ID
-                    var rowSchoolName = Model.AllSchools?.FirstOrDefault(s => s.Id == item.Department?.SchoolId)?.Name ?? "";
+                    // Safely looks up the School Name based on the Subject's Department's School ID
+                    var rowSchoolName = Model.AllSchools?.FirstOrDefault(s => s.Id == item.Subject?.Department?.SchoolId)?.Name ?? "";
 
                     // COMBINED YEAR AND SEMESTER FOR THE FILTER
                     var yearAndSem = $"{item.YearLevel} {item.Semester}";
@@ -184,7 +184,7 @@
 
                     <tr class="subject-row"
                         data-semester="@yearAndSem"
-                        data-department="@item.Department?.Name"
+                        data-department="@item.Subject?.Department?.Name"
                         data-school="@rowSchoolName"
                         data-curriculum-year="@item.CurriculumYear"
                         data-units="@(item.Subject?.Units ?? 0)"
@@ -219,7 +219,7 @@
                         </td>
 
                
-                        <td style="color: #7f8c8d; white-space: nowrap;">@item.Department?.Name</td>
+                        <td style="color: #7f8c8d; white-space: nowrap;">@item.Subject?.Department?.Name</td>
                     </tr>
                 }
             }
@@ -290,7 +290,7 @@
                 }
 
                 if (hasVisibleSubject) {
-                     header.style.display = "";
+                    header.style.display = "";
                 } else {
                     header.style.display = "none";
                 }
@@ -306,7 +306,7 @@
             filterSubjects();
         }
 
-        window.addEventListener("DOMContentLoaded", function () {
+        window.addEventListener("DOMContentLoaded", function() {
             filterSubjects();
         });
     </script>
