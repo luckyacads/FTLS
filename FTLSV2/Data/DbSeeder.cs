@@ -15,6 +15,9 @@ namespace FTLSV2.Data
                 // 1. Alter curriculum table to add curriculum_year column if it doesn't exist
                 context.Database.ExecuteSqlRaw("ALTER TABLE curriculum ADD COLUMN IF NOT EXISTS curriculum_year VARCHAR(50) DEFAULT '2023';");
 
+                // Correct department for ES 2, ES 2A, ES 7, ES 8, ES 12
+                context.Database.ExecuteSqlRaw("UPDATE subject SET department_id = 84 WHERE subject_code IN ('ES 2', 'ES 2A', 'ES 7', 'ES 8', 'ES 12');");
+
                 // 2. Only seed if not already seeded.
                 var hasMappings = context.Curriculums.Any(c => c.DepartmentId == 2);
                 if (!hasMappings)
@@ -344,8 +347,9 @@ namespace FTLSV2.Data
                 foreach (var item in items)
                 {
                     // Find or create the subject. Subjects are unique by Code and Units.
+                    string trimmedCode = item.code.Trim();
                     var subject = context.Subjects
-                        .FirstOrDefault(s => s.Code == item.code && s.Units == item.units && !s.Is_delete);
+                        .FirstOrDefault(s => s.Code.Trim() == trimmedCode && s.Units == item.units && !s.Is_delete);
 
                     if (subject == null)
                     {
@@ -354,11 +358,20 @@ namespace FTLSV2.Data
                             Code = item.code,
                             Title = item.title,
                             Units = item.units,
-                            DepartmentId = 2, // Computer Engineering
+                            DepartmentId = GetDepartmentIdForSubject(item.code),
                             Is_delete = false
                         };
                         context.Subjects.Add(subject);
                         context.SaveChanges();
+                    }
+                    else
+                    {
+                        // Ensure existing subject has the correct department as well
+                        int correctDeptId = GetDepartmentIdForSubject(item.code);
+                        if (subject.DepartmentId != correctDeptId)
+                        {
+                            subject.DepartmentId = correctDeptId;
+                        }
                     }
 
                     // Map to curriculum
@@ -381,6 +394,44 @@ namespace FTLSV2.Data
             {
                 Console.WriteLine($"ERROR Seeding: {ex.Message}");
             }
+        }
+
+        private static int GetDepartmentIdForSubject(string code)
+        {
+            string upperCode = code.Trim().ToUpper();
+            if (upperCode.StartsWith("CPE") || upperCode.StartsWith("AC "))
+                return 2; // Computer Engineering
+            if (upperCode.StartsWith("CS"))
+                return 29; // Computer Science
+            if (upperCode.StartsWith("IT"))
+                return 31; // Information Technology
+            if (upperCode.StartsWith("EM") || upperCode.StartsWith("EDA") || 
+                upperCode.StartsWith("ES 2") || upperCode.StartsWith("ES 6") || 
+                upperCode.StartsWith("ES 7") || upperCode.StartsWith("ES 8") || 
+                upperCode.StartsWith("ES 12") || 
+                upperCode.StartsWith("NS") || upperCode.StartsWith("PHY"))
+                return 84; // Engineering Mathematics, Science and Enhancement Program
+            if (upperCode.StartsWith("NSTP") || upperCode.StartsWith("CWTS"))
+                return 88; // National Service Training Program
+            if (upperCode.StartsWith("PE ") || upperCode.StartsWith("PATHFIT"))
+                return 87; // Physical Education
+            if (upperCode.StartsWith("REED"))
+                return 83; // Center for Religious Education
+            if (upperCode.StartsWith("GUIDANCE"))
+                return 89; // Student Development and Placement Center
+            if (upperCode.StartsWith("KOMFIL") || upperCode.StartsWith("LIT") || upperCode.StartsWith("EP ") || upperCode.StartsWith("FILDIS") || upperCode.StartsWith("EFCOM"))
+                return 90; // Communication, Languages, and Literature
+            if (upperCode.StartsWith("ENT"))
+                return 85; // Business and Entrepreneurship
+            if (upperCode.StartsWith("GE ") || upperCode.StartsWith("RIZAL"))
+            {
+                if (upperCode.Contains("PC")) // GE PC (Purposive Communication)
+                    return 90; // Communication, Languages, and Literature
+                if (upperCode.Contains("MMW")) // GE MMW (Mathematics in the Modern World)
+                    return 86; // Mathematics and Sciences
+                return 91; // Department of Social Sciences and Philosophy
+            }
+            return 2; // Default to Computer Engineering
         }
     }
 }
