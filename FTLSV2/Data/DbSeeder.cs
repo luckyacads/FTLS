@@ -18,6 +18,12 @@ namespace FTLSV2.Data
                 // Correct department for ES 2, ES 2A, ES 7, ES 8, ES 12
                 context.Database.ExecuteSqlRaw("UPDATE subject SET department_id = 84 WHERE subject_code IN ('ES 2', 'ES 2A', 'ES 7', 'ES 8', 'ES 12');");
 
+                // Correct department for NSTP / CWTS subjects to 88
+                context.Database.ExecuteSqlRaw("UPDATE subject SET department_id = 88 WHERE subject_code LIKE 'NSTP%' OR subject_code LIKE 'CWTS%';");
+
+                // Correct department for GE AA / GE AA* to 90 (Communication, Languages, and Literature)
+                context.Database.ExecuteSqlRaw("UPDATE subject SET department_id = 90 WHERE subject_code IN ('GE AA', 'GE AA*');");
+
                 // 2. Only seed if not already seeded.
                 var hasMappings = context.Curriculums.Any(c => c.DepartmentId == 2);
                 if (!hasMappings)
@@ -425,7 +431,7 @@ namespace FTLSV2.Data
                 return 85; // Business and Entrepreneurship
             if (upperCode.StartsWith("GE ") || upperCode.StartsWith("RIZAL"))
             {
-                if (upperCode.Contains("PC")) // GE PC (Purposive Communication)
+                if (upperCode.Contains("PC") || upperCode.Contains("AA")) // GE PC (Purposive Communication) & GE AA (Art Appreciation)
                     return 90; // Communication, Languages, and Literature
                 if (upperCode.Contains("MMW")) // GE MMW (Mathematics in the Modern World)
                     return 86; // Mathematics and Sciences
