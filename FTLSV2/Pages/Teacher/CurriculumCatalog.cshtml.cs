@@ -50,12 +50,16 @@ namespace FTLSV2.Pages.Teacher
             // 2. Manually link Subjects in C# along with their respective departments
             var allSubjects = _context.Subjects
                 .Include(s => s.Department)
+                .Where(s => !s.Is_delete)
                 .ToList();
 
             foreach (var item in MySubjects)
             {
                 item.Subject = allSubjects.FirstOrDefault(s => s.SubjectId == item.SubjectId);
             }
+
+            // Filter out curriculum items whose linked subject is deleted
+            MySubjects.RemoveAll(c => c.Subject == null);
 
             AllDepartments = _context.Departments.OrderBy(d => d.Name).ToList();
             AllSchools = _context.Schools.OrderBy(s => s.Name).ToList();

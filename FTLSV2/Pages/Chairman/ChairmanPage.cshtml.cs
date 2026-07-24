@@ -302,7 +302,7 @@ namespace FTLSV2.Pages.Chairman
             GlobalMaxLimit = settings?.MaxOverload ?? 30;
 
             ActiveFaculty = _context.Users.Where(u => u.Role == "Faculty" && u.Is_delete == false).ToList();
-            ActiveSubjects = _context.Subjects.ToList();
+            ActiveSubjects = _context.Subjects.Where(s => !s.Is_delete).ToList();
             AllRooms = _context.Rooms.ToList();
 
             // Calculate current Academic Year dynamically

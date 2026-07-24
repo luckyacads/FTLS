@@ -48,6 +48,7 @@ namespace FTLSV2.Pages.Admin
         {
             // Filter records based on whether the view state targets soft-deleted entries
             Subjects = _db.Subjects
+                .Include(s => s.Department)
                 .Where(s => s.Is_delete == ShowDeleted)
                 .OrderBy(s => s.Title)
                 .ToList();

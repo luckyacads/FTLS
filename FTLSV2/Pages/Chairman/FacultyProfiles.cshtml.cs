@@ -67,6 +67,7 @@ namespace FTLSV2.Pages.Chairman
                 .Where(u =>
                     allowedRoles.Contains(u.Role) &&
                     u.DepartmentId == departmentId &&
+                    !u.Is_delete &&
                     (u.Status == "Active" || string.IsNullOrEmpty(u.Status))
                 )
                 .ToList();

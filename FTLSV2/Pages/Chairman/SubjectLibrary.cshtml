@@ -268,7 +268,7 @@
 
                 Model.SubjectCurriculums.TryGetValue(subject.SubjectId, out var currList);
                 var firstCurr = currList?.FirstOrDefault();
-                var deptId = firstCurr?.DepartmentId ?? subject.DepartmentId ?? 0;
+                var deptId = subject.DepartmentId ?? firstCurr?.DepartmentId ?? 0;
                 var yearLevel = firstCurr?.YearLevel ?? "";
                 var semester = firstCurr?.Semester ?? "";
 
@@ -297,7 +297,7 @@
                                         <span style="font-size: 10px; background: #eafbf1; color: #07362d; padding: 2px 6px; border-radius: 4px; border: 1px solid #c8e6c9; font-weight: 600; white-space: nowrap;">@mapping.Semester</span>
                                         <span style="font-size: 10px; background: #e8f4fd; color: #1d4ed8; padding: 2px 6px; border-radius: 4px; border: 1px solid #bfdbfe; font-weight: 600; white-space: nowrap;">@mapping.CurriculumYear</span>
                                     </div>
-                                    <button type="button" class="btn-edit-badge" onclick="showEditForm(@subject.SubjectId, '@subject.Code', '@subject.Title', @subject.Units, @mapping.DepartmentId, '@mapping.YearLevel', '@mapping.Semester', '@mapping.CurriculumYear', @mapping.CurriculumId)" style="background: none; border: none; padding: 2px; cursor: pointer; color: #10b981; display: flex; align-items: center; justify-content: center; margin-left: 6px;" title="Edit this mapping">
+                                    <button type="button" class="btn-edit-badge" onclick="showEditForm(@subject.SubjectId, '@subject.Code.Replace("'", "\\'")', '@subject.Title.Replace("'", "\\'")', @subject.Units, @deptId, '@mapping.YearLevel', '@mapping.Semester', '@mapping.CurriculumYear', @mapping.CurriculumId)" style="background: none; border: none; padding: 2px; cursor: pointer; color: #10b981; display: flex; align-items: center; justify-content: center; margin-left: 6px;" title="Edit this mapping">
                                         <svg style="width: 13px; height: 13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                     </button>
                                 </div>
@@ -318,10 +318,10 @@
                             {
                                 if (currList == null || !currList.Any())
                                 {
-                                    <button type="button" class="btn-edit" onclick="showEditForm(@subject.SubjectId, '@subject.Code', '@subject.Title', @subject.Units, @deptId, '@yearLevel', '@semester', '@(firstCurr?.CurriculumYear ?? "2023")', @(firstCurr?.CurriculumId ?? 0))">Edit</button>
+                                    <button type="button" class="btn-edit" onclick="showEditForm(@subject.SubjectId, '@subject.Code.Replace("'", "\\'")', '@subject.Title.Replace("'", "\\'")', @subject.Units, @deptId, '@yearLevel', '@semester', '@(firstCurr?.CurriculumYear ?? "2023")', @(firstCurr?.CurriculumId ?? 0))">Edit</button>
                                 }
 
-                                <button type="button" class="btn-delete" onclick="showDeleteModal(@subject.SubjectId, '@subject.Code')">Delete</button>
+                                <button type="button" class="btn-delete" onclick="showDeleteModal(@subject.SubjectId, '@subject.Code.Replace("'", "\\'")')">Delete</button>
                             }
                         </div>
                     </div>
