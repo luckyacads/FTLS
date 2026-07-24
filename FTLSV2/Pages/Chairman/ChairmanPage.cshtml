@@ -69,6 +69,12 @@
         border-left: none;
     }
 
+    .modal-card-large {
+        width: 900px;
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+
     .modal-header {
         display: flex;
         justify-content: space-between;
@@ -87,14 +93,94 @@
     .modal-close {
         border: none;
         background: transparent;
-        color: #6b7280;
+        color: #dc2626;
         cursor: pointer;
         font-size: 26px;
         line-height: 1;
+        transition: color 0.2s ease;
     }
 
         .modal-close:hover {
-            color: #111827;
+            color: #991b1b;
+        }
+
+    .btn-close-red {
+        background-color: #dc2626;
+        color: white;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 7px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        transition: background-color 0.2s ease;
+    }
+
+        .btn-close-red:hover {
+            background-color: #b91c1c;
+        }
+
+    .faculty-profile-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    .faculty-profile-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .faculty-name {
+        font-size: 16px;
+        font-weight: 700;
+        color: #07362d;
+        margin: 0;
+    }
+
+    .load-badge {
+        font-size: 12px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+
+    .load-normal {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .load-overload {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .load-underload {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .schedule-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        margin-top: 8px;
+    }
+
+        .schedule-table th, .schedule-table td {
+            border: 1px solid #e5e7eb;
+            padding: 8px 10px;
+            text-align: left;
+        }
+
+        .schedule-table th {
+            background: #f3f4f6;
+            color: #374151;
+            font-weight: 600;
         }
 
     .edit-form-grid {
@@ -183,10 +269,6 @@
         margin-bottom: 24px;
     }
 
-    .action-cell {
-        white-space: nowrap;
-    }
-
     .modern-time-container {
         display: flex;
         align-items: center;
@@ -221,16 +303,6 @@
             background: #e2e8f0;
         }
 
-    select.modern-time-input {
-        appearance: none;
-        -webkit-appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 8px center;
-        background-size: 14px;
-        padding-right: 28px;
-    }
-
     .time-separator {
         display: flex;
         align-items: center;
@@ -251,40 +323,6 @@
         border-bottom: 2px solid #f3f4f6;
         padding-bottom: 15px;
     }
-
-    .day-tabs {
-        display: flex;
-        gap: 8px;
-        overflow-x: auto;
-        padding-bottom: 5px;
-        margin-bottom: 20px;
-    }
-
-    .day-tab {
-        padding: 8px 20px;
-        border-radius: 30px;
-        background: #f3f4f6;
-        color: #4b5563;
-        font-weight: 600;
-        font-size: 14px;
-        border: 2px solid transparent;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        white-space: nowrap;
-    }
-
-        .day-tab:hover {
-            background: #e5e7eb;
-            color: #111827;
-        }
-
-        .day-tab.active {
-            background: #07362d;
-            color: white;
-            border-color: #07362d;
-            box-shadow: 0 4px 10px rgba(7, 54, 45, 0.2);
-            transform: translateY(-1px);
-        }
 
     .class-list-container {
         display: flex;
@@ -354,15 +392,6 @@
         border-radius: 6px;
     }
 
-    .class-units {
-        background: #eef2ff;
-        color: #1d4ed8;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-weight: 700;
-        font-size: 13px;
-    }
-
     .checkbox-group {
         display: flex;
         gap: 12px;
@@ -391,61 +420,6 @@
             height: 16px;
             cursor: pointer;
         }
-
-    .fade-list {
-        animation: fadeSlideUp 0.3s ease-out;
-    }
-
-    @@keyframes fadeSlideUp {
-        from {
-            opacity: 0;
-            transform: translateY(10px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    @@media (max-width: 800px) {
-        .edit-form-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .modal-card {
-            width: calc(100% - 30px);
-            padding: 24px 20px;
-        }
-
-        .modern-time-container {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 5px;
-        }
-
-        .time-separator {
-            display: none;
-        }
-
-        .class-list-item {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 12px;
-        }
-
-        .class-time {
-            width: 100%;
-        }
-
-        .class-meta {
-            width: 100%;
-            justify-content: flex-start;
-            margin-top: 8px;
-            padding-top: 12px;
-            border-top: 1px solid #f3f4f6;
-        }
-    }
 </style>
 
 <div class="header-bar">
@@ -467,17 +441,18 @@
 <div class="page-container">
     <h2 style="margin-bottom: 15px; color: #07362d; font-size: 20px;">Teaching Load Management</h2>
 
-    @if (Model.OverloadedFacultyAlerts != null && Model.OverloadedFacultyAlerts.Any())
+    <!-- FACULTY STATUS ALERTS (UNDERLOAD & OVERLOAD) -->
+    @if (Model.FacultyAlerts != null && Model.FacultyAlerts.Any())
     {
         <div style="background-color: #fff3cd; color: #856404; padding: 15px; margin-bottom: 20px; border-radius: 8px; border-left: 5px solid #ffc107; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
             <h4 style="margin: 0 0 8px 0; font-size: 15px; color: #856404; display: flex; align-items: center; gap: 8px;">
-                ⚠ <strong>Faculty Unit Overload Alert(s)</strong>
+                ⚠ <strong>Faculty Unit Status Alerts</strong>
             </h4>
             <ul style="margin: 0; padding-left: 20px; font-size: 13px;">
-                @foreach (var alert in Model.OverloadedFacultyAlerts)
+                @foreach (var alert in Model.FacultyAlerts)
                 {
                     <li style="margin-bottom: 4px;">
-                        <strong>@alert.FacultyName</strong> is overloaded for A.Y. <strong>@alert.AcademicYear</strong> with <strong>@alert.AssignedUnits</strong> units (Regular Limit: @alert.MaxUnits units).
+                        <strong>@alert.FacultyName</strong> (A.Y. @alert.AcademicYear): @alert.Message
                     </li>
                 }
             </ul>
@@ -519,7 +494,7 @@
                             {
                                 @foreach (var faculty in Model.ActiveFaculty)
                                 {
-                                    <option value="@faculty.FacultyId">Engr. @faculty.FirstName @faculty.LastName</option>
+                                    <option value="@faculty.FacultyId">Engr. @faculty.FirstName @faculty.LastName (@(faculty.MaxUnits >= 18 ? "Full-Time" : "Part-Time"))</option>
                                 }
                             }
                         </select>
@@ -618,6 +593,7 @@
     <div class="chairman-card" style="margin-top: 20px; width: 100%; background: #fdfdfd;" id="printableArea">
         <div class="schedule-header-area">
             <h3 style="margin: 0; font-size: 20px; color: #111827;">Assigned Teaching Loads</h3>
+            <button type="button" class="btn-cancel" onclick="openModal('facultyLoadModal')">📋 View Faculty Load Profiles</button>
         </div>
 
         <div class="class-list-container" id="scheduleListContainer">
@@ -663,6 +639,94 @@
     </div>
 </div>
 
+<!-- ============================================================== -->
+<!-- FACULTY LOAD POPUP MATCHING ACADEMIC YEAR DIRECTORY            -->
+<!-- ============================================================== -->
+<div id="facultyLoadModal" class="modal-overlay">
+    <div class="modal-card modal-card-large">
+        <div class="modal-header">
+            <h3>Faculty Load Summary & Profiles (A.Y. @Model.SelectedAcademicYear)</h3>
+            <button type="button" class="modal-close" onclick="closeModal('facultyLoadModal')">×</button>
+        </div>
+
+        <div class="modal-body">
+            @if (Model.FacultyProfilesLoadList != null && Model.FacultyProfilesLoadList.Any())
+            {
+                @foreach (var faculty in Model.FacultyProfilesLoadList)
+                {
+                    <div class="faculty-profile-card">
+                        <div class="faculty-profile-header">
+                            <div>
+                                <h4 class="faculty-name">Engr. @faculty.FirstName @faculty.LastName</h4>
+                                <span style="font-size: 12px; color: #6b7280;">Email: @faculty.Email | Type: <strong>@faculty.EmploymentType</strong></span>
+                            </div>
+                            <div>
+                                @if (faculty.IsUnderloaded)
+                                {
+                                    <span class="load-badge load-underload">
+                                        Units: @faculty.TotalAssignedUnits (Below 18 Units)
+                                    </span>
+                                }
+                                else if (faculty.IsOverloaded)
+                                {
+                                    <span class="load-badge load-overload">
+                                        Units: @faculty.TotalAssignedUnits / @faculty.MaxUnits (Overloaded)
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="load-badge load-normal">
+                                        Units: @faculty.TotalAssignedUnits / @faculty.MaxUnits
+                                    </span>
+                                }
+                            </div>
+                        </div>
+
+                        @if (faculty.Schedules != null && faculty.Schedules.Any())
+                        {
+                            <table class="schedule-table">
+                                <thead>
+                                    <tr>
+                                        <th>Subject</th>
+                                        <th>Time & Day</th>
+                                        <th>Room</th>
+                                        <th>Semester / A.Y.</th>
+                                        <th>Units</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var sched in faculty.Schedules)
+                                    {
+                                        <tr>
+                                            <td><strong>@sched.CourseCode</strong> - @sched.SubjectTitle</td>
+                                            <td>@sched.Schedule</td>
+                                            <td>@sched.RoomName</td>
+                                            <td>@sched.Semester (@sched.AcademicYear)</td>
+                                            <td>@sched.AssignedUnits</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <p style="font-size: 12px; color: #9ca3af; margin: 4px 0 0 0;">No assigned loads currently.</p>
+                        }
+                    </div>
+                }
+            }
+            else
+            {
+                <p>No faculty loaded.</p>
+            }
+        </div>
+
+        <div class="modal-actions">
+            <button type="button" class="btn-close-red" onclick="closeModal('facultyLoadModal')">Close</button>
+        </div>
+    </div>
+</div>
+
 <div id="editScheduleModal" class="modal-overlay">
     <div class="modal-card">
         <div class="modal-header">
@@ -682,7 +746,7 @@
                         {
                             @foreach (var faculty in Model.ActiveFaculty)
                             {
-                                <option value="@faculty.FacultyId">Engr. @faculty.FirstName @faculty.LastName</option>
+                                <option value="@faculty.FacultyId">Engr. @faculty.FirstName @faculty.LastName (@(faculty.MaxUnits >= 18 ? "Full-Time" : "Part-Time"))</option>
                             }
                         }
                     </select>
@@ -791,8 +855,15 @@
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const checkboxes = document.querySelectorAll('input[name="SelectedDays"]');
+    document.addEventListener("DOMContentLoaded", function() {
+        @if (Model.ShowFacultyLoadPopup)
+            {
+                <text>
+                        openModal('facultyLoadModal');
+                </text>
+        }
+
+            const checkboxes = document.querySelectorAll('input[name="SelectedDays"]');
         const startInput = document.getElementById("StartTime");
         const endInput = document.getElementById("EndTime");
         const roomDropdown = document.getElementById("SelectedRoomId");
@@ -859,8 +930,8 @@
 
         if (parsed) {
             parsed.days.forEach(day => {
-               const checkbox = document.querySelector(`input[name="EditDays"][value="${day.trim()}"]`);
-               if(checkbox) checkbox.checked = true;
+                const checkbox = document.querySelector(`input[name="EditDays"][value="${day.trim()}"]`);
+                if (checkbox) checkbox.checked = true;
             });
 
             document.getElementById("editStartTime").value = parsed.startTime;
@@ -877,12 +948,12 @@
         const match = scheduleText.match(/^([A-Za-z,\s]+)\s(\d{1,2}:\d{2}\s(?:AM|PM))\s-\s(\d{1,2}:\d{2}\s(?:AM|PM))$/i);
 
         if (match && match.length === 4) {
-             const daysArray = match[1].split(",");
-             return {
-                 days: daysArray,
-                 startTime: convertToTimeInputValue(match[2]),
-                 endTime: convertToTimeInputValue(match[3])
-             };
+            const daysArray = match[1].split(",");
+            return {
+                days: daysArray,
+                startTime: convertToTimeInputValue(match[2]),
+                endTime: convertToTimeInputValue(match[3])
+            };
         }
 
         return null;
@@ -909,7 +980,7 @@
         const start = document.getElementById("editStartTime").value;
         const end = document.getElementById("editEndTime").value;
         const editRoomDropdown = document.getElementById("editRoomId");
-        
+
         const targetRoomId = (currentRoomId !== null && !(currentRoomId instanceof Event))
             ? currentRoomId
             : editRoomDropdown.value;
@@ -957,21 +1028,25 @@
         if (modal) modal.style.display = "none";
     }
 
-    document.addEventListener("keydown", function (event) {
+    document.addEventListener("keydown", function(event) {
         if (event.key === "Escape") {
             closeModal("editScheduleModal");
             closeModal("deleteScheduleModal");
+            closeModal("facultyLoadModal");
         }
     });
 
-    document.addEventListener("click", function (event) {
+    document.addEventListener("click", function(event) {
         const editModal = document.getElementById("editScheduleModal");
         const deleteModal = document.getElementById("deleteScheduleModal");
+        const facultyModal = document.getElementById("facultyLoadModal");
+
         if (event.target === editModal) closeModal("editScheduleModal");
         if (event.target === deleteModal) closeModal("deleteScheduleModal");
+        if (event.target === facultyModal) closeModal("facultyLoadModal");
     });
 
-    document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", function() {
         const alerts = document.querySelectorAll('.alert-message');
         alerts.forEach(alert => {
             setTimeout(() => {
