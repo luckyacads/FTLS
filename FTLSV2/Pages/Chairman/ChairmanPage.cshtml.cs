@@ -197,13 +197,24 @@ namespace FTLSV2.Pages.Chairman
                 .Sum(s => s.AssignedUnits);
 
             var faculty = _context.Users.FirstOrDefault(u => u.FacultyId == SelectedFacultyId);
-            int facultyMaxUnits = faculty?.MaxUnits ?? 18;
+
+            // Automatically determine employment type & policy limit
+            bool isFullTime = (faculty?.MaxUnits ?? 18) >= 18;
+            int policyMaxUnits = isFullTime ? 30 : 17;
+            string empType = isFullTime ? "Full-Time" : "Part-Time";
+
+            // Save policy update to DB if needed
+            if (faculty != null && faculty.MaxUnits != policyMaxUnits)
+            {
+                faculty.MaxUnits = policyMaxUnits;
+                _context.SaveChanges();
+            }
 
             int newTotalUnits = currentTotalUnits + officialSubjectUnits;
 
-            if (newTotalUnits > facultyMaxUnits)
+            if (newTotalUnits > policyMaxUnits)
             {
-                TempData["ErrorMessage"] = $"Assignment exceeds maximum allowed limit ({facultyMaxUnits} units) for Engr. {faculty?.FirstName} {faculty?.LastName}. Current: {currentTotalUnits} units. Added course: {officialSubjectUnits} units.";
+                TempData["ErrorMessage"] = $"Assignment exceeds maximum allowed limit ({policyMaxUnits} units) for {empType} faculty Engr. {faculty?.FirstName} {faculty?.LastName}. Current: {currentTotalUnits} units. Added course: {officialSubjectUnits} units.";
                 LoadPageData();
                 return Page();
             }
@@ -258,13 +269,21 @@ namespace FTLSV2.Pages.Chairman
                 .Sum(s => s.AssignedUnits);
 
             var faculty = _context.Users.FirstOrDefault(u => u.FacultyId == EditFacultyId);
-            int facultyMaxUnits = faculty?.MaxUnits ?? 18;
+            bool isFullTime = (faculty?.MaxUnits ?? 18) >= 18;
+            int policyMaxUnits = isFullTime ? 30 : 17;
+            string empType = isFullTime ? "Full-Time" : "Part-Time";
+
+            if (faculty != null && faculty.MaxUnits != policyMaxUnits)
+            {
+                faculty.MaxUnits = policyMaxUnits;
+                _context.SaveChanges();
+            }
 
             int newTotalUnits = currentTotalUnits + officialSubjectUnits;
 
-            if (newTotalUnits > facultyMaxUnits)
+            if (newTotalUnits > policyMaxUnits)
             {
-                TempData["ErrorMessage"] = $"Assignment exceeds maximum allowed limit ({facultyMaxUnits} units) for Engr. {faculty?.FirstName} {faculty?.LastName}. Current: {currentTotalUnits} units. Course: {officialSubjectUnits} units.";
+                TempData["ErrorMessage"] = $"Assignment exceeds maximum allowed limit ({policyMaxUnits} units) for {empType} faculty Engr. {faculty?.FirstName} {faculty?.LastName}. Current: {currentTotalUnits} units. Course: {officialSubjectUnits} units.";
                 return RedirectToPage();
             }
 
@@ -311,7 +330,23 @@ namespace FTLSV2.Pages.Chairman
             string currentAY = (month >= 1 && month <= 5) ? $"{currentYear - 1}-{currentYear}" : $"{currentYear}-{currentYear + 1}";
             SelectedAcademicYear = currentAY;
 
-            // Get schedules specifically for the current Academic Year
+            // Automatically update DB values for active faculty
+            bool changesMade = false;
+            foreach (var faculty in ActiveFaculty)
+            {
+                bool isFT = faculty.MaxUnits >= 18;
+                int targetMax = isFT ? 30 : 17;
+                if (faculty.MaxUnits != targetMax)
+                {
+                    faculty.MaxUnits = targetMax;
+                    changesMade = true;
+                }
+            }
+            if (changesMade)
+            {
+                _context.SaveChanges();
+            }
+
             var currentYearSchedules = _context.Schedules
                 .Include(s => s.Subject)
                 .Include(s => s.Room)
@@ -334,7 +369,7 @@ namespace FTLSV2.Pages.Chairman
                 }).ToList();
 
                 int totalUnits = facSchedules.Sum(s => s.AssignedUnits);
-                int facultyMaxUnits = f.MaxUnits; // Reads directly from User database table
+                int facultyMaxUnits = f.MaxUnits;
                 bool isFullTime = facultyMaxUnits >= 18;
                 string empType = isFullTime ? "Full-Time" : "Part-Time";
 
@@ -356,12 +391,12 @@ namespace FTLSV2.Pages.Chairman
                 };
             }).ToList();
 
-            // --- CALCULATE ALL FACULTY ALERTS (UNDERLOAD & OVERLOAD) ---
+            // --- CALCULATE ALL FACULTY ALERTS ---
             FacultyAlerts = new List<FacultyAlertView>();
 
             foreach (var faculty in ActiveFaculty)
             {
-                int facultyMaxUnits = faculty.MaxUnits; // Reads directly from DB
+                int facultyMaxUnits = faculty.MaxUnits;
                 bool isFullTime = facultyMaxUnits >= 18;
                 string empType = isFullTime ? "Full-Time" : "Part-Time";
 

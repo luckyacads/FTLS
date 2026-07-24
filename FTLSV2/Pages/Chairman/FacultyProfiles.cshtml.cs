@@ -17,13 +17,13 @@ namespace FTLSV2.Pages.Chairman
             _db = db;
         }
 
-        // FIXED: FacultyId is now an int. Removed unused 'Id' property.
         public record FacultyView(
             int FacultyId,
             string Name,
             string Role,
             int TotalUnits,
             int MaxUnits,
+            bool IsUnderloaded,
             bool IsOverloaded,
             string CurrentUnitsDisplay
         );
@@ -44,10 +44,8 @@ namespace FTLSV2.Pages.Chairman
                 return;
             }
 
-            // FIXED: Parse the session string to an integer
             int activeFacultyId = int.Parse(activeFacultyIdString);
 
-            // Get chairman viewing the page
             var chairman = _db.Users.FirstOrDefault(u =>
                 u.FacultyId == activeFacultyId &&
                 u.Role == "Chairman");
@@ -62,7 +60,6 @@ namespace FTLSV2.Pages.Chairman
 
             var allowedRoles = new[] { "Faculty", "Chairman" };
 
-            // Only same department
             var departmentUsers = _db.Users
                 .Where(u =>
                     allowedRoles.Contains(u.Role) &&
@@ -72,7 +69,7 @@ namespace FTLSV2.Pages.Chairman
                 )
                 .ToList();
 
-            // Calculate Academic Year dynamically based on calendar
+            // Calculate Academic Year dynamically
             int currentYear = DateTime.Today.Year;
             int month = DateTime.Today.Month;
             if (month >= 1 && month <= 5)
@@ -86,16 +83,40 @@ namespace FTLSV2.Pages.Chairman
 
             CurrentTermDisplay = $"A.Y. {SelectedAcademicYear}";
 
+            // Auto-sync policy updates to database records
+            bool changesMade = false;
+            foreach (var user in departmentUsers)
+            {
+                bool isFT = user.MaxUnits >= 18;
+                int targetMax = isFT ? 30 : 17;
+                if (user.MaxUnits != targetMax)
+                {
+                    user.MaxUnits = targetMax;
+                    changesMade = true;
+                }
+            }
+            if (changesMade)
+            {
+                _db.SaveChanges();
+            }
+
             FacultyList = departmentUsers
                 .Select(u =>
                 {
                     int totalUnits = _db.Schedules
-                        .Where(s => s.FacultyId == u.FacultyId 
+                        .Where(s => s.FacultyId == u.FacultyId
                                     && s.AcademicYear == SelectedAcademicYear)
                         .Sum(s => s.AssignedUnits);
 
                     int maxUnits = u.MaxUnits;
+                    bool isFullTime = maxUnits >= 18;
+
+                    bool isUnderloaded = isFullTime && totalUnits < 18;
                     bool isOverloaded = totalUnits > maxUnits;
+
+                    string displayUnits = isUnderloaded
+                        ? $"{totalUnits} units (Below 18 Units)"
+                        : $"{totalUnits} / {maxUnits} units";
 
                     return new FacultyView(
                         u.FacultyId,
@@ -103,8 +124,9 @@ namespace FTLSV2.Pages.Chairman
                         u.Role,
                         totalUnits,
                         maxUnits,
+                        isUnderloaded,
                         isOverloaded,
-                        $"{totalUnits} / {maxUnits} units"
+                        displayUnits
                     );
                 })
                 .OrderBy(f => f.Name)

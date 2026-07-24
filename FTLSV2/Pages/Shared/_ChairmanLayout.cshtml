@@ -127,7 +127,7 @@
             }
 
             <nav>
-                <a href="/ChairmanPage" class="@(Context.Request.Path == "/ChairmanPage" ? "active" : "")">
+                <a href="/Chairman/ChairmanPage" class="@(Context.Request.Path.StartsWithSegments("/Chairman/ChairmanPage") || Context.Request.Path == "/ChairmanPage" ? "active" : "")">
                     Scheduler
                 </a>
 
@@ -166,7 +166,7 @@
     @await RenderSectionAsync("Scripts", required: false)
 
     <script>
-            window.addEventListener('pageshow', function (event) {
+            window.addEventListener('pageshow', function(event) {
                 if (event.persisted) {
                     window.location.reload(true);
                 }

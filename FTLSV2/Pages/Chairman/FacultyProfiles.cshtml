@@ -20,7 +20,6 @@
     .search-input {
         width: 100%;
         height: 42px;
-        /* FIXED: Changed to 16px on the left, 42px on the right to make space for the icon */
         padding: 10px 42px 10px 16px;
         font-size: 14px;
         color: #111827;
@@ -41,7 +40,6 @@
 
     .search-icon {
         position: absolute;
-        /* FIXED: Changed from left to right */
         right: 14px;
         top: 12px;
         width: 18px;
@@ -108,23 +106,40 @@
     }
 
     .badge-units {
-        background-color: #f3f4f6;
-        color: #1f2937;
-        padding: 4px 12px;
+        padding: 6px 14px;
         border-radius: 20px;
         font-weight: 700;
         font-size: 12px;
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
     }
+
+    /* Green for normal/optimal units */
+    .badge-units-normal {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+
+    /* Yellow for Full-Time underload (< 18 units) */
+                                     .badge-units-underload {
+                                     background-color: #fef3c7;
+                                     color: #92400e;
+                                     border: 1px solid #fde68a;
+                                     }
+
+    /* Red for overload */
+                                     .badge-units-overload {
+                                     background-color: #fce8e6;
+                                     color: #c5221f;
+                                     border: 1px solid #fad2cf;
+                                     }
 
     @@media (max-width: 768px) {
-        .search-container
-
-    {
-        max-width: 100%;
-    }
-
-    }
+                                     .search-container {
+                                     max-width: 100%;
+                                     }
+                                     }
 </style>
 
 <div class="page-container">
@@ -159,7 +174,7 @@
                     {
                         @foreach (var f in Model.FacultyList)
                         {
-                            <tr class="faculty-row" style="@(f.IsOverloaded ? "background-color: #fff9f9;" : "")">
+                            <tr class="faculty-row" style="@(f.IsOverloaded ? "background-color: #fff9f9;" : f.IsUnderloaded ? "background-color: #fffdf5;" : "")">
                                 <td style="font-weight: 700; color: #07362d;">@f.FacultyId</td>
                                 <td style="font-weight: 600;">@f.Name</td>
                                 <td>
@@ -168,13 +183,21 @@
                                 <td style="text-align: center;">
                                     @if (f.IsOverloaded)
                                     {
-                                        <span class="badge-units" style="background-color: #fce8e6; color: #c5221f; border: 1px solid #fad2cf; display: inline-flex; align-items: center; gap: 4px;" title="Overload limit exceeded! Regular limit is @f.MaxUnits.">
+                                        <span class="badge-units badge-units-overload" title="Overload limit exceeded! Regular limit is @f.MaxUnits.">
                                             ⚠ @f.CurrentUnitsDisplay (Overloaded)
+                                        </span>
+                                    }
+                                    else if (f.IsUnderloaded)
+                                    {
+                                        <span class="badge-units badge-units-underload" title="Full-Time faculty requires at least 18 units.">
+                                            @f.CurrentUnitsDisplay
                                         </span>
                                     }
                                     else
                                     {
-                                        <span class="badge-units">@f.CurrentUnitsDisplay</span>
+                                        <span class="badge-units badge-units-normal">
+                                            @f.CurrentUnitsDisplay
+                                        </span>
                                     }
                                 </td>
                             </tr>
