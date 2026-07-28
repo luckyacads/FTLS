@@ -34,7 +34,9 @@ namespace FTLSV2.Pages.Chairman
             public int TotalAssignedUnits { get; set; }
             public bool IsUnderloaded { get; set; }
             public bool IsOverloaded { get; set; }
+            public List<AssignedLoad> Schedules { get; set; } = new List<AssignedLoad>();
         }
+
         // --- DROPDOWN LISTS ---
         public IList<User> ActiveFaculty { get; set; } = new List<User>();
         public IList<Subject> ActiveSubjects { get; set; } = new List<Subject>();
@@ -345,24 +347,34 @@ namespace FTLSV2.Pages.Chairman
                 _context.SaveChanges();
             }
 
-            var assignedUnitsByFaculty = _context.Schedules
-                .AsNoTracking()
+            var currentYearSchedules = _context.Schedules
+                .Include(s => s.Subject)
+                .Include(s => s.Room)
                 .Where(s => s.AcademicYear == currentAY)
-                .GroupBy(s => s.FacultyId)
-                .Select(group => new
+                .ToList();
+
+            FacultyProfilesLoadList = ActiveFaculty.Select(f => {
+                var facSchedules = currentYearSchedules.Where(s => s.FacultyId == f.FacultyId).Select(s => new AssignedLoad
                 {
-                    FacultyId = group.Key,
-                    TotalAssignedUnits = group.Sum(s => s.AssignedUnits)
-                })
-                .ToDictionary(item => item.FacultyId, item => item.TotalAssignedUnits);
+                    ScheduleId = s.ScheduleId,
+                    FacultyId = s.FacultyId,
+                    CourseCode = s.Subject?.Code ?? "",
+                    SubjectTitle = s.Subject?.Title ?? "",
+                    Schedule = s.TimeSlot,
+                    RoomName = s.Room?.Name ?? "No room",
+                    OfferCode = s.OfferCode,
+                    AcademicYear = s.AcademicYear,
+                    Semester = s.Semester,
+                    AssignedUnits = s.AssignedUnits
+                }).ToList();
 
-            FacultyProfilesLoadList = ActiveFaculty.Select(f =>
-            {
-                assignedUnitsByFaculty.TryGetValue(f.FacultyId, out int totalUnits);
-
+                int totalUnits = facSchedules.Sum(s => s.AssignedUnits);
                 int facultyMaxUnits = f.MaxUnits;
                 bool isFullTime = facultyMaxUnits >= 18;
-                string employmentType = isFullTime ? "Full-Time" : "Part-Time";
+                string empType = isFullTime ? "Full-Time" : "Part-Time";
+
+                bool isUnder = isFullTime && totalUnits < 18;
+                bool isOver = totalUnits > facultyMaxUnits;
 
                 return new FacultyLoadProfileView
                 {
@@ -370,45 +382,57 @@ namespace FTLSV2.Pages.Chairman
                     FirstName = f.FirstName,
                     LastName = f.LastName,
                     Email = f.Email,
-                    EmploymentType = employmentType,
+                    EmploymentType = empType,
                     MaxUnits = facultyMaxUnits,
                     TotalAssignedUnits = totalUnits,
-                    IsUnderloaded = isFullTime && totalUnits < 18,
-                    IsOverloaded = totalUnits > facultyMaxUnits
+                    IsUnderloaded = isUnder,
+                    IsOverloaded = isOver,
+                    Schedules = facSchedules
                 };
             }).ToList();
+
             // --- CALCULATE ALL FACULTY ALERTS ---
             FacultyAlerts = new List<FacultyAlertView>();
 
-            foreach (var facultyProfile in FacultyProfilesLoadList)
+            foreach (var faculty in ActiveFaculty)
             {
-                string facultyName = $"Engr. {facultyProfile.FirstName} {facultyProfile.LastName}";
+                int facultyMaxUnits = faculty.MaxUnits;
+                bool isFullTime = facultyMaxUnits >= 18;
+                string empType = isFullTime ? "Full-Time" : "Part-Time";
 
-                if (facultyProfile.IsUnderloaded)
+                var facultySchedules = _context.Schedules
+                    .Where(s => s.FacultyId == faculty.FacultyId && s.AcademicYear == currentAY)
+                    .AsNoTracking()
+                    .ToList();
+
+                int assignedUnits = facultySchedules.Sum(s => s.AssignedUnits);
+
+                if (isFullTime && assignedUnits < 18)
                 {
                     FacultyAlerts.Add(new FacultyAlertView(
-                        facultyProfile.FacultyId,
-                        facultyName,
+                        faculty.FacultyId,
+                        $"Engr. {faculty.FirstName} {faculty.LastName}",
                         currentAY,
-                        facultyProfile.TotalAssignedUnits,
+                        assignedUnits,
                         18,
-                        $"Full-Time faculty is underloaded with {facultyProfile.TotalAssignedUnits} units (Minimum required: 18 units).",
+                        $"Full-Time faculty is underloaded with {assignedUnits} units (Minimum required: 18 units).",
                         "Underload"
                     ));
                 }
-                else if (facultyProfile.IsOverloaded)
+                else if (assignedUnits > facultyMaxUnits)
                 {
                     FacultyAlerts.Add(new FacultyAlertView(
-                        facultyProfile.FacultyId,
-                        facultyName,
+                        faculty.FacultyId,
+                        $"Engr. {faculty.FirstName} {faculty.LastName}",
                         currentAY,
-                        facultyProfile.TotalAssignedUnits,
-                        facultyProfile.MaxUnits,
-                        $"{facultyProfile.EmploymentType} faculty is overloaded with {facultyProfile.TotalAssignedUnits} units (Maximum allowed: {facultyProfile.MaxUnits} units).",
+                        assignedUnits,
+                        facultyMaxUnits,
+                        $"{empType} faculty is overloaded with {assignedUnits} units (Maximum allowed: {facultyMaxUnits} units).",
                         "Overload"
                     ));
                 }
             }
+
             AvailableAcademicYears = new List<string>();
             for (int year = 2023; year <= currentYear + 1; year++)
             {

@@ -132,7 +132,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 0;
+        margin-bottom: 10px;
     }
 
     .faculty-name {
@@ -163,6 +163,25 @@
         background: #fef3c7;
         color: #92400e;
     }
+
+    .schedule-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        margin-top: 8px;
+    }
+
+        .schedule-table th, .schedule-table td {
+            border: 1px solid #e5e7eb;
+            padding: 8px 10px;
+            text-align: left;
+        }
+
+        .schedule-table th {
+            background: #f3f4f6;
+            color: #374151;
+            font-weight: 600;
+        }
 
     .edit-form-grid {
         display: grid;
@@ -621,14 +640,15 @@
 </div>
 
 <!-- ============================================================== -->
-<!-- FACULTY LOAD POPUP: UNIT SUMMARY ONLY                           -->
+<!-- FACULTY LOAD POPUP MATCHING ACADEMIC YEAR DIRECTORY            -->
 <!-- ============================================================== -->
 <div id="facultyLoadModal" class="modal-overlay">
     <div class="modal-card modal-card-large">
         <div class="modal-header">
             <h3>Faculty Load Summary & Profiles (A.Y. @Model.SelectedAcademicYear)</h3>
-            <button type="button" class="modal-close" onclick="closeModal('facultyLoadModal')">Ã—</button>
+            <button type="button" class="modal-close" onclick="closeModal('facultyLoadModal')">×</button>
         </div>
+
         <div class="modal-body">
             @if (Model.FacultyProfilesLoadList != null && Model.FacultyProfilesLoadList.Any())
             {
@@ -638,9 +658,7 @@
                         <div class="faculty-profile-header">
                             <div>
                                 <h4 class="faculty-name">Engr. @faculty.FirstName @faculty.LastName</h4>
-                                <span style="font-size: 12px; color: #6b7280;">
-                                    Email: @faculty.Email | Type: <strong>@faculty.EmploymentType</strong>
-                                </span>
+                                <span style="font-size: 12px; color: #6b7280;">Email: @faculty.Email | Type: <strong>@faculty.EmploymentType</strong></span>
                             </div>
                             <div>
                                 @if (faculty.IsUnderloaded)
@@ -663,6 +681,35 @@
                                 }
                             </div>
                         </div>
+
+                        @if (faculty.Schedules != null && faculty.Schedules.Any())
+                        {
+                            <table class="schedule-table">
+                                <thead>
+                                    <tr>
+                                        <th>Time & Day</th>
+                                        <th>Room</th>
+                                        <th>Semester / A.Y.</th>
+                                        <th>Units</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var sched in faculty.Schedules)
+                                    {
+                                        <tr>
+                                            <td>@sched.Schedule</td>
+                                            <td>@sched.RoomName</td>
+                                            <td>@sched.Semester (@sched.AcademicYear)</td>
+                                            <td>@sched.AssignedUnits</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <p style="font-size: 12px; color: #9ca3af; margin: 4px 0 0 0;">No assigned loads currently.</p>
+                        }
                     </div>
                 }
             }
@@ -671,11 +718,13 @@
                 <p>No faculty loaded.</p>
             }
         </div>
+
         <div class="modal-actions">
             <button type="button" class="btn-close-red" onclick="closeModal('facultyLoadModal')">Close</button>
         </div>
     </div>
 </div>
+
 <div id="editScheduleModal" class="modal-overlay">
     <div class="modal-card">
         <div class="modal-header">
