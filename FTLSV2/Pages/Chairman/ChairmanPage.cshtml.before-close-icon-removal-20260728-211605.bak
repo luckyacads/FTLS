@@ -627,6 +627,7 @@
     <div class="modal-card modal-card-large">
         <div class="modal-header">
             <h3>Faculty Load Summary & Profiles (A.Y. @Model.SelectedAcademicYear)</h3>
+            <button type="button" class="modal-close" onclick="closeModal('facultyLoadModal')">Ã—</button>
         </div>
         <div class="modal-body">
             @if (Model.FacultyProfilesLoadList != null && Model.FacultyProfilesLoadList.Any())
