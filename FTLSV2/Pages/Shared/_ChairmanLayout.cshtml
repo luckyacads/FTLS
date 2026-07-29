@@ -48,8 +48,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Chairman Portal</title>
 
-    <link rel="stylesheet" href="~/CSS/TeacherPage.css" />
-    <link rel="stylesheet" href="~/css/chairman.css" />
+    <link rel="stylesheet"
+        href="~/css/TeacherPage.css"
+        asp-append-version="true" />
+
+    <link rel="stylesheet"
+        href="~/css/chairman.css"
+        asp-append-version="true" />
 
     @await RenderSectionAsync("Styles", required: false)
 
