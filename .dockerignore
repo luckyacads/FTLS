@@ -1,0 +1,16 @@
+.git
+.github
+.vs
+
+**/bin
+**/obj
+
+*.user
+*.suo
+*.bak
+
+Apply-*.ps1
+Apply-Patch.cmd
+Replacement-*.txt
+ChairmanPageModel-*.txt
+ChairmanPage-Popup-*.txt
