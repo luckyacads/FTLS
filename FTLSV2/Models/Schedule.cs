@@ -43,5 +43,10 @@ namespace FTLSV2.Models
 
         [ForeignKey(nameof(RoomId))]
         public Room? Room { get; set; }
+
+        public ICollection<ScheduleSlot> ScheduleSlots { get; set; }
+        = new List<ScheduleSlot>();
     }
+
+    
 }
