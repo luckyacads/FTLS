@@ -126,7 +126,12 @@
                     <a asp-page="/Admin/ManageDepartments" class="@(Context.Request.Path.StartsWithSegments("/Admin/ManageDepartments", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">Manage Departments</a>
                     <a asp-page="/Admin/RoomRegistry" class="@(Context.Request.Path.StartsWithSegments("/Admin/RoomRegistry", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">Room Registry</a>
                     <a asp-page="/Admin/AuditLogs" class="@(Context.Request.Path.StartsWithSegments("/Admin/AuditLogs", System.StringComparison.OrdinalIgnoreCase) ? "active" : "")">Audit Logs</a>
-                    <a asp-page="/LoginPage" class="logout" style="margin-top: 10px;">Logout</a>
+                    <a asp-page="/LoginPage"
+                        asp-page-handler="Logout"
+                        class="logout"
+                        style="margin-top: 10px;">
+                        Logout
+                    </a>
                 </nav>
             </aside>
 

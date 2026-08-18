@@ -23,8 +23,37 @@ namespace FTLSV2.Pages
 
         public string ErrorMessage { get; set; }
 
-        public void OnGet()
+        public IActionResult OnGet()
         {
+            var activeUser = HttpContext.Session.GetString("ActiveUser");
+            var userRole = HttpContext.Session.GetString("UserRole");
+
+            // If no active session exists, show the login page normally.
+            if (string.IsNullOrEmpty(activeUser))
+            {
+                return Page();
+            }
+
+            // User is already logged in.
+            // Redirect them back to the correct dashboard instead of
+            // allowing the browser Back button to show Login again.
+            switch (userRole)
+            {
+                case "Admin":
+                    return RedirectToPage("/Admin/AdminPage");
+
+                case "Chairman":
+                    return RedirectToPage("/Chairman/ChairmanPage");
+
+                case "Faculty":
+                    return RedirectToPage("/Teacher/TeacherPage");
+
+                default:
+                    // Invalid/incomplete session.
+                    // Clear it and require a fresh login.
+                    HttpContext.Session.Clear();
+                    return Page();
+            }
         }
 
         public IActionResult OnPost()

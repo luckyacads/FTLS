@@ -15,7 +15,21 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AddPageRoute("/LoginPage", "");
 });
 
-builder.Services.AddSession();
+builder.Services.AddDistributedMemoryCache();
+
+builder.Services.AddSession(options =>
+{
+    // Effectively prevents inactivity from logging the user out.
+    // The browser session cookie will still disappear when the browser closes.
+    options.IdleTimeout = TimeSpan.FromDays(365);
+
+    options.Cookie.Name = ".FTLS.Session";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
