@@ -167,6 +167,99 @@ namespace FTLSV2.Pages.Chairman
             return false;
         }
 
+        private string? GetScheduleConflictMessage(
+            int facultyId,
+            int subjectId,
+            int? roomId,
+            List<string> days,
+            TimeSpan startTime,
+            TimeSpan endTime,
+            string? academicYear,
+            string? semester,
+            int? excludeScheduleId = null)
+        {
+            var existingSchedules = _context.Schedules
+                .AsNoTracking()
+                .Include(s => s.Faculty)
+                .Include(s => s.Subject)
+                .Include(s => s.Room)
+                .Where(s =>
+                    s.AcademicYear == academicYear &&
+                    s.Semester == semester &&
+                    (!excludeScheduleId.HasValue ||
+                    s.ScheduleId != excludeScheduleId.Value))
+                .ToList();
+
+            foreach (var existing in existingSchedules)
+            {
+                // Ignore schedules that do not overlap in BOTH day and time.
+                if (!CheckOverlap(
+                        existing.TimeSlot,
+                        days,
+                        startTime,
+                        endTime))
+                {
+                    continue;
+                }
+
+                bool sameFaculty = existing.FacultyId == facultyId;
+                bool sameSubject = existing.SubjectId == subjectId;
+
+                // Nullable comparison is intentional for exact duplicate detection.
+                bool sameRoomAssignment = existing.RoomId == roomId;
+
+                // Room conflicts only apply when an actual room is selected.
+                bool sameOccupiedRoom =
+                    roomId.HasValue &&
+                    existing.RoomId.HasValue &&
+                    existing.RoomId.Value == roomId.Value;
+
+                string facultyName =
+                    $"Engr. {existing.Faculty.FirstName} {existing.Faculty.LastName}";
+
+                string subjectCode = existing.Subject.Code;
+
+                string roomName =
+                    existing.Room != null
+                        ? existing.Room.Name
+                        : "No room";
+
+                // 1. Same faculty + same subject + overlapping schedule.
+                if (sameFaculty && sameSubject)
+                {
+                    return
+                        $"Duplicate schedule detected. {facultyName} already has " +
+                        $"{subjectCode} scheduled at {existing.TimeSlot}.";
+                }
+
+                // 2. Same faculty AND same room are both occupied.
+                if (sameFaculty && sameOccupiedRoom)
+                {
+                    return
+                        $"Schedule conflict detected. {facultyName} is already " +
+                        $"scheduled at {existing.TimeSlot}, and room {roomName} " +
+                        $"is also occupied during that time.";
+                }
+
+                // 3. Faculty cannot teach two subjects at the same time.
+                if (sameFaculty)
+                {
+                    return
+                        $"Faculty schedule conflict. {facultyName} is already " +
+                        $"assigned to {subjectCode} at {existing.TimeSlot}.";
+                }
+
+                // 4. Room cannot be used by two schedules at the same time.
+                if (sameOccupiedRoom)
+                {
+                    return
+                        $"Room schedule conflict. Room {roomName} is already " +
+                        $"being used for {subjectCode} at {existing.TimeSlot}.";
+                }
+            }
+
+            return null;
+        }
         public IActionResult OnPost()
         {
             var activeUserString = HttpContext.Session.GetString("ActiveUser");
@@ -217,14 +310,40 @@ namespace FTLSV2.Pages.Chairman
                 return Page();
             }
 
+            int? selectedRoomId =
+            SelectedRoomId > 0 ? SelectedRoomId : null;
+
+            // --- DUPLICATE / CONFLICT VALIDATION ---
+            var conflictMessage = GetScheduleConflictMessage(
+                SelectedFacultyId,
+                SelectedSubjectId,
+                selectedRoomId,
+                SelectedDays,
+                StartTime,
+                EndTime,
+                SelectedAcademicYear,
+                SelectedSemester
+            );
+
+            if (conflictMessage != null)
+            {
+                TempData["ErrorMessage"] = conflictMessage;
+                LoadPageData();
+                return Page();
+            }
+
             string joinedDays = string.Join(", ", SelectedDays);
-            string formattedTimeSlot = $"{joinedDays} {DateTime.Today.Add(StartTime):h:mm tt} - {DateTime.Today.Add(EndTime):h:mm tt}";
+
+            string formattedTimeSlot =
+                $"{joinedDays} " +
+                $"{DateTime.Today.Add(StartTime):h:mm tt} - " +
+                $"{DateTime.Today.Add(EndTime):h:mm tt}";
 
             var newSchedule = new Schedule
             {
                 FacultyId = SelectedFacultyId,
                 SubjectId = SelectedSubjectId,
-                RoomId = SelectedRoomId > 0 ? SelectedRoomId : null,
+                RoomId = selectedRoomId,
                 TimeSlot = formattedTimeSlot,
                 AssignedUnits = officialSubjectUnits,
                 OfferCode = SelectedOfferCode,
@@ -285,9 +404,31 @@ namespace FTLSV2.Pages.Chairman
                 return RedirectToPage();
             }
 
+            int? editRoomId =
+                EditRoomId > 0 ? EditRoomId : null;
+
+            // --- DUPLICATE / CONFLICT VALIDATION ---
+            var conflictMessage = GetScheduleConflictMessage(
+                EditFacultyId,
+                EditSubjectId,
+                editRoomId,
+                EditDays,
+                EditStartTime,
+                EditEndTime,
+                EditAcademicYear,
+                EditSemester,
+                EditScheduleId
+            );
+
+            if (conflictMessage != null)
+            {
+                TempData["ErrorMessage"] = conflictMessage;
+                return RedirectToPage();
+            }
+
             schedule.FacultyId = EditFacultyId;
             schedule.SubjectId = EditSubjectId;
-            schedule.RoomId = EditRoomId > 0 ? EditRoomId : null;
+            schedule.RoomId = editRoomId;
             schedule.AssignedUnits = officialSubjectUnits;
 
             string joinedEditDays = string.Join(", ", EditDays);
