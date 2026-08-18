@@ -109,6 +109,20 @@
         overflow-y: auto;
     }
 
+    /* Edit Schedule modal only */
+    .edit-schedule-card {
+        max-height: 88vh;
+        overflow-y: auto;
+    }
+
+    .edit-schedule-time-section {
+        grid-column: span 2;
+    }
+
+    .edit-custom-time-panel {
+        margin-top: 10px;
+    }
+
     .modal-header {
         display: flex;
         justify-content: space-between;
@@ -717,6 +731,180 @@
             justify-content: space-between;
         }
     }
+
+            /* =========================================================
+        EDIT SCHEDULE MODAL - ALIGNMENT POLISH
+        Scoped only to Edit Assigned Schedule
+        ========================================================= */
+
+        #editScheduleModal .edit-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+
+        /* Keep all form controls perfectly aligned */
+        #editScheduleModal .edit-form-group {
+            min-width: 0;
+        }
+
+        #editScheduleModal .edit-input {
+            width: 100%;
+            height: 40px;
+            box-sizing: border-box;
+        }
+
+
+        /* Schedule Days & Time section */
+        #editScheduleModal .edit-form-group:has(.schedule-mode-toggle) {
+            padding-top: 2px;
+        }
+
+
+        /* Make the two mode buttons equal width */
+        #editScheduleModal .schedule-mode-toggle {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+
+            width: 100%;
+            box-sizing: border-box;
+
+            gap: 5px;
+            padding: 4px;
+            margin-bottom: 14px;
+
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 9px;
+        }
+
+        #editScheduleModal .schedule-mode-option {
+            width: 100%;
+        }
+
+        #editScheduleModal .schedule-mode-option span {
+            width: 100%;
+            box-sizing: border-box;
+
+            padding: 8px 10px;
+
+            text-align: center;
+            white-space: nowrap;
+        }
+
+
+        /* Six equally sized day buttons */
+        #editScheduleModal .schedule-day-picker {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+
+            gap: 8px;
+            width: 100%;
+            margin-bottom: 14px;
+        }
+
+        #editScheduleModal .schedule-day-chip {
+            width: 100%;
+            min-width: 0;
+            height: 40px;
+
+            padding: 0;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+
+            box-sizing: border-box;
+        }
+
+
+        /* Align the time panel with everything above */
+        #editScheduleModal .schedule-mode-panel {
+            width: 100%;
+            box-sizing: border-box;
+
+            padding: 12px;
+            margin: 0;
+
+            background: #f8fafc;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+        }
+
+        #editScheduleModal .schedule-mode-panel-title {
+            margin-bottom: 9px;
+        }
+
+
+        /* Make both time fields symmetrical */
+        #editScheduleModal .common-time-inputs {
+            display: grid;
+
+            grid-template-columns:
+                minmax(0, 1fr)
+                34px
+                minmax(0, 1fr);
+
+            align-items: center;
+            gap: 7px;
+        }
+
+        #editScheduleModal .common-time-inputs input[type="time"] {
+            width: 100%;
+            min-width: 0;
+            height: 42px;
+
+            box-sizing: border-box;
+        }
+
+
+        /* Customized day rows */
+        #editScheduleModal .custom-day-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        #editScheduleModal .day-schedule-row {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+
+        /* Give Room / Offer Code a little separation */
+        #editScheduleModal .schedule-mode-panel + * {
+            margin-top: 2px;
+        }
+
+
+        /* Keep action buttons aligned */
+        #editScheduleModal .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+
+        /* Responsive */
+        @@media (max-width: 700px) {
+
+            #editScheduleModal .edit-form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            #editScheduleModal .schedule-day-picker {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            #editScheduleModal .custom-day-grid {
+                grid-template-columns: 1fr;
+            }
+        }
 </style>
 
 <div class="header-bar">
@@ -1167,7 +1355,7 @@
 
 <!-- EDIT SCHEDULE -->
 <div id="editScheduleModal" class="modal-overlay">
-    <div class="modal-card">
+    <div class="modal-card edit-schedule-card">
         <div class="modal-header">
             <h3>Edit Assigned Schedule</h3>
 
@@ -1178,10 +1366,16 @@
             </button>
         </div>
 
-        <form method="post" asp-page-handler="EditSchedule">
-            <input type="hidden" asp-for="EditScheduleId" id="editScheduleId" />
+        <form method="post"
+              asp-page-handler="EditSchedule"
+              id="editScheduleForm">
+
+            <input type="hidden"
+                   asp-for="EditScheduleId"
+                   id="editScheduleId" />
 
             <div class="edit-form-grid">
+
                 <div class="edit-form-group">
                     <label asp-for="EditFacultyId">Faculty</label>
 
@@ -1224,38 +1418,229 @@
                     </select>
                 </div>
 
-                <div class="edit-form-group" style="grid-column: span 2;">
-                    <label>Schedule Days</label>
+                <div class="edit-form-group edit-schedule-time-section">
+                    <label>Schedule Days &amp; Time</label>
 
-                    <div class="checkbox-group" id="editDaysGroup">
-                        <label class="checkbox-label"><input type="checkbox" name="EditDays" value="M" /> M</label>
-                        <label class="checkbox-label"><input type="checkbox" name="EditDays" value="T" /> T</label>
-                        <label class="checkbox-label"><input type="checkbox" name="EditDays" value="W" /> W</label>
-                        <label class="checkbox-label"><input type="checkbox" name="EditDays" value="Th" /> Th</label>
-                        <label class="checkbox-label"><input type="checkbox" name="EditDays" value="F" /> F</label>
-                        <label class="checkbox-label"><input type="checkbox" name="EditDays" value="S" /> S</label>
+                    <div class="schedule-mode-toggle"
+                         role="radiogroup"
+                         aria-label="Edit schedule time mode">
+
+                        <label class="schedule-mode-option">
+                            <input type="radio"
+                                   name="EditScheduleTimeMode"
+                                   value="common"
+                                   data-edit-schedule-mode
+                                   checked />
+                            <span>Same Time for All Days</span>
+                        </label>
+
+                        <label class="schedule-mode-option">
+                            <input type="radio"
+                                   name="EditScheduleTimeMode"
+                                   value="custom"
+                                   data-edit-schedule-mode />
+                            <span>Customize per Day</span>
+                        </label>
                     </div>
-                </div>
 
-                <div class="edit-form-group" style="grid-column: span 2;">
-                    <label>Time Slot</label>
+                    <div class="schedule-day-picker"
+                         id="editDaysGroup">
 
-                    <div class="modern-time-container">
-                        <input asp-for="EditStartTime"
-                               id="editStartTime"
-                               type="time"
-                               class="modern-time-input"
-                               required
-                               onclick="this.showPicker()" />
+                        <label class="schedule-day-chip">
+                            <input type="checkbox"
+                                   name="EditDays"
+                                   value="M"
+                                   data-edit-day="M" />
+                            <span>M</span>
+                        </label>
 
-                        <div class="time-separator">TO</div>
+                        <label class="schedule-day-chip">
+                            <input type="checkbox"
+                                   name="EditDays"
+                                   value="T"
+                                   data-edit-day="T" />
+                            <span>T</span>
+                        </label>
 
-                        <input asp-for="EditEndTime"
-                               id="editEndTime"
-                               type="time"
-                               class="modern-time-input"
-                               required
-                               onclick="this.showPicker()" />
+                        <label class="schedule-day-chip">
+                            <input type="checkbox"
+                                   name="EditDays"
+                                   value="W"
+                                   data-edit-day="W" />
+                            <span>W</span>
+                        </label>
+
+                        <label class="schedule-day-chip">
+                            <input type="checkbox"
+                                   name="EditDays"
+                                   value="Th"
+                                   data-edit-day="Th" />
+                            <span>Th</span>
+                        </label>
+
+                        <label class="schedule-day-chip">
+                            <input type="checkbox"
+                                   name="EditDays"
+                                   value="F"
+                                   data-edit-day="F" />
+                            <span>F</span>
+                        </label>
+
+                        <label class="schedule-day-chip">
+                            <input type="checkbox"
+                                   name="EditDays"
+                                   value="S"
+                                   data-edit-day="S" />
+                            <span>S</span>
+                        </label>
+                    </div>
+
+                    <!-- SAME TIME MODE -->
+                    <div id="editCommonTimePanel"
+                         class="schedule-mode-panel">
+
+                        <span class="schedule-mode-panel-title">
+                            Time for all selected days
+                        </span>
+
+                        <div class="common-time-inputs">
+                            <input asp-for="EditStartTime"
+                                   id="editStartTime"
+                                   type="time" />
+
+                            <span class="time-separator">TO</span>
+
+                            <input asp-for="EditEndTime"
+                                   id="editEndTime"
+                                   type="time" />
+                        </div>
+                    </div>
+
+                    <!-- CUSTOM TIME MODE -->
+                    <div id="editCustomTimePanel"
+                         class="schedule-mode-panel edit-custom-time-panel is-hidden">
+
+                        <span class="schedule-mode-panel-title">
+                            Individual time for each selected day
+                        </span>
+
+                        <div class="custom-day-grid">
+
+                            <div class="day-schedule-row"
+                                 data-edit-flex-row="M">
+                                <div class="day-schedule-label">M</div>
+
+                                <div class="day-time-inputs">
+                                    <input type="time"
+                                           name="EditDayStartTimes[M]"
+                                           data-edit-day-start="M"
+                                           disabled />
+
+                                    <span class="time-separator">TO</span>
+
+                                    <input type="time"
+                                           name="EditDayEndTimes[M]"
+                                           data-edit-day-end="M"
+                                           disabled />
+                                </div>
+                            </div>
+
+                            <div class="day-schedule-row"
+                                 data-edit-flex-row="T">
+                                <div class="day-schedule-label">T</div>
+
+                                <div class="day-time-inputs">
+                                    <input type="time"
+                                           name="EditDayStartTimes[T]"
+                                           data-edit-day-start="T"
+                                           disabled />
+
+                                    <span class="time-separator">TO</span>
+
+                                    <input type="time"
+                                           name="EditDayEndTimes[T]"
+                                           data-edit-day-end="T"
+                                           disabled />
+                                </div>
+                            </div>
+
+                            <div class="day-schedule-row"
+                                 data-edit-flex-row="W">
+                                <div class="day-schedule-label">W</div>
+
+                                <div class="day-time-inputs">
+                                    <input type="time"
+                                           name="EditDayStartTimes[W]"
+                                           data-edit-day-start="W"
+                                           disabled />
+
+                                    <span class="time-separator">TO</span>
+
+                                    <input type="time"
+                                           name="EditDayEndTimes[W]"
+                                           data-edit-day-end="W"
+                                           disabled />
+                                </div>
+                            </div>
+
+                            <div class="day-schedule-row"
+                                 data-edit-flex-row="Th">
+                                <div class="day-schedule-label">Th</div>
+
+                                <div class="day-time-inputs">
+                                    <input type="time"
+                                           name="EditDayStartTimes[Th]"
+                                           data-edit-day-start="Th"
+                                           disabled />
+
+                                    <span class="time-separator">TO</span>
+
+                                    <input type="time"
+                                           name="EditDayEndTimes[Th]"
+                                           data-edit-day-end="Th"
+                                           disabled />
+                                </div>
+                            </div>
+
+                            <div class="day-schedule-row"
+                                 data-edit-flex-row="F">
+                                <div class="day-schedule-label">F</div>
+
+                                <div class="day-time-inputs">
+                                    <input type="time"
+                                           name="EditDayStartTimes[F]"
+                                           data-edit-day-start="F"
+                                           disabled />
+
+                                    <span class="time-separator">TO</span>
+
+                                    <input type="time"
+                                           name="EditDayEndTimes[F]"
+                                           data-edit-day-end="F"
+                                           disabled />
+                                </div>
+                            </div>
+
+                            <div class="day-schedule-row"
+                                 data-edit-flex-row="S">
+                                <div class="day-schedule-label">S</div>
+
+                                <div class="day-time-inputs">
+                                    <input type="time"
+                                           name="EditDayStartTimes[S]"
+                                           data-edit-day-start="S"
+                                           disabled />
+
+                                    <span class="time-separator">TO</span>
+
+                                    <input type="time"
+                                           name="EditDayEndTimes[S]"
+                                           data-edit-day-end="S"
+                                           disabled />
+                                </div>
+                            </div>
+
+                        </div>
                     </div>
                 </div>
 
@@ -1319,6 +1704,7 @@
                         }
                     </select>
                 </div>
+
             </div>
 
             <div class="modal-actions">
@@ -1328,7 +1714,8 @@
                     Cancel
                 </button>
 
-                <button type="submit" class="btn-primary">
+                <button type="submit"
+                        class="btn-primary">
                     Update Schedule
                 </button>
             </div>
@@ -1376,7 +1763,7 @@
         }
 
         initializeFlexibleScheduleUi();
-        initializeEditScheduleRoomAvailability();
+        initializeEditScheduleUi();
         initializeAlertAutoDismiss();
     });
 
@@ -1926,36 +2313,394 @@
         }
     }
 
-    function initializeEditScheduleRoomAvailability() {
-        const editCheckboxes =
-            document.querySelectorAll(
-                'input[name="EditDays"]'
-            );
 
-        const editStartInput =
+    function initializeEditScheduleUi() {
+        const modeRadios =
+            document.querySelectorAll("[data-edit-schedule-mode]");
+
+        const dayCheckboxes =
+            document.querySelectorAll("[data-edit-day]");
+
+        const commonStart =
             document.getElementById("editStartTime");
 
-        const editEndInput =
+        const commonEnd =
             document.getElementById("editEndTime");
 
-        editCheckboxes.forEach(function (checkbox) {
-            checkbox.addEventListener(
-                "change",
-                fetchAvailableRoomsForEdit
-            );
+        const form =
+            document.getElementById("editScheduleForm");
+
+        modeRadios.forEach(function (radio) {
+            radio.addEventListener("change", function () {
+                applyEditScheduleMode();
+                updateAvailableRoomsForEditSchedule();
+            });
         });
 
-        if (editStartInput && editEndInput) {
-            editStartInput.addEventListener(
-                "change",
-                fetchAvailableRoomsForEdit
+        dayCheckboxes.forEach(function (checkbox) {
+            checkbox.addEventListener("change", function () {
+                updateEditDayRows();
+
+                if (getEditScheduleMode() === "common") {
+                    syncEditCommonTimeToSelectedDays();
+                }
+
+                updateAvailableRoomsForEditSchedule();
+            });
+        });
+
+        if (commonStart) {
+            commonStart.addEventListener("change", function () {
+                validateEditCommonTime();
+                syncEditCommonTimeToSelectedDays();
+                updateAvailableRoomsForEditSchedule();
+            });
+        }
+
+        if (commonEnd) {
+            commonEnd.addEventListener("change", function () {
+                validateEditCommonTime();
+                syncEditCommonTimeToSelectedDays();
+                updateAvailableRoomsForEditSchedule();
+            });
+        }
+
+        document
+            .querySelectorAll("[data-edit-day-start], [data-edit-day-end]")
+            .forEach(function (input) {
+                input.addEventListener("change", function () {
+                    validateEditDayTime(input);
+                    updateAvailableRoomsForEditSchedule();
+                });
+            });
+
+        if (form) {
+            form.addEventListener("submit", function (event) {
+                const selectedDays =
+                    document.querySelectorAll("[data-edit-day]:checked");
+
+                if (selectedDays.length === 0) {
+                    event.preventDefault();
+                    alert("Please select at least one schedule day.");
+                    return;
+                }
+
+                const mode =
+                    getEditScheduleMode();
+
+                if (mode === "common") {
+                    if (!validateEditCommonTime()) {
+                        event.preventDefault();
+                        return;
+                    }
+
+                    syncEditCommonTimeToSelectedDays();
+                }
+                else {
+                    let valid = true;
+
+                    selectedDays.forEach(function (checkbox) {
+                        const day =
+                            checkbox.dataset.editDay;
+
+                        const startInput =
+                            document.querySelector(
+                                `[data-edit-day-start="${day}"]`
+                            );
+
+                        const endInput =
+                            document.querySelector(
+                                `[data-edit-day-end="${day}"]`
+                            );
+
+                        if (
+                            !startInput ||
+                            !endInput ||
+                            !startInput.value ||
+                            !endInput.value ||
+                            endInput.value <= startInput.value
+                        ) {
+                            valid = false;
+
+                            if (endInput) {
+                                endInput.setCustomValidity(
+                                    "Enter a valid start and end time for this day."
+                                );
+
+                                endInput.reportValidity();
+                            }
+                        }
+                    });
+
+                    if (!valid) {
+                        event.preventDefault();
+                    }
+                }
+            });
+        }
+
+        applyEditScheduleMode();
+    }
+
+    function getEditScheduleMode() {
+        const selected =
+            document.querySelector(
+                "[data-edit-schedule-mode]:checked"
             );
 
-            editEndInput.addEventListener(
-                "change",
-                fetchAvailableRoomsForEdit
-            );
+        return selected ? selected.value : "common";
+    }
+
+    function applyEditScheduleMode() {
+        const mode =
+            getEditScheduleMode();
+
+        const commonPanel =
+            document.getElementById("editCommonTimePanel");
+
+        const customPanel =
+            document.getElementById("editCustomTimePanel");
+
+        const commonStart =
+            document.getElementById("editStartTime");
+
+        const commonEnd =
+            document.getElementById("editEndTime");
+
+        if (mode === "common") {
+            commonPanel?.classList.remove("is-hidden");
+            customPanel?.classList.add("is-hidden");
+
+            if (commonStart) {
+                commonStart.disabled = false;
+                commonStart.required = true;
+            }
+
+            if (commonEnd) {
+                commonEnd.disabled = false;
+                commonEnd.required = true;
+                commonEnd.setCustomValidity("");
+            }
+
+            syncEditCommonTimeToSelectedDays();
         }
+        else {
+            commonPanel?.classList.add("is-hidden");
+            customPanel?.classList.remove("is-hidden");
+
+            if (commonStart) {
+                commonStart.disabled = true;
+                commonStart.required = false;
+            }
+
+            if (commonEnd) {
+                commonEnd.disabled = true;
+                commonEnd.required = false;
+                commonEnd.setCustomValidity("");
+            }
+        }
+
+        updateEditDayRows();
+    }
+
+    function updateEditDayRows() {
+        const mode =
+            getEditScheduleMode();
+
+        document
+            .querySelectorAll("[data-edit-day]")
+            .forEach(function (checkbox) {
+                const day =
+                    checkbox.dataset.editDay;
+
+                const row =
+                    document.querySelector(
+                        `[data-edit-flex-row="${day}"]`
+                    );
+
+                const startInput =
+                    document.querySelector(
+                        `[data-edit-day-start="${day}"]`
+                    );
+
+                const endInput =
+                    document.querySelector(
+                        `[data-edit-day-end="${day}"]`
+                    );
+
+                if (!startInput || !endInput) {
+                    return;
+                }
+
+                if (mode === "custom") {
+                    if (checkbox.checked) {
+                        row?.classList.add("active");
+
+                        startInput.disabled = false;
+                        endInput.disabled = false;
+
+                        startInput.required = true;
+                        endInput.required = true;
+                    }
+                    else {
+                        row?.classList.remove("active");
+
+                        startInput.disabled = true;
+                        endInput.disabled = true;
+
+                        startInput.required = false;
+                        endInput.required = false;
+
+                        startInput.value = "";
+                        endInput.value = "";
+                        endInput.setCustomValidity("");
+                    }
+                }
+                else {
+                    row?.classList.remove("active");
+
+                    /*
+                     * Keep selected-day fields enabled in common mode so
+                     * EditDayStartTimes[] and EditDayEndTimes[] are posted too.
+                     */
+                    startInput.disabled = !checkbox.checked;
+                    endInput.disabled = !checkbox.checked;
+
+                    startInput.required = false;
+                    endInput.required = false;
+
+                    if (!checkbox.checked) {
+                        startInput.value = "";
+                        endInput.value = "";
+                        endInput.setCustomValidity("");
+                    }
+                }
+            });
+
+        if (mode === "common") {
+            syncEditCommonTimeToSelectedDays();
+        }
+    }
+
+    function syncEditCommonTimeToSelectedDays() {
+        if (getEditScheduleMode() !== "common") {
+            return;
+        }
+
+        const commonStart =
+            document.getElementById("editStartTime");
+
+        const commonEnd =
+            document.getElementById("editEndTime");
+
+        document
+            .querySelectorAll("[data-edit-day]")
+            .forEach(function (checkbox) {
+                const day =
+                    checkbox.dataset.editDay;
+
+                const startInput =
+                    document.querySelector(
+                        `[data-edit-day-start="${day}"]`
+                    );
+
+                const endInput =
+                    document.querySelector(
+                        `[data-edit-day-end="${day}"]`
+                    );
+
+                if (!startInput || !endInput) {
+                    return;
+                }
+
+                if (checkbox.checked) {
+                    startInput.disabled = false;
+                    endInput.disabled = false;
+
+                    startInput.value =
+                        commonStart?.value || "";
+
+                    endInput.value =
+                        commonEnd?.value || "";
+                }
+                else {
+                    startInput.disabled = true;
+                    endInput.disabled = true;
+
+                    startInput.value = "";
+                    endInput.value = "";
+                }
+            });
+    }
+
+    function validateEditCommonTime() {
+        const commonStart =
+            document.getElementById("editStartTime");
+
+        const commonEnd =
+            document.getElementById("editEndTime");
+
+        if (!commonStart || !commonEnd) {
+            return false;
+        }
+
+        commonEnd.setCustomValidity("");
+
+        if (!commonStart.value || !commonEnd.value) {
+            return false;
+        }
+
+        if (commonEnd.value <= commonStart.value) {
+            commonEnd.setCustomValidity(
+                "End time must be later than start time."
+            );
+
+            commonEnd.reportValidity();
+
+            return false;
+        }
+
+        return true;
+    }
+
+    function validateEditDayTime(input) {
+        const day =
+            input.dataset.editDayStart ||
+            input.dataset.editDayEnd;
+
+        if (!day) {
+            return true;
+        }
+
+        const startInput =
+            document.querySelector(
+                `[data-edit-day-start="${day}"]`
+            );
+
+        const endInput =
+            document.querySelector(
+                `[data-edit-day-end="${day}"]`
+            );
+
+        if (!startInput || !endInput) {
+            return true;
+        }
+
+        endInput.setCustomValidity("");
+
+        if (
+            startInput.value &&
+            endInput.value &&
+            endInput.value <= startInput.value
+        ) {
+            endInput.setCustomValidity(
+                "End time must be later than start time."
+            );
+
+            return false;
+        }
+
+        return true;
     }
 
     function openEditScheduleModal(
@@ -1989,20 +2734,42 @@
         document.getElementById("editSemester").value =
             semester || "";
 
-        const parsed =
-            parseScheduleText(scheduleText);
+        /*
+         * Existing schedules currently use the original one-time-range
+         * string, so they open in common-time mode by default.
+         */
+        const commonMode =
+            document.querySelector(
+                '[data-edit-schedule-mode][value="common"]'
+            );
+
+        if (commonMode) {
+            commonMode.checked = true;
+        }
 
         document
-            .querySelectorAll('input[name="EditDays"]')
+            .querySelectorAll("[data-edit-day]")
             .forEach(function (checkbox) {
                 checkbox.checked = false;
             });
+
+        document
+            .querySelectorAll(
+                "[data-edit-day-start], [data-edit-day-end]"
+            )
+            .forEach(function (input) {
+                input.value = "";
+                input.setCustomValidity("");
+            });
+
+        const parsed =
+            parseScheduleText(scheduleText);
 
         if (parsed) {
             parsed.days.forEach(function (day) {
                 const checkbox =
                     document.querySelector(
-                        `input[name="EditDays"][value="${day.trim()}"]`
+                        `[data-edit-day="${day.trim()}"]`
                     );
 
                 if (checkbox) {
@@ -2016,10 +2783,20 @@
             document.getElementById("editEndTime").value =
                 parsed.endTime;
         }
+        else {
+            document.getElementById("editStartTime").value =
+                "";
+
+            document.getElementById("editEndTime").value =
+                "";
+        }
+
+        applyEditScheduleMode();
+        syncEditCommonTimeToSelectedDays();
 
         openModal("editScheduleModal");
 
-        fetchAvailableRoomsForEdit(roomId || 0);
+        updateAvailableRoomsForEditSchedule(roomId || 0);
     }
 
     function parseScheduleText(scheduleText) {
@@ -2035,7 +2812,7 @@
             return null;
         }
 
-        let rawDays =
+        const rawDays =
             match[1].trim();
 
         let daysArray;
@@ -2122,81 +2899,189 @@
         return `${String(hours).padStart(2, "0")}:${minutes}`;
     }
 
-    function fetchAvailableRoomsForEdit(currentRoomId = null) {
-        const scheduleId =
-            document.getElementById("editScheduleId").value;
-
-        const checkedEditDays =
-            Array.from(
-                document.querySelectorAll(
-                    'input[name="EditDays"]:checked'
-                )
-            )
-            .map(function (checkbox) {
-                return checkbox.value;
-            })
-            .join(", ");
-
-        const start =
-            document.getElementById("editStartTime").value;
-
-        const end =
-            document.getElementById("editEndTime").value;
-
-        const editRoomDropdown =
+    async function updateAvailableRoomsForEditSchedule(
+        currentRoomId = null
+    ) {
+        const roomDropdown =
             document.getElementById("editRoomId");
 
-        const targetRoomId =
-            currentRoomId !== null &&
-            !(currentRoomId instanceof Event)
-                ? currentRoomId
-                : editRoomDropdown.value;
+        const scheduleId =
+            document.getElementById("editScheduleId")?.value;
 
-        if (!checkedEditDays || !start || !end) {
+        if (!roomDropdown || !scheduleId) {
             return;
         }
 
-        editRoomDropdown.innerHTML =
-            '<option value="">Searching...</option>';
+        const selectedCheckboxes =
+            Array.from(
+                document.querySelectorAll(
+                    "[data-edit-day]:checked"
+                )
+            );
 
-        fetch(
-            `?handler=AvailableRooms` +
-            `&days=${encodeURIComponent(checkedEditDays)}` +
-            `&startTime=${encodeURIComponent(start)}` +
-            `&endTime=${encodeURIComponent(end)}` +
-            `&excludeScheduleId=${encodeURIComponent(scheduleId)}`
-        )
-        .then(function (response) {
-            return response.json();
-        })
-        .then(function (data) {
-            editRoomDropdown.innerHTML =
+        if (selectedCheckboxes.length === 0) {
+            return;
+        }
+
+        const mode =
+            getEditScheduleMode();
+
+        const slots = [];
+
+        if (mode === "common") {
+            const start =
+                document.getElementById("editStartTime")?.value;
+
+            const end =
+                document.getElementById("editEndTime")?.value;
+
+            if (!start || !end || end <= start) {
+                return;
+            }
+
+            selectedCheckboxes.forEach(function (checkbox) {
+                slots.push({
+                    day: checkbox.dataset.editDay,
+                    start: start,
+                    end: end
+                });
+            });
+        }
+        else {
+            for (const checkbox of selectedCheckboxes) {
+                const day =
+                    checkbox.dataset.editDay;
+
+                const startInput =
+                    document.querySelector(
+                        `[data-edit-day-start="${day}"]`
+                    );
+
+                const endInput =
+                    document.querySelector(
+                        `[data-edit-day-end="${day}"]`
+                    );
+
+                if (
+                    !startInput ||
+                    !endInput ||
+                    !startInput.value ||
+                    !endInput.value ||
+                    endInput.value <= startInput.value
+                ) {
+                    return;
+                }
+
+                slots.push({
+                    day: day,
+                    start: startInput.value,
+                    end: endInput.value
+                });
+            }
+        }
+
+        const requestedRoomId =
+            currentRoomId !== null &&
+            !(currentRoomId instanceof Event)
+                ? String(currentRoomId)
+                : roomDropdown.value;
+
+        roomDropdown.innerHTML =
+            '<option value="">Checking room availability...</option>';
+
+        try {
+            const responses =
+                await Promise.all(
+                    slots.map(function (slot) {
+                        const url =
+                            `?handler=AvailableRooms` +
+                            `&days=${encodeURIComponent(slot.day)}` +
+                            `&startTime=${encodeURIComponent(slot.start)}` +
+                            `&endTime=${encodeURIComponent(slot.end)}` +
+                            `&excludeScheduleId=${encodeURIComponent(scheduleId)}`;
+
+                        return fetch(url)
+                            .then(function (response) {
+                                if (!response.ok) {
+                                    throw new Error(
+                                        "Unable to load available rooms."
+                                    );
+                                }
+
+                                return response.json();
+                            });
+                    })
+                );
+
+            if (responses.length === 0) {
+                return;
+            }
+
+            let availableRooms =
+                responses[0];
+
+            for (let i = 1; i < responses.length; i++) {
+                const allowedIds =
+                    new Set(
+                        responses[i].map(function (room) {
+                            return String(room.roomId);
+                        })
+                    );
+
+                availableRooms =
+                    availableRooms.filter(function (room) {
+                        return allowedIds.has(
+                            String(room.roomId)
+                        );
+                    });
+            }
+
+            roomDropdown.innerHTML =
                 '<option value="0">No room assigned</option>';
 
-            if (!data || data.length === 0) {
-                editRoomDropdown.innerHTML =
-                    '<option value="">-- No Rooms Available! --</option>';
+            if (
+                !availableRooms ||
+                availableRooms.length === 0
+            ) {
+                roomDropdown.innerHTML =
+                    '<option value="">-- No Rooms Available for All Selected Slots --</option>';
 
                 return;
             }
 
-            data.forEach(function (room) {
+            availableRooms.forEach(function (room) {
                 const option =
                     document.createElement("option");
 
-                option.value = room.roomId;
-                option.textContent = room.name;
+                option.value =
+                    room.roomId;
 
-                editRoomDropdown.appendChild(option);
+                option.textContent =
+                    room.name;
+
+                roomDropdown.appendChild(option);
             });
 
-            editRoomDropdown.value =
-                targetRoomId;
-        })
-        .catch(function (error) {
+            const requestedStillExists =
+                Array.from(roomDropdown.options)
+                    .some(function (option) {
+                        return option.value ===
+                            requestedRoomId;
+                    });
+
+            if (requestedStillExists) {
+                roomDropdown.value =
+                    requestedRoomId;
+            }
+        }
+        catch (error) {
             console.error(error);
-        });
+
+            roomDropdown.innerHTML =
+                '<option value="">-- Error loading available rooms --</option>';
+        }
     }
+
 
     function openDeleteScheduleModal(
         scheduleId,
