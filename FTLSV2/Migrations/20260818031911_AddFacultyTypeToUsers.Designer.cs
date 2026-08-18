@@ -3,6 +3,7 @@ using System;
 using FTLSV2.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FTLSV2.Migrations
 {
     [DbContext(typeof(FtlsDbContext))]
-    partial class FtlsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260818031911_AddFacultyTypeToUsers")]
+    partial class AddFacultyTypeToUsers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

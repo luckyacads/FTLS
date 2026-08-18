@@ -39,6 +39,7 @@ namespace FTLSV2.Data
                 entity.Property(e => e.LastName).HasColumnName("last_name");
                 entity.Property(e => e.Status).HasColumnName("status");
                 entity.Property(e => e.MaxUnits).HasColumnName("max_units");
+                entity.Property(e => e.FacultyType).HasColumnName("faculty_type").HasMaxLength(20);
                 entity.Property(e => e.CurrentUnits).HasColumnName("current_units");
                 entity.Property(e => e.SchoolId).HasColumnName("school_id");
                 entity.Property(e => e.DepartmentId).HasColumnName("department_id");

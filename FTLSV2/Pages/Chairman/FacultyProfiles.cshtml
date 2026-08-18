@@ -163,9 +163,10 @@
             <table class="modern-table">
                 <thead>
                     <tr>
-                        <th style="width: 20%;">Faculty ID</th>
-                        <th style="width: 45%;">Name</th>
-                        <th style="width: 20%;">Role</th>
+                        <th style="width: 15%;">Faculty ID</th>
+                        <th style="width: 35%;">Name</th>
+                        <th style="width: 15%;">Role</th>
+                        <th style="width: 20%;">Faculty Type</th>
                         <th style="width: 15%; text-align: center;">Current Units</th>
                     </tr>
                 </thead>
@@ -179,6 +180,9 @@
                                 <td style="font-weight: 600;">@f.Name</td>
                                 <td>
                                     <span class="badge-role">@f.Role</span>
+                                </td>
+                                <td>
+                                    <span class="badge-role">@f.FacultyType</span>
                                 </td>
                                 <td style="text-align: center;">
                                     @if (f.IsOverloaded)
@@ -206,7 +210,7 @@
                     else
                     {
                         <tr>
-                            <td colspan="4" style="text-align: center; padding: 50px 20px; color: #6b7280; font-size: 14px; background: #ffffff;">
+                            <td colspan="5" style="text-align: center; padding: 50px 20px; color: #6b7280; font-size: 14px; background: #ffffff;">
                                 <svg style="width: 36px; height: 36px; margin-bottom: 8px; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
                                 </svg>

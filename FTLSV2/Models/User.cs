@@ -27,6 +27,10 @@ namespace FTLSV2.Models
         [Column("max_units")]
         public int MaxUnits { get; set; }
 
+        [Column("faculty_type")]
+        [StringLength(20)]
+        public string? FacultyType { get; set; }
+
         [Column("school_id")]
         public int? SchoolId { get; set; }
 

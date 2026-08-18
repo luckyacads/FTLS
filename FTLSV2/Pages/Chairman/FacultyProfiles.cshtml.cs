@@ -21,6 +21,7 @@ namespace FTLSV2.Pages.Chairman
             int FacultyId,
             string Name,
             string Role,
+            string FacultyType,
             int TotalUnits,
             int MaxUnits,
             bool IsUnderloaded,
@@ -83,22 +84,6 @@ namespace FTLSV2.Pages.Chairman
 
             CurrentTermDisplay = $"A.Y. {SelectedAcademicYear}";
 
-            // Auto-sync policy updates to database records
-            bool changesMade = false;
-            foreach (var user in departmentUsers)
-            {
-                bool isFT = user.MaxUnits >= 18;
-                int targetMax = isFT ? 30 : 17;
-                if (user.MaxUnits != targetMax)
-                {
-                    user.MaxUnits = targetMax;
-                    changesMade = true;
-                }
-            }
-            if (changesMade)
-            {
-                _db.SaveChanges();
-            }
 
             FacultyList = departmentUsers
                 .Select(u =>
@@ -108,9 +93,11 @@ namespace FTLSV2.Pages.Chairman
                                     && s.AcademicYear == SelectedAcademicYear)
                         .Sum(s => s.AssignedUnits);
 
-                    int maxUnits = u.MaxUnits;
-                    bool isFullTime = maxUnits >= 18;
+                    string facultyType = u.FacultyType ?? "Not Assigned";
 
+                    int maxUnits = u.MaxUnits;
+
+                    bool isFullTime = facultyType == "Full-Time";
                     bool isUnderloaded = isFullTime && totalUnits < 18;
                     bool isOverloaded = totalUnits > maxUnits;
 
@@ -122,6 +109,7 @@ namespace FTLSV2.Pages.Chairman
                         u.FacultyId,
                         $"{u.FirstName} {u.LastName}",
                         u.Role,
+                        facultyType,
                         totalUnits,
                         maxUnits,
                         isUnderloaded,

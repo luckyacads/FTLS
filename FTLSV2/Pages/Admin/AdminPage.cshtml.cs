@@ -185,7 +185,54 @@ namespace FTLSV2.Pages.Admin
 
             return RedirectToPage();
         }
+        
+        // --- ASSIGN / UPDATE FACULTY TYPE ---
+        public IActionResult OnPostUpdateFacultyType(int facultyId, string facultyType)
+        {
+            var allowedTypes = new[] { "Full-Time", "Part-Time" };
 
+            if (string.IsNullOrWhiteSpace(facultyType) ||
+                !allowedTypes.Contains(facultyType))
+            {
+                TempData["ErrorMessage"] = "Invalid faculty type selected.";
+                return RedirectToPage();
+            }
+
+            var user = _context.Users
+                .FirstOrDefault(u => u.FacultyId == facultyId);
+
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "User account could not be found.";
+                return RedirectToPage();
+            }
+
+            if (user.Role == "Admin")
+            {
+                TempData["ErrorMessage"] =
+                    "Administrator accounts cannot be assigned a faculty type.";
+
+                return RedirectToPage();
+            }
+
+            user.FacultyType = facultyType;
+
+            if (facultyType == "Part-Time")
+            {
+                user.MaxUnits = 17;
+            }
+            else
+            {
+                user.MaxUnits = 30;
+            }
+
+            _context.SaveChanges();
+
+            TempData["SuccessMessage"] =
+                $"{user.FirstName} {user.LastName} is now assigned as {facultyType}.";
+
+            return RedirectToPage();
+        }
         // --- UPDATE USER MAX UNITS ---
         public IActionResult OnPostUpdateUserUnits(int facultyId, int newUnits)
         {
