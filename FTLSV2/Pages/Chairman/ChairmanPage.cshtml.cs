@@ -318,7 +318,37 @@ namespace FTLSV2.Pages.Chairman
             var settings = _context.SystemSettings.FirstOrDefault();
             GlobalMaxLimit = settings?.MaxOverload ?? 30;
 
-            ActiveFaculty = _context.Users.Where(u => u.Role == "Faculty" && u.Is_delete == false).ToList();
+            var activeUserString = HttpContext.Session.GetString("ActiveUser");
+
+        if (string.IsNullOrEmpty(activeUserString) ||
+            !int.TryParse(activeUserString, out int activeFacultyId))
+        {
+            ActiveFaculty = new List<User>();
+        }
+        else
+        {
+            var chairman = _context.Users
+                .FirstOrDefault(u =>
+                    u.FacultyId == activeFacultyId &&
+                    u.Role == "Chairman");
+
+            if (chairman == null || chairman.DepartmentId == null)
+            {
+                ActiveFaculty = new List<User>();
+            }
+            else
+            {
+                int chairmanDepartmentId = chairman.DepartmentId.Value;
+
+                ActiveFaculty = _context.Users
+                    .Where(u =>
+                        u.Role == "Faculty" &&
+                        u.DepartmentId == chairmanDepartmentId &&
+                        !u.Is_delete &&
+                        (u.Status == "Active" || string.IsNullOrEmpty(u.Status)))
+                    .ToList();
+            }
+        }
             ActiveSubjects = _context.Subjects.Where(s => !s.Is_delete).ToList();
             AllRooms = _context.Rooms.ToList();
 
