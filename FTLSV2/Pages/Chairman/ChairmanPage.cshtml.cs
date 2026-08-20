@@ -54,6 +54,9 @@ namespace FTLSV2.Pages.Chairman
         [BindProperty] public int? SelectedOfferCode { get; set; }
         [BindProperty] public string SelectedAcademicYear { get; set; }
         [BindProperty] public string SelectedSemester { get; set; }
+        [BindProperty] public string ScheduleTimeMode { get; set; } = "common";
+        [BindProperty] public Dictionary<string, string> DayStartTimes { get; set; } = new();
+        [BindProperty] public Dictionary<string, string> DayEndTimes { get; set; } = new();
 
         [BindProperty] public int EditScheduleId { get; set; }
         [BindProperty] public int EditFacultyId { get; set; }
@@ -65,6 +68,9 @@ namespace FTLSV2.Pages.Chairman
         [BindProperty] public int? EditOfferCode { get; set; }
         [BindProperty] public string EditAcademicYear { get; set; }
         [BindProperty] public string EditSemester { get; set; }
+        [BindProperty] public string EditScheduleTimeMode { get; set; } = "common";
+        [BindProperty] public Dictionary<string, string> EditDayStartTimes { get; set; } = new();
+        [BindProperty] public Dictionary<string, string> EditDayEndTimes { get; set; } = new();
 
         [BindProperty] public int DeleteScheduleId { get; set; }
         public int GlobalMaxLimit { get; set; }
@@ -272,13 +278,6 @@ namespace FTLSV2.Pages.Chairman
                 return Page();
             }
 
-            if (EndTime <= StartTime)
-            {
-                TempData["ErrorMessage"] = "Invalid time range.";
-                LoadPageData();
-                return Page();
-            }
-
             var targetSubject = _context.Subjects.FirstOrDefault(s => s.SubjectId == SelectedSubjectId);
             int officialSubjectUnits = targetSubject?.Units ?? 0;
 
@@ -310,48 +309,122 @@ namespace FTLSV2.Pages.Chairman
                 return Page();
             }
 
-            int? selectedRoomId =
-            SelectedRoomId > 0 ? SelectedRoomId : null;
+            int? selectedRoomId = SelectedRoomId > 0 ? SelectedRoomId : null;
 
-            // --- DUPLICATE / CONFLICT VALIDATION ---
-            var conflictMessage = GetScheduleConflictMessage(
-                SelectedFacultyId,
-                SelectedSubjectId,
-                selectedRoomId,
-                SelectedDays,
-                StartTime,
-                EndTime,
-                SelectedAcademicYear,
-                SelectedSemester
-            );
+            var newSchedulesToSave = new List<Schedule>();
 
-            if (conflictMessage != null)
+            if (ScheduleTimeMode == "custom")
             {
-                TempData["ErrorMessage"] = conflictMessage;
-                LoadPageData();
-                return Page();
+                bool isFirstDay = true;
+                foreach (var day in SelectedDays)
+                {
+                    if (!DayStartTimes.TryGetValue(day, out var startStr) || !DayEndTimes.TryGetValue(day, out var endStr) ||
+                        !TimeSpan.TryParse(startStr, out TimeSpan start) || !TimeSpan.TryParse(endStr, out TimeSpan end))
+                    {
+                        TempData["ErrorMessage"] = $"Invalid time range for {day}.";
+                        LoadPageData();
+                        return Page();
+                    }
+
+                    if (end <= start)
+                    {
+                        TempData["ErrorMessage"] = $"Invalid time range for {day}.";
+                        LoadPageData();
+                        return Page();
+                    }
+
+                    // --- DUPLICATE / CONFLICT VALIDATION ---
+                    var conflictMessage = GetScheduleConflictMessage(
+                        SelectedFacultyId,
+                        SelectedSubjectId,
+                        selectedRoomId,
+                        new List<string> { day },
+                        start,
+                        end,
+                        SelectedAcademicYear,
+                        SelectedSemester
+                    );
+
+                    if (conflictMessage != null)
+                    {
+                        TempData["ErrorMessage"] = conflictMessage;
+                        LoadPageData();
+                        return Page();
+                    }
+
+                    string formattedTimeSlot =
+                        $"{day} " +
+                        $"{DateTime.Today.Add(start):h:mm tt} - " +
+                        $"{DateTime.Today.Add(end):h:mm tt}";
+
+                    int assignedUnits = isFirstDay ? officialSubjectUnits : 0;
+                    isFirstDay = false;
+
+                    newSchedulesToSave.Add(new Schedule
+                    {
+                        FacultyId = SelectedFacultyId,
+                        SubjectId = SelectedSubjectId,
+                        RoomId = selectedRoomId,
+                        TimeSlot = formattedTimeSlot,
+                        AssignedUnits = assignedUnits,
+                        OfferCode = SelectedOfferCode,
+                        AcademicYear = SelectedAcademicYear,
+                        Semester = SelectedSemester
+                    });
+                }
+            }
+            else
+            {
+                if (EndTime <= StartTime)
+                {
+                    TempData["ErrorMessage"] = "Invalid time range.";
+                    LoadPageData();
+                    return Page();
+                }
+
+                // --- DUPLICATE / CONFLICT VALIDATION ---
+                var conflictMessage = GetScheduleConflictMessage(
+                    SelectedFacultyId,
+                    SelectedSubjectId,
+                    selectedRoomId,
+                    SelectedDays,
+                    StartTime,
+                    EndTime,
+                    SelectedAcademicYear,
+                    SelectedSemester
+                );
+
+                if (conflictMessage != null)
+                {
+                    TempData["ErrorMessage"] = conflictMessage;
+                    LoadPageData();
+                    return Page();
+                }
+
+                string joinedDays = string.Join(", ", SelectedDays);
+
+                string formattedTimeSlot =
+                    $"{joinedDays} " +
+                    $"{DateTime.Today.Add(StartTime):h:mm tt} - " +
+                    $"{DateTime.Today.Add(EndTime):h:mm tt}";
+
+                newSchedulesToSave.Add(new Schedule
+                {
+                    FacultyId = SelectedFacultyId,
+                    SubjectId = SelectedSubjectId,
+                    RoomId = selectedRoomId,
+                    TimeSlot = formattedTimeSlot,
+                    AssignedUnits = officialSubjectUnits,
+                    OfferCode = SelectedOfferCode,
+                    AcademicYear = SelectedAcademicYear,
+                    Semester = SelectedSemester
+                });
             }
 
-            string joinedDays = string.Join(", ", SelectedDays);
-
-            string formattedTimeSlot =
-                $"{joinedDays} " +
-                $"{DateTime.Today.Add(StartTime):h:mm tt} - " +
-                $"{DateTime.Today.Add(EndTime):h:mm tt}";
-
-            var newSchedule = new Schedule
+            foreach (var s in newSchedulesToSave)
             {
-                FacultyId = SelectedFacultyId,
-                SubjectId = SelectedSubjectId,
-                RoomId = selectedRoomId,
-                TimeSlot = formattedTimeSlot,
-                AssignedUnits = officialSubjectUnits,
-                OfferCode = SelectedOfferCode,
-                AcademicYear = SelectedAcademicYear,
-                Semester = SelectedSemester
-            };
-
-            _context.Schedules.Add(newSchedule);
+                _context.Schedules.Add(s);
+            }
             _context.SaveChanges();
 
             TempData["SuccessMessage"] = "Schedule successfully assigned!";
@@ -367,12 +440,6 @@ namespace FTLSV2.Pages.Chairman
             if (EditDays == null || EditDays.Count == 0)
             {
                 TempData["ErrorMessage"] = "You must select at least one day.";
-                return RedirectToPage();
-            }
-
-            if (EditEndTime <= EditStartTime)
-            {
-                TempData["ErrorMessage"] = "Invalid time range.";
                 return RedirectToPage();
             }
 
@@ -407,36 +474,124 @@ namespace FTLSV2.Pages.Chairman
             int? editRoomId =
                 EditRoomId > 0 ? EditRoomId : null;
 
-            // --- DUPLICATE / CONFLICT VALIDATION ---
-            var conflictMessage = GetScheduleConflictMessage(
-                EditFacultyId,
-                EditSubjectId,
-                editRoomId,
-                EditDays,
-                EditStartTime,
-                EditEndTime,
-                EditAcademicYear,
-                EditSemester,
-                EditScheduleId
-            );
+            var newSchedulesToInsert = new List<Schedule>();
 
-            if (conflictMessage != null)
+            if (EditScheduleTimeMode == "custom")
             {
-                TempData["ErrorMessage"] = conflictMessage;
-                return RedirectToPage();
+                bool isFirstDay = true;
+                foreach (var day in EditDays)
+                {
+                    if (!EditDayStartTimes.TryGetValue(day, out var startStr) || !EditDayEndTimes.TryGetValue(day, out var endStr) ||
+                        !TimeSpan.TryParse(startStr, out TimeSpan start) || !TimeSpan.TryParse(endStr, out TimeSpan end))
+                    {
+                        TempData["ErrorMessage"] = $"Invalid time range for {day}.";
+                        return RedirectToPage();
+                    }
+
+                    if (end <= start)
+                    {
+                        TempData["ErrorMessage"] = $"Invalid time range for {day}.";
+                        return RedirectToPage();
+                    }
+
+                    // --- DUPLICATE / CONFLICT VALIDATION ---
+                    var conflictMessage = GetScheduleConflictMessage(
+                        EditFacultyId,
+                        EditSubjectId,
+                        editRoomId,
+                        new List<string> { day },
+                        start,
+                        end,
+                        EditAcademicYear,
+                        EditSemester,
+                        isFirstDay ? EditScheduleId : null
+                    );
+
+                    if (conflictMessage != null)
+                    {
+                        TempData["ErrorMessage"] = conflictMessage;
+                        return RedirectToPage();
+                    }
+
+                    string formattedTimeSlot =
+                        $"{day} " +
+                        $"{DateTime.Today.Add(start):h:mm tt} - " +
+                        $"{DateTime.Today.Add(end):h:mm tt}";
+
+                    int assignedUnits = isFirstDay ? officialSubjectUnits : 0;
+
+                    if (isFirstDay)
+                    {
+                        schedule.FacultyId = EditFacultyId;
+                        schedule.SubjectId = EditSubjectId;
+                        schedule.RoomId = editRoomId;
+                        schedule.AssignedUnits = assignedUnits;
+                        schedule.TimeSlot = formattedTimeSlot;
+                        schedule.OfferCode = EditOfferCode;
+                        schedule.AcademicYear = EditAcademicYear;
+                        schedule.Semester = EditSemester;
+                        isFirstDay = false;
+                    }
+                    else
+                    {
+                        newSchedulesToInsert.Add(new Schedule
+                        {
+                            FacultyId = EditFacultyId,
+                            SubjectId = EditSubjectId,
+                            RoomId = editRoomId,
+                            TimeSlot = formattedTimeSlot,
+                            AssignedUnits = assignedUnits,
+                            OfferCode = EditOfferCode,
+                            AcademicYear = EditAcademicYear,
+                            Semester = EditSemester
+                        });
+                    }
+                }
+            }
+            else
+            {
+                if (EditEndTime <= EditStartTime)
+                {
+                    TempData["ErrorMessage"] = "Invalid time range.";
+                    return RedirectToPage();
+                }
+
+                // --- DUPLICATE / CONFLICT VALIDATION ---
+                var conflictMessage = GetScheduleConflictMessage(
+                    EditFacultyId,
+                    EditSubjectId,
+                    editRoomId,
+                    EditDays,
+                    EditStartTime,
+                    EditEndTime,
+                    EditAcademicYear,
+                    EditSemester,
+                    EditScheduleId
+                );
+
+                if (conflictMessage != null)
+                {
+                    TempData["ErrorMessage"] = conflictMessage;
+                    return RedirectToPage();
+                }
+
+                schedule.FacultyId = EditFacultyId;
+                schedule.SubjectId = EditSubjectId;
+                schedule.RoomId = editRoomId;
+                schedule.AssignedUnits = officialSubjectUnits;
+
+                string joinedEditDays = string.Join(", ", EditDays);
+                schedule.TimeSlot = $"{joinedEditDays} {DateTime.Today.Add(EditStartTime):h:mm tt} - {DateTime.Today.Add(EditEndTime):h:mm tt}";
+
+                schedule.OfferCode = EditOfferCode;
+                schedule.AcademicYear = EditAcademicYear;
+                schedule.Semester = EditSemester;
             }
 
-            schedule.FacultyId = EditFacultyId;
-            schedule.SubjectId = EditSubjectId;
-            schedule.RoomId = editRoomId;
-            schedule.AssignedUnits = officialSubjectUnits;
-
-            string joinedEditDays = string.Join(", ", EditDays);
-            schedule.TimeSlot = $"{joinedEditDays} {DateTime.Today.Add(EditStartTime):h:mm tt} - {DateTime.Today.Add(EditEndTime):h:mm tt}";
-
-            schedule.OfferCode = EditOfferCode;
-            schedule.AcademicYear = EditAcademicYear;
-            schedule.Semester = EditSemester;
+            foreach (var newSched in newSchedulesToInsert)
+            {
+                _context.Schedules.Add(newSched);
+            }
 
             _context.SaveChanges();
             TempData["SuccessMessage"] = "Schedule successfully updated!";
