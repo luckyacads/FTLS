@@ -1038,32 +1038,32 @@
 
                         <div class="schedule-day-picker" id="daysCheckboxGroup">
                             <label class="schedule-day-chip">
-                                <input type="checkbox" name="SelectedDays" value="M" data-schedule-day="M" />
+                                <input type="checkbox" name="SelectedDays" value="M" data-schedule-day="M" @(Model.SelectedDays?.Contains("M") == true ? "checked" : "") />
                                 <span>M</span>
                             </label>
 
                             <label class="schedule-day-chip">
-                                <input type="checkbox" name="SelectedDays" value="T" data-schedule-day="T" />
+                                <input type="checkbox" name="SelectedDays" value="T" data-schedule-day="T" @(Model.SelectedDays?.Contains("T") == true ? "checked" : "") />
                                 <span>T</span>
                             </label>
 
                             <label class="schedule-day-chip">
-                                <input type="checkbox" name="SelectedDays" value="W" data-schedule-day="W" />
+                                <input type="checkbox" name="SelectedDays" value="W" data-schedule-day="W" @(Model.SelectedDays?.Contains("W") == true ? "checked" : "") />
                                 <span>W</span>
                             </label>
 
                             <label class="schedule-day-chip">
-                                <input type="checkbox" name="SelectedDays" value="Th" data-schedule-day="Th" />
+                                <input type="checkbox" name="SelectedDays" value="Th" data-schedule-day="Th" @(Model.SelectedDays?.Contains("Th") == true ? "checked" : "") />
                                 <span>Th</span>
                             </label>
 
                             <label class="schedule-day-chip">
-                                <input type="checkbox" name="SelectedDays" value="F" data-schedule-day="F" />
+                                <input type="checkbox" name="SelectedDays" value="F" data-schedule-day="F" @(Model.SelectedDays?.Contains("F") == true ? "checked" : "") />
                                 <span>F</span>
                             </label>
 
                             <label class="schedule-day-chip">
-                                <input type="checkbox" name="SelectedDays" value="S" data-schedule-day="S" />
+                                <input type="checkbox" name="SelectedDays" value="S" data-schedule-day="S" @(Model.SelectedDays?.Contains("S") == true ? "checked" : "") />
                                 <span>S</span>
                             </label>
                         </div>
@@ -1075,12 +1075,14 @@
 
                             <div class="common-time-inputs">
                                 <input type="time"
+                                       asp-for="StartTime"
                                        id="commonStartTime"
                                        title="Start Time" />
 
                                 <span class="time-separator">TO</span>
 
                                 <input type="time"
+                                       asp-for="EndTime"
                                        id="commonEndTime"
                                        title="End Time" />
                             </div>
