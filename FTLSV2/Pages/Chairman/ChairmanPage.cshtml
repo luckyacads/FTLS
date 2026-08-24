@@ -52,36 +52,6 @@
         transition: opacity 0.5s ease-out;
     }
 
-    .preset-time-slots {
-        margin-top: 10px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-    }
-
-    .btn-preset-slot {
-        background: #ffffff;
-        border: 1px solid #cbd5e1;
-        color: #334155;
-        padding: 5px 10px;
-        font-size: 11px;
-        font-weight: 600;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.15s ease-in-out;
-        user-select: none;
-    }
-
-    .btn-preset-slot:hover {
-        background: #f1f5f9;
-        border-color: #94a3b8;
-        color: #0f766e;
-    }
-
-    .btn-preset-slot:active {
-        background: #e2e8f0;
-    }
-
     .btn-edit {
         padding: 7px 12px;
         border: 1px solid #dcdcdc;
@@ -1144,15 +1114,6 @@
                                     }
                                 </select>
                             </div>
-
-                            <div class="preset-time-slots">
-                                <button type="button" class="btn-preset-slot" onclick="setCommonTimePreset('07:30', '09:00')">07:30 AM - 09:00 AM</button>
-                                <button type="button" class="btn-preset-slot" onclick="setCommonTimePreset('09:00', '10:30')">09:00 AM - 10:30 AM</button>
-                                <button type="button" class="btn-preset-slot" onclick="setCommonTimePreset('10:30', '12:00')">10:30 AM - 12:00 PM</button>
-                                <button type="button" class="btn-preset-slot" onclick="setCommonTimePreset('13:30', '15:00')">01:30 PM - 03:00 PM</button>
-                                <button type="button" class="btn-preset-slot" onclick="setCommonTimePreset('15:00', '16:30')">03:00 PM - 04:30 PM</button>
-                                <button type="button" class="btn-preset-slot" onclick="setCommonTimePreset('16:30', '18:00')">04:30 PM - 06:00 PM</button>
-                            </div>
                         </div>
 
                         <div id="customTimePanel" class="schedule-mode-panel is-hidden">
@@ -1558,15 +1519,6 @@
                                 }
                             </select>
                         </div>
-
-                        <div class="preset-time-slots">
-                            <button type="button" class="btn-preset-slot" onclick="setEditTimePreset('07:30', '09:00')">07:30 AM - 09:00 AM</button>
-                            <button type="button" class="btn-preset-slot" onclick="setEditTimePreset('09:00', '10:30')">09:00 AM - 10:30 AM</button>
-                            <button type="button" class="btn-preset-slot" onclick="setEditTimePreset('10:30', '12:00')">10:30 AM - 12:00 PM</button>
-                            <button type="button" class="btn-preset-slot" onclick="setEditTimePreset('13:30', '15:00')">01:30 PM - 03:00 PM</button>
-                            <button type="button" class="btn-preset-slot" onclick="setEditTimePreset('15:00', '16:30')">03:00 PM - 04:30 PM</button>
-                            <button type="button" class="btn-preset-slot" onclick="setEditTimePreset('16:30', '18:00')">04:30 PM - 06:00 PM</button>
-                        </div>
                     </div>
 
                     <!-- CUSTOM TIME MODE -->
@@ -1811,43 +1763,7 @@
         });
     }
 
-    function setCommonTimePreset(start, end) {
-        const startInput = document.getElementById("commonStartTime");
-        const endInput = document.getElementById("commonEndTime");
-        if (startInput) {
-            startInput.value = start;
-            startInput.dispatchEvent(new Event('change'));
-        }
-        if (endInput) {
-            endInput.value = end;
-            endInput.dispatchEvent(new Event('change'));
-        }
-        if (typeof syncCommonTimeToSelectedDays === "function") {
-            syncCommonTimeToSelectedDays();
-        }
-        if (typeof updateAvailableRoomsForFlexibleSchedule === "function") {
-            updateAvailableRoomsForFlexibleSchedule();
-        }
-    }
 
-    function setEditTimePreset(start, end) {
-        const startInput = document.getElementById("editStartTime");
-        const endInput = document.getElementById("editEndTime");
-        if (startInput) {
-            startInput.value = start;
-            startInput.dispatchEvent(new Event('change'));
-        }
-        if (endInput) {
-            endInput.value = end;
-            endInput.dispatchEvent(new Event('change'));
-        }
-        if (typeof syncEditCommonTimeToSelectedDays === "function") {
-            syncEditCommonTimeToSelectedDays();
-        }
-        if (typeof updateAvailableRoomsForEditSchedule === "function") {
-            updateAvailableRoomsForEditSchedule();
-        }
-    }
 
     function initializeFlexibleScheduleUi() {
         const modeRadios =
