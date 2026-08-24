@@ -371,6 +371,36 @@
         display: none;
     }
 
+    .table-scrollable-container th {
+        position: sticky;
+        top: 0;
+        background: #f8fafc;
+        z-index: 5;
+        box-shadow: inset 0 -1px 0 #cbd5e1;
+    }
+
+    .faculty-accordion-header:hover {
+        background: #cbd5e1 !important;
+    }
+
+    .loads-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .loads-table th {
+        padding: 10px 12px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #334155;
+    }
+
+    .loads-table td {
+        padding: 10px 12px;
+        font-size: 13px;
+        vertical-align: middle;
+    }
+
     .schedule-mode-panel-title {
         display: block;
         margin-bottom: 8px;
@@ -1202,90 +1232,184 @@
     </div>
 
     <div class="chairman-card" style="margin-top: 20px; width: 100%; background: #fdfdfd;" id="printableArea">
-        <div class="schedule-header-area">
+        <div class="schedule-header-area" style="margin-bottom: 15px;">
             <h3 style="margin: 0; font-size: 20px; color: #111827;">Assigned Teaching Loads</h3>
             <button type="button" class="btn-cancel" onclick="openModal('facultyLoadModal')">
                  View Faculty Load Profiles
             </button>
         </div>
 
-        <div class="class-list-container" id="scheduleListContainer">
-            @if (Model.CurrentSchedules != null && Model.CurrentSchedules.Any())
-            {
-                @foreach (var load in Model.CurrentSchedules)
+        @if (Model.CurrentSchedules != null && Model.CurrentSchedules.Any())
+        {
+            <!-- Search & Filters Toolbar -->
+            <div class="loads-filter-toolbar" style="margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                <div style="grid-column: 1 / -1;">
+                    <input type="text" id="loadsSearchInput" placeholder="🔍 Search instructor, course code, offer code, room..." style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;" onkeyup="filterTeachingLoads()" />
+                </div>
+                
+                <div>
+                    <label style="font-size: 11px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Faculty Member</label>
+                    <select id="filterFaculty" onchange="filterTeachingLoads()" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #ffffff;">
+                        <option value="">All Faculty</option>
+                        @foreach (var name in Model.CurrentSchedules.Select(s => s.FacultyName).Distinct().OrderBy(n => n))
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                </div>
+
+                <div>
+                    <label style="font-size: 11px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Day Filter</label>
+                    <select id="filterDay" onchange="filterTeachingLoads()" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #ffffff;">
+                        <option value="">All Days</option>
+                        <option value="M">Monday (M)</option>
+                        <option value="T">Tuesday (T)</option>
+                        <option value="W">Wednesday (W)</option>
+                        <option value="Th">Thursday (Th)</option>
+                        <option value="F">Friday (F)</option>
+                        <option value="S">Saturday (S)</option>
+                        <option value="MWF">MWF Group</option>
+                        <option value="TTh">TTh Group</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label style="font-size: 11px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Room</label>
+                    <select id="filterRoom" onchange="filterTeachingLoads()" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #ffffff;">
+                        <option value="">All Rooms</option>
+                        @foreach (var room in Model.CurrentSchedules.Select(s => s.RoomName).Where(r => !string.IsNullOrEmpty(r)).Distinct().OrderBy(r => r))
+                        {
+                            <option value="@room">@room</option>
+                        }
+                    </select>
+                </div>
+
+                <div>
+                    <label style="font-size: 11px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Semester</label>
+                    <select id="filterSemester" onchange="filterTeachingLoads()" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #ffffff;">
+                        <option value="">All Semesters</option>
+                        @foreach (var sem in Model.CurrentSchedules.Select(s => s.Semester).Where(s => !string.IsNullOrEmpty(s)).Distinct().OrderBy(s => s))
+                        {
+                            <option value="@sem">@sem</option>
+                        }
+                    </select>
+                </div>
+
+                <div>
+                    <label style="font-size: 11px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Academic Year</label>
+                    <select id="filterYear" onchange="filterTeachingLoads()" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #ffffff;">
+                        <option value="">All Years</option>
+                        @foreach (var yr in Model.CurrentSchedules.Select(s => s.AcademicYear).Where(y => !string.IsNullOrEmpty(y)).Distinct().OrderBy(y => y))
+                        {
+                            <option value="@yr">@yr</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <!-- Grouped Faculty Accordion List -->
+            <div class="faculty-groups-container" id="facultyGroupsContainer">
+                @foreach (var group in Model.CurrentSchedules.GroupBy(s => s.FacultyName).OrderBy(g => g.Key))
                 {
-                    var scheduleParts = SplitScheduleForDisplay(load.Schedule);
+                    var facultyName = group.Key;
+                    var facultyLoads = group.ToList();
 
-                    <div class="class-list-item">
-                        <div class="class-time">
-                            <div class="class-days">@scheduleParts.Days</div>
-
-                            @if (!string.IsNullOrWhiteSpace(scheduleParts.Time))
-                            {
-                                <div class="class-hours">@scheduleParts.Time</div>
-                            }
+                    <div class="faculty-accordion-group" data-faculty-name="@facultyName" style="margin-bottom: 10px;">
+                        <div class="faculty-accordion-header" onclick="toggleFacultyAccordion(this)" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; user-select: none; transition: background 0.15s ease;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span class="accordion-arrow" style="font-size: 12px; display: inline-block; transition: transform 0.2s ease;">▶</span>
+                                <strong style="color: #0f766e; font-size: 15px;">@facultyName</strong>
+                            </div>
+                            <span class="load-badge" data-count="@facultyLoads.Count" style="background: #e2e8f0; color: #475569; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 700;">
+                                @facultyLoads.Count load@(facultyLoads.Count > 1 ? "s" : "")
+                            </span>
                         </div>
 
-                        <div class="class-info">
-                            <div class="class-code" style="display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
-                                @load.CourseCode
-
-                                <span style="font-weight: normal; color: #6b7280; font-size: 12px;">
-                                    (Offer: @(load.OfferCode ?? 0))
-                                </span>
-
-                                <span style="background: #e1f5ee; color: #0f6e56; padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase; margin-left: 6px; letter-spacing: 0.5px;">
-                                    Assigned
-                                </span>
-                            </div>
-
-                            <div class="class-title">
-                                @load.FacultyName • @load.Semester (@load.AcademicYear)
-                            </div>
-                        </div>
-
-                        <div class="class-meta">
-                            <div class="class-room">@load.RoomName</div>
-
-                            <div style="display: flex; gap: 8px;">
-                                <button type="button"
-                                        class="btn-edit"
-                                        onclick='openEditScheduleModal(
-                                            @load.ScheduleId,
-                                            @load.FacultyId,
-                                            @load.SubjectId,
-                                            @(load.RoomId ?? 0),
-                                            @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.Schedule ?? "")),
-                                            @(load.OfferCode ?? 0),
-                                            @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.AcademicYear ?? "")),
-                                            @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.Semester ?? ""))
-                                        )'>
-                                    Edit
-                                </button>
-
-                                <button type="button"
-                                        class="btn-delete"
-                                        onclick='openDeleteScheduleModal(
-                                            @load.ScheduleId,
-                                            @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.CourseCode ?? "this course"))
-                                        )'>
-                                    Delete
-                                </button>
+                        <div class="faculty-accordion-body" style="display: none; margin-top: 4px; padding: 5px 0;">
+                            <div class="table-scrollable-container" style="max-height: 380px; overflow-y: auto; border: 1px solid #cbd5e1; border-radius: 6px; background: #ffffff;">
+                                <table class="loads-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+                                    <thead>
+                                        <tr style="position: sticky; top: 0; background: #f8fafc; border-bottom: 2px solid #cbd5e1; z-index: 5;">
+                                            <th style="padding: 10px 12px; font-size: 13px; font-weight: 700; color: #334155; background: #f8fafc;">Day / Time</th>
+                                            <th style="padding: 10px 12px; font-size: 13px; font-weight: 700; color: #334155; background: #f8fafc;">Course</th>
+                                            <th style="padding: 10px 12px; font-size: 13px; font-weight: 700; color: #334155; width: 100px; background: #f8fafc;">Offer Code</th>
+                                            <th style="padding: 10px 12px; font-size: 13px; font-weight: 700; color: #334155; background: #f8fafc;">Room</th>
+                                            <th style="padding: 10px 12px; font-size: 13px; font-weight: 700; color: #334155; background: #f8fafc;">Sem / A.Y.</th>
+                                            <th style="padding: 10px 12px; font-size: 13px; font-weight: 700; color: #334155; text-align: center; width: 140px; background: #f8fafc;">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var load in facultyLoads)
+                                        {
+                                            var scheduleParts = SplitScheduleForDisplay(load.Schedule);
+                                            <tr class="load-row" 
+                                                data-faculty="@load.FacultyName" 
+                                                data-days="@scheduleParts.Days" 
+                                                data-room="@load.RoomName" 
+                                                data-sem="@load.Semester" 
+                                                data-year="@load.AcademicYear" 
+                                                data-searchable="@load.CourseCode @load.OfferCode @load.RoomName @load.FacultyName" 
+                                                style="border-bottom: 1px solid #e2e8f0; background: #ffffff;">
+                                                <td style="padding: 10px 12px; font-size: 13px;">
+                                                    <div style="font-weight: 600; color: #07362d;">@scheduleParts.Days</div>
+                                                    <div style="font-size: 11px; color: #64748b;">@scheduleParts.Time</div>
+                                                </td>
+                                                <td style="padding: 10px 12px; font-size: 13px;">
+                                                    <div style="font-weight: 600; color: #0f766e;">@load.CourseCode</div>
+                                                    <span style="font-size: 10px; background: #e1f5ee; color: #0f6e56; padding: 2px 6px; border-radius: 4px; font-weight: 700; display: inline-block; margin-top: 2px;">Assigned</span>
+                                                </td>
+                                                <td style="padding: 10px 12px; font-size: 13px; font-weight: 600; color: #475569;">
+                                                    @(load.OfferCode ?? 0)
+                                                </td>
+                                                <td style="padding: 10px 12px; font-size: 13px; font-weight: 600; color: #07362d;">
+                                                    @load.RoomName
+                                                </td>
+                                                <td style="padding: 10px 12px; font-size: 12px; color: #475569;">
+                                                    <div>@load.Semester</div>
+                                                    <div style="font-size: 10px; color: #64748b;">A.Y. @load.AcademicYear</div>
+                                                </td>
+                                                <td style="padding: 10px 12px; text-align: center;">
+                                                    <div style="display: flex; gap: 6px; justify-content: center;">
+                                                        <button type="button" 
+                                                                class="btn-edit" 
+                                                                onclick='openEditScheduleModal(
+                                                                    @load.ScheduleId, 
+                                                                    @load.FacultyId, 
+                                                                    @load.SubjectId, 
+                                                                    @(load.RoomId ?? 0), 
+                                                                    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.Schedule ?? "")), 
+                                                                    @(load.OfferCode ?? 0), 
+                                                                    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.AcademicYear ?? "")), 
+                                                                    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.Semester ?? ""))
+                                                                )'>Edit</button>
+                                                        <button type="button" 
+                                                                class="btn-delete" 
+                                                                onclick='openDeleteScheduleModal(
+                                                                    @load.ScheduleId, 
+                                                                    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(load.CourseCode ?? "this course"))
+                                                                )'>Delete</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
                 }
-            }
-            else
-            {
-                <div id="noClassesMessage"
-                     style="text-align: center; padding: 60px 20px; color: #6b7280; background: #f9fafb; border-radius: 12px; border: 1px dashed #d1d5db; margin-top: 10px;">
-                    <p style="margin: 0; font-size: 15px; font-weight: 500;">
-                        No schedules assigned yet.
-                    </p>
-                </div>
-            }
-        </div>
+            </div>
+
+            <div id="noMatchingLoadsMessage" style="display: none; text-align: center; padding: 40px 20px; color: #6b7280; background: #f9fafb; border-radius: 8px; border: 1px dashed #cbd5e1; margin-top: 10px;">
+                <p style="margin: 0; font-size: 14px; font-weight: 500;">No matching teaching loads found.</p>
+            </div>
+        }
+        else
+        {
+            <div id="noClassesMessage" style="text-align: center; padding: 60px 20px; color: #6b7280; background: #f9fafb; border-radius: 12px; border: 1px dashed #d1d5db; margin-top: 10px;">
+                <p style="margin: 0; font-size: 15px; font-weight: 500;">No schedules assigned yet.</p>
+            </div>
+        }
     </div>
 </div>
 
@@ -1671,6 +1795,102 @@
         const hours = parseInt(parts[0], 10) || 0;
         const minutes = parseInt(parts[1], 10) || 0;
         return hours * 60 + minutes;
+    }
+
+    function toggleFacultyAccordion(header) {
+        const body = header.nextElementSibling;
+        const arrow = header.querySelector(".accordion-arrow");
+        const isOpen = body.style.display === "block";
+
+        if (isOpen) {
+            body.style.display = "none";
+            header.style.background = "#f1f5f9";
+            if (arrow) arrow.style.transform = "rotate(0deg)";
+        } else {
+            body.style.display = "block";
+            header.style.background = "#e2e8f0";
+            if (arrow) arrow.style.transform = "rotate(90deg)";
+        }
+    }
+
+    function filterTeachingLoads() {
+        const searchQuery = document.getElementById("loadsSearchInput").value.toLowerCase().trim();
+        const filterFaculty = document.getElementById("filterFaculty").value;
+        const filterDay = document.getElementById("filterDay").value;
+        const filterRoom = document.getElementById("filterRoom").value;
+        const filterSemester = document.getElementById("filterSemester").value;
+        const filterYear = document.getElementById("filterYear").value;
+
+        const groups = document.querySelectorAll(".faculty-accordion-group");
+        let totalVisibleLoads = 0;
+
+        groups.forEach(group => {
+            const rows = group.querySelectorAll(".load-row");
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const searchableText = row.dataset.searchable.toLowerCase();
+                const faculty = row.dataset.faculty;
+                const days = row.dataset.days;
+                const room = row.dataset.room;
+                const sem = row.dataset.sem;
+                const year = row.dataset.year;
+
+                // Match Search Query
+                const matchesSearch = !searchQuery || searchableText.includes(searchQuery);
+
+                // Match Faculty
+                const matchesFaculty = !filterFaculty || faculty === filterFaculty;
+
+                // Match Day
+                let matchesDay = true;
+                if (filterDay) {
+                    if (filterDay === "MWF") {
+                        matchesDay = days.includes("M") || days.includes("W") || days.includes("F");
+                    } else if (filterDay === "TTh") {
+                        matchesDay = days.includes("T") || days.includes("Th");
+                    } else {
+                        matchesDay = days.includes(filterDay);
+                    }
+                }
+
+                // Match Room
+                const matchesRoom = !filterRoom || room === filterRoom;
+
+                // Match Semester
+                const matchesSemester = !filterSemester || sem === filterSemester;
+
+                // Match Academic Year
+                const matchesYear = !filterYear || year === filterYear;
+
+                if (matchesSearch && matchesFaculty && matchesDay && matchesRoom && matchesSemester && matchesYear) {
+                    row.style.display = "";
+                    visibleCount++;
+                } else {
+                    row.style.display = "none";
+                }
+            });
+
+            // Update badge text
+            const badge = group.querySelector(".load-badge");
+            if (badge) {
+                badge.textContent = visibleCount + (visibleCount === 1 ? " load" : " loads");
+            }
+
+            // Show group if it has visible rows, otherwise hide it
+            if (visibleCount > 0) {
+                group.style.display = "";
+                totalVisibleLoads += visibleCount;
+            } else {
+                group.style.display = "none";
+            }
+        });
+
+        // Show/hide no matching loads message
+        const noMatchMsg = document.getElementById("noMatchingLoadsMessage");
+        if (noMatchMsg) {
+            noMatchMsg.style.display = totalVisibleLoads === 0 ? "block" : "none";
+        }
     }
 
     document.addEventListener("DOMContentLoaded", function () {
