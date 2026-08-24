@@ -112,6 +112,7 @@ namespace FTLSV2.Pages
 
             if (dbUser.Role == "Chairman")
             {
+                HttpContext.Session.SetString("ShowFacultyLoadPopup", "true");
                 return RedirectToPage("/Chairman/ChairmanPage");
             }
 

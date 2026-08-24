@@ -84,7 +84,15 @@ namespace FTLSV2.Pages.Chairman
 
             LoadPageData();
 
-            ShowFacultyLoadPopup = true;
+            if (HttpContext.Session.GetString("ShowFacultyLoadPopup") == "true")
+            {
+                ShowFacultyLoadPopup = true;
+                HttpContext.Session.Remove("ShowFacultyLoadPopup");
+            }
+            else
+            {
+                ShowFacultyLoadPopup = false;
+            }
 
             return Page();
         }
