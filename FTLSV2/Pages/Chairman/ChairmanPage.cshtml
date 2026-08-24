@@ -4,6 +4,14 @@
 @{
     Layout = "_ChairmanLayout";
     ViewData["Title"] = "Scheduler";
+
+    var timeOptions = new List<(string Value, string Text)>();
+    var baseTime = new DateTime(2020, 1, 1, 7, 0, 0); // Start at 7:00 AM
+    for (int i = 0; i <= 30; i++) // Up to 10:00 PM (15 hours)
+    {
+        var time = baseTime.AddMinutes(i * 30);
+        timeOptions.Add((time.ToString("HH:mm"), time.ToString("hh:mm tt")));
+    }
 }
 
 @functions {
@@ -42,6 +50,36 @@
 <style>
     .alert-message {
         transition: opacity 0.5s ease-out;
+    }
+
+    .preset-time-slots {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .btn-preset-slot {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: #334155;
+        padding: 5px 10px;
+        font-size: 11px;
+        font-weight: 600;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.15s ease-in-out;
+        user-select: none;
+    }
+
+    .btn-preset-slot:hover {
+        background: #f1f5f9;
+        border-color: #94a3b8;
+        color: #0f766e;
+    }
+
+    .btn-preset-slot:active {
+        background: #e2e8f0;
     }
 
     .btn-edit {
@@ -381,11 +419,13 @@
     }
 
     .common-time-inputs input[type="time"],
-    .day-time-inputs input[type="time"] {
+    .day-time-inputs input[type="time"],
+    .common-time-inputs select,
+    .day-time-inputs select {
         width: 100%;
         min-width: 0;
         height: 42px;
-        padding: 7px 10px;
+        padding: 7px 24px 7px 10px;
         box-sizing: border-box;
         background: #ffffff;
         border: 1px solid #d1d5db;
@@ -393,16 +433,25 @@
         color: #111827;
         font-size: 13px;
         font-weight: 600;
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml;utf8,<svg fill='%23374151' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        background-size: 18px;
     }
 
     .common-time-inputs input[type="time"]:focus,
-    .day-time-inputs input[type="time"]:not(:disabled):focus {
+    .day-time-inputs input[type="time"]:not(:disabled):focus,
+    .common-time-inputs select:focus,
+    .day-time-inputs select:not(:disabled):focus {
         outline: none;
         border-color: #07362d;
         box-shadow: 0 0 0 2px rgba(7, 54, 45, 0.10);
     }
 
-    .day-time-inputs input[type="time"]:disabled {
+    .day-time-inputs input[type="time"]:disabled,
+    .day-time-inputs select:disabled {
         background: #e5e7eb;
         color: #9ca3af;
         cursor: not-allowed;
@@ -851,7 +900,8 @@
             gap: 7px;
         }
 
-        #editScheduleModal .common-time-inputs input[type="time"] {
+        #editScheduleModal .common-time-inputs input[type="time"],
+        #editScheduleModal .common-time-inputs select {
             width: 100%;
             min-width: 0;
             height: 42px;
@@ -1074,17 +1124,34 @@
                             </span>
 
                             <div class="common-time-inputs">
-                                <input type="time"
-                                       asp-for="StartTime"
-                                       id="commonStartTime"
-                                       title="Start Time" />
+                                <select asp-for="StartTime"
+                                        id="commonStartTime"
+                                        title="Start Time">
+                                    @foreach (var opt in timeOptions)
+                                    {
+                                        <option value="@opt.Value">@opt.Text</option>
+                                    }
+                                </select>
 
                                 <span class="time-separator">TO</span>
 
-                                <input type="time"
-                                       asp-for="EndTime"
-                                       id="commonEndTime"
-                                       title="End Time" />
+                                <select asp-for="EndTime"
+                                        id="commonEndTime"
+                                        title="End Time">
+                                    @foreach (var opt in timeOptions)
+                                    {
+                                        <option value="@opt.Value">@opt.Text</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="preset-time-slots">
+                                <button type="button" class="btn-preset-slot" onclick="setCommonTimePreset('07:30', '09:00')">07:30 AM - 09:00 AM</button>
+                                <button type="button" class="btn-preset-slot" onclick="setCommonTimePreset('09:00', '10:30')">09:00 AM - 10:30 AM</button>
+                                <button type="button" class="btn-preset-slot" onclick="setCommonTimePreset('10:30', '12:00')">10:30 AM - 12:00 PM</button>
+                                <button type="button" class="btn-preset-slot" onclick="setCommonTimePreset('13:30', '15:00')">01:30 PM - 03:00 PM</button>
+                                <button type="button" class="btn-preset-slot" onclick="setCommonTimePreset('15:00', '16:30')">03:00 PM - 04:30 PM</button>
+                                <button type="button" class="btn-preset-slot" onclick="setCommonTimePreset('16:30', '18:00')">04:30 PM - 06:00 PM</button>
                             </div>
                         </div>
 
@@ -1092,61 +1159,28 @@
                             <span class="schedule-mode-panel-title">
                                 Individual time for each selected day
                             </span>
-
                             <div class="custom-day-grid">
-                                <div class="day-schedule-row" data-flex-row="M">
-                                    <div class="day-schedule-label">M</div>
-                                    <div class="day-time-inputs">
-                                        <input type="time" name="DayStartTimes[M]" data-day-start="M" disabled />
-                                        <span class="time-separator">TO</span>
-                                        <input type="time" name="DayEndTimes[M]" data-day-end="M" disabled />
+                                @foreach (var day in new[] { "M", "T", "W", "Th", "F", "S" })
+                                {
+                                    <div class="day-schedule-row" data-flex-row="@day">
+                                        <div class="day-schedule-label">@day</div>
+                                        <div class="day-time-inputs">
+                                            <select name="DayStartTimes[@day]" data-day-start="@day" disabled>
+                                                @foreach (var opt in timeOptions)
+                                                {
+                                                    <option value="@opt.Value" selected="@(Model.DayStartTimes?.ContainsKey(day) == true && Model.DayStartTimes[day] == opt.Value)">@opt.Text</option>
+                                                }
+                                            </select>
+                                            <span class="time-separator">TO</span>
+                                            <select name="DayEndTimes[@day]" data-day-end="@day" disabled>
+                                                @foreach (var opt in timeOptions)
+                                                {
+                                                    <option value="@opt.Value" selected="@(Model.DayEndTimes?.ContainsKey(day) == true && Model.DayEndTimes[day] == opt.Value)">@opt.Text</option>
+                                                }
+                                            </select>
+                                        </div>
                                     </div>
-                                </div>
-
-                                <div class="day-schedule-row" data-flex-row="T">
-                                    <div class="day-schedule-label">T</div>
-                                    <div class="day-time-inputs">
-                                        <input type="time" name="DayStartTimes[T]" data-day-start="T" disabled />
-                                        <span class="time-separator">TO</span>
-                                        <input type="time" name="DayEndTimes[T]" data-day-end="T" disabled />
-                                    </div>
-                                </div>
-
-                                <div class="day-schedule-row" data-flex-row="W">
-                                    <div class="day-schedule-label">W</div>
-                                    <div class="day-time-inputs">
-                                        <input type="time" name="DayStartTimes[W]" data-day-start="W" disabled />
-                                        <span class="time-separator">TO</span>
-                                        <input type="time" name="DayEndTimes[W]" data-day-end="W" disabled />
-                                    </div>
-                                </div>
-
-                                <div class="day-schedule-row" data-flex-row="Th">
-                                    <div class="day-schedule-label">Th</div>
-                                    <div class="day-time-inputs">
-                                        <input type="time" name="DayStartTimes[Th]" data-day-start="Th" disabled />
-                                        <span class="time-separator">TO</span>
-                                        <input type="time" name="DayEndTimes[Th]" data-day-end="Th" disabled />
-                                    </div>
-                                </div>
-
-                                <div class="day-schedule-row" data-flex-row="F">
-                                    <div class="day-schedule-label">F</div>
-                                    <div class="day-time-inputs">
-                                        <input type="time" name="DayStartTimes[F]" data-day-start="F" disabled />
-                                        <span class="time-separator">TO</span>
-                                        <input type="time" name="DayEndTimes[F]" data-day-end="F" disabled />
-                                    </div>
-                                </div>
-
-                                <div class="day-schedule-row" data-flex-row="S">
-                                    <div class="day-schedule-label">S</div>
-                                    <div class="day-time-inputs">
-                                        <input type="time" name="DayStartTimes[S]" data-day-start="S" disabled />
-                                        <span class="time-separator">TO</span>
-                                        <input type="time" name="DayEndTimes[S]" data-day-end="S" disabled />
-                                    </div>
-                                </div>
+                                }
                             </div>
                         </div>
                     </div>
@@ -1506,15 +1540,32 @@
                         </span>
 
                         <div class="common-time-inputs">
-                            <input asp-for="EditStartTime"
-                                   id="editStartTime"
-                                   type="time" />
+                            <select asp-for="EditStartTime"
+                                    id="editStartTime">
+                                @foreach (var opt in timeOptions)
+                                {
+                                    <option value="@opt.Value">@opt.Text</option>
+                                }
+                            </select>
 
                             <span class="time-separator">TO</span>
 
-                            <input asp-for="EditEndTime"
-                                   id="editEndTime"
-                                   type="time" />
+                            <select asp-for="EditEndTime"
+                                    id="editEndTime">
+                                @foreach (var opt in timeOptions)
+                                {
+                                    <option value="@opt.Value">@opt.Text</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="preset-time-slots">
+                            <button type="button" class="btn-preset-slot" onclick="setEditTimePreset('07:30', '09:00')">07:30 AM - 09:00 AM</button>
+                            <button type="button" class="btn-preset-slot" onclick="setEditTimePreset('09:00', '10:30')">09:00 AM - 10:30 AM</button>
+                            <button type="button" class="btn-preset-slot" onclick="setEditTimePreset('10:30', '12:00')">10:30 AM - 12:00 PM</button>
+                            <button type="button" class="btn-preset-slot" onclick="setEditTimePreset('13:30', '15:00')">01:30 PM - 03:00 PM</button>
+                            <button type="button" class="btn-preset-slot" onclick="setEditTimePreset('15:00', '16:30')">03:00 PM - 04:30 PM</button>
+                            <button type="button" class="btn-preset-slot" onclick="setEditTimePreset('16:30', '18:00')">04:30 PM - 06:00 PM</button>
                         </div>
                     </div>
 
@@ -1527,121 +1578,27 @@
                         </span>
 
                         <div class="custom-day-grid">
-
-                            <div class="day-schedule-row"
-                                 data-edit-flex-row="M">
-                                <div class="day-schedule-label">M</div>
-
-                                <div class="day-time-inputs">
-                                    <input type="time"
-                                           name="EditDayStartTimes[M]"
-                                           data-edit-day-start="M"
-                                           disabled />
-
-                                    <span class="time-separator">TO</span>
-
-                                    <input type="time"
-                                           name="EditDayEndTimes[M]"
-                                           data-edit-day-end="M"
-                                           disabled />
+                            @foreach (var day in new[] { "M", "T", "W", "Th", "F", "S" })
+                            {
+                                <div class="day-schedule-row" data-edit-flex-row="@day">
+                                    <div class="day-schedule-label">@day</div>
+                                    <div class="day-time-inputs">
+                                        <select name="EditDayStartTimes[@day]" data-edit-day-start="@day" disabled>
+                                            @foreach (var opt in timeOptions)
+                                            {
+                                                <option value="@opt.Value" selected="@(Model.EditDayStartTimes?.ContainsKey(day) == true && Model.EditDayStartTimes[day] == opt.Value)">@opt.Text</option>
+                                            }
+                                        </select>
+                                        <span class="time-separator">TO</span>
+                                        <select name="EditDayEndTimes[@day]" data-edit-day-end="@day" disabled>
+                                            @foreach (var opt in timeOptions)
+                                            {
+                                                <option value="@opt.Value" selected="@(Model.EditDayEndTimes?.ContainsKey(day) == true && Model.EditDayEndTimes[day] == opt.Value)">@opt.Text</option>
+                                            }
+                                        </select>
+                                    </div>
                                 </div>
-                            </div>
-
-                            <div class="day-schedule-row"
-                                 data-edit-flex-row="T">
-                                <div class="day-schedule-label">T</div>
-
-                                <div class="day-time-inputs">
-                                    <input type="time"
-                                           name="EditDayStartTimes[T]"
-                                           data-edit-day-start="T"
-                                           disabled />
-
-                                    <span class="time-separator">TO</span>
-
-                                    <input type="time"
-                                           name="EditDayEndTimes[T]"
-                                           data-edit-day-end="T"
-                                           disabled />
-                                </div>
-                            </div>
-
-                            <div class="day-schedule-row"
-                                 data-edit-flex-row="W">
-                                <div class="day-schedule-label">W</div>
-
-                                <div class="day-time-inputs">
-                                    <input type="time"
-                                           name="EditDayStartTimes[W]"
-                                           data-edit-day-start="W"
-                                           disabled />
-
-                                    <span class="time-separator">TO</span>
-
-                                    <input type="time"
-                                           name="EditDayEndTimes[W]"
-                                           data-edit-day-end="W"
-                                           disabled />
-                                </div>
-                            </div>
-
-                            <div class="day-schedule-row"
-                                 data-edit-flex-row="Th">
-                                <div class="day-schedule-label">Th</div>
-
-                                <div class="day-time-inputs">
-                                    <input type="time"
-                                           name="EditDayStartTimes[Th]"
-                                           data-edit-day-start="Th"
-                                           disabled />
-
-                                    <span class="time-separator">TO</span>
-
-                                    <input type="time"
-                                           name="EditDayEndTimes[Th]"
-                                           data-edit-day-end="Th"
-                                           disabled />
-                                </div>
-                            </div>
-
-                            <div class="day-schedule-row"
-                                 data-edit-flex-row="F">
-                                <div class="day-schedule-label">F</div>
-
-                                <div class="day-time-inputs">
-                                    <input type="time"
-                                           name="EditDayStartTimes[F]"
-                                           data-edit-day-start="F"
-                                           disabled />
-
-                                    <span class="time-separator">TO</span>
-
-                                    <input type="time"
-                                           name="EditDayEndTimes[F]"
-                                           data-edit-day-end="F"
-                                           disabled />
-                                </div>
-                            </div>
-
-                            <div class="day-schedule-row"
-                                 data-edit-flex-row="S">
-                                <div class="day-schedule-label">S</div>
-
-                                <div class="day-time-inputs">
-                                    <input type="time"
-                                           name="EditDayStartTimes[S]"
-                                           data-edit-day-start="S"
-                                           disabled />
-
-                                    <span class="time-separator">TO</span>
-
-                                    <input type="time"
-                                           name="EditDayEndTimes[S]"
-                                           data-edit-day-end="S"
-                                           disabled />
-                                </div>
-                            </div>
-
+                            }
                         </div>
                     </div>
                 </div>
@@ -1767,7 +1724,130 @@
         initializeFlexibleScheduleUi();
         initializeEditScheduleUi();
         initializeAlertAutoDismiss();
+        initializeDynamicTimeDropdownFiltering();
     });
+
+    function setupDynamicElementFiltering(startElement, endElement) {
+        if (!startElement || !endElement) return;
+
+        function updateEndTimeOptions() {
+            const startTimeVal = startElement.value;
+            if (!startTimeVal) return;
+
+            const [startH, startM] = startTimeVal.split(":").map(Number);
+            const startTotalMinutes = startH * 60 + startM;
+
+            const currentEndTimeVal = endElement.value;
+            let currentEndTimeValid = false;
+
+            Array.from(endElement.options).forEach(option => {
+                const optionVal = option.value;
+                const [optH, optM] = optionVal.split(":").map(Number);
+                const optTotalMinutes = optH * 60 + optM;
+
+                if (optTotalMinutes <= startTotalMinutes) {
+                    option.style.display = "none";
+                    option.disabled = true;
+                } else {
+                    option.style.display = "";
+                    option.disabled = false;
+                    if (optionVal === currentEndTimeVal) {
+                        currentEndTimeValid = true;
+                    }
+                }
+            });
+
+            if (!currentEndTimeValid) {
+                const targetEndMinutes = startTotalMinutes + 90;
+                const targetH = Math.floor(targetEndMinutes / 60);
+                const targetM = targetEndMinutes % 60;
+                const targetVal = `${String(targetH).padStart(2, '0')}:${String(targetM).padStart(2, '0')}`;
+
+                let selected = false;
+                for (let option of endElement.options) {
+                    if (option.value === targetVal && !option.disabled) {
+                        endElement.value = targetVal;
+                        selected = true;
+                        break;
+                    }
+                }
+                if (!selected) {
+                    for (let option of endElement.options) {
+                        if (!option.disabled) {
+                            endElement.value = option.value;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        updateEndTimeOptions();
+        startElement.addEventListener("change", updateEndTimeOptions);
+    }
+
+    function initializeDynamicTimeDropdownFiltering() {
+        setupDynamicElementFiltering(
+            document.getElementById("commonStartTime"),
+            document.getElementById("commonEndTime")
+        );
+
+        const days = ["M", "T", "W", "Th", "F", "S"];
+        days.forEach(day => {
+            const startSelect = document.querySelector(`select[data-day-start="${day}"]`);
+            const endSelect = document.querySelector(`select[data-day-end="${day}"]`);
+            setupDynamicElementFiltering(startSelect, endSelect);
+        });
+
+        setupDynamicElementFiltering(
+            document.getElementById("editStartTime"),
+            document.getElementById("editEndTime")
+        );
+
+        days.forEach(day => {
+            const startSelect = document.querySelector(`select[data-edit-day-start="${day}"]`);
+            const endSelect = document.querySelector(`select[data-edit-day-end="${day}"]`);
+            setupDynamicElementFiltering(startSelect, endSelect);
+        });
+    }
+
+    function setCommonTimePreset(start, end) {
+        const startInput = document.getElementById("commonStartTime");
+        const endInput = document.getElementById("commonEndTime");
+        if (startInput) {
+            startInput.value = start;
+            startInput.dispatchEvent(new Event('change'));
+        }
+        if (endInput) {
+            endInput.value = end;
+            endInput.dispatchEvent(new Event('change'));
+        }
+        if (typeof syncCommonTimeToSelectedDays === "function") {
+            syncCommonTimeToSelectedDays();
+        }
+        if (typeof updateAvailableRoomsForFlexibleSchedule === "function") {
+            updateAvailableRoomsForFlexibleSchedule();
+        }
+    }
+
+    function setEditTimePreset(start, end) {
+        const startInput = document.getElementById("editStartTime");
+        const endInput = document.getElementById("editEndTime");
+        if (startInput) {
+            startInput.value = start;
+            startInput.dispatchEvent(new Event('change'));
+        }
+        if (endInput) {
+            endInput.value = end;
+            endInput.dispatchEvent(new Event('change'));
+        }
+        if (typeof syncEditCommonTimeToSelectedDays === "function") {
+            syncEditCommonTimeToSelectedDays();
+        }
+        if (typeof updateAvailableRoomsForEditSchedule === "function") {
+            updateAvailableRoomsForEditSchedule();
+        }
+    }
 
     function initializeFlexibleScheduleUi() {
         const modeRadios =
