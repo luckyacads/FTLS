@@ -648,7 +648,7 @@ namespace FTLSV2.Pages.Chairman
 
                     ActiveFaculty = _context.Users
                         .Where(u =>
-                            u.Role == "Faculty" &&
+                            (u.Role == "Faculty" || u.Role == "Chairman") &&
                             u.DepartmentId == chairmanDepartmentId &&
                             !u.Is_delete &&
                             (u.Status == "Active" || string.IsNullOrEmpty(u.Status)))
