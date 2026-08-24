@@ -622,37 +622,39 @@ namespace FTLSV2.Pages.Chairman
             var settings = _context.SystemSettings.FirstOrDefault();
             GlobalMaxLimit = settings?.MaxOverload ?? 30;
 
+            int? chairmanDeptId = null;
             var activeUserString = HttpContext.Session.GetString("ActiveUser");
 
-        if (string.IsNullOrEmpty(activeUserString) ||
-            !int.TryParse(activeUserString, out int activeFacultyId))
-        {
-            ActiveFaculty = new List<User>();
-        }
-        else
-        {
-            var chairman = _context.Users
-                .FirstOrDefault(u =>
-                    u.FacultyId == activeFacultyId &&
-                    u.Role == "Chairman");
-
-            if (chairman == null || chairman.DepartmentId == null)
+            if (string.IsNullOrEmpty(activeUserString) ||
+                !int.TryParse(activeUserString, out int activeFacultyId))
             {
                 ActiveFaculty = new List<User>();
             }
             else
             {
-                int chairmanDepartmentId = chairman.DepartmentId.Value;
+                var chairman = _context.Users
+                    .FirstOrDefault(u =>
+                        u.FacultyId == activeFacultyId &&
+                        u.Role == "Chairman");
 
-                ActiveFaculty = _context.Users
-                    .Where(u =>
-                        u.Role == "Faculty" &&
-                        u.DepartmentId == chairmanDepartmentId &&
-                        !u.Is_delete &&
-                        (u.Status == "Active" || string.IsNullOrEmpty(u.Status)))
-                    .ToList();
+                if (chairman == null || chairman.DepartmentId == null)
+                {
+                    ActiveFaculty = new List<User>();
+                }
+                else
+                {
+                    chairmanDeptId = chairman.DepartmentId;
+                    int chairmanDepartmentId = chairman.DepartmentId.Value;
+
+                    ActiveFaculty = _context.Users
+                        .Where(u =>
+                            u.Role == "Faculty" &&
+                            u.DepartmentId == chairmanDepartmentId &&
+                            !u.Is_delete &&
+                            (u.Status == "Active" || string.IsNullOrEmpty(u.Status)))
+                        .ToList();
+                }
             }
-        }
             ActiveSubjects = _context.Subjects.Where(s => !s.Is_delete).ToList();
             AllRooms = _context.Rooms.ToList();
 
@@ -749,7 +751,17 @@ namespace FTLSV2.Pages.Chairman
                 AvailableAcademicYears.Add($"{year}-{year + 1}");
             }
 
-            CurrentSchedules = _context.Schedules.Select(s => new AssignedLoad
+            var schedulesQuery = _context.Schedules.AsQueryable();
+            if (chairmanDeptId != null)
+            {
+                schedulesQuery = schedulesQuery.Where(s => s.Faculty.DepartmentId == chairmanDeptId.Value);
+            }
+            else
+            {
+                schedulesQuery = schedulesQuery.Where(s => false);
+            }
+
+            CurrentSchedules = schedulesQuery.Select(s => new AssignedLoad
             {
                 ScheduleId = s.ScheduleId,
                 FacultyId = s.FacultyId,
