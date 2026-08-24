@@ -371,34 +371,141 @@
         display: none;
     }
 
-    .table-scrollable-container th {
-        position: sticky;
-        top: 0;
-        background: #f8fafc;
-        z-index: 5;
-        box-shadow: inset 0 -1px 0 #cbd5e1;
+    .loads-filter-toolbar {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        box-sizing: border-box;
+        max-width: 100%;
+    }
+
+    .loads-filter-toolbar > div {
+        min-width: 0;
+    }
+
+    .loads-filter-toolbar input,
+    .loads-filter-toolbar select {
+        width: 100%;
+        max-width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 13px;
+        color: #374151;
+        background: #ffffff;
+        box-sizing: border-box;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .loads-filter-toolbar input:focus,
+    .loads-filter-toolbar select:focus {
+        outline: none;
+        border-color: #0f766e;
+        box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+    }
+
+    .faculty-accordion-group {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 12px;
+        background: #ffffff;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .faculty-accordion-group:hover {
+        border-color: #cbd5e1;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .faculty-accordion-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        background: #ffffff;
+        cursor: pointer;
+        user-select: none;
+        transition: background 0.15s ease;
     }
 
     .faculty-accordion-header:hover {
-        background: #cbd5e1 !important;
+        background: #f9fafb !important;
+    }
+
+    .faculty-accordion-header strong {
+        color: #07362d;
+        font-size: 15px;
+        font-weight: 800;
+    }
+
+    .load-badge {
+        background: #e1f5ee;
+        color: #0f6e56;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .accordion-arrow {
+        font-size: 10px;
+        color: #6b7280;
+        display: inline-block;
+        transition: transform 0.2s ease;
+        margin-right: 8px;
+    }
+
+    .table-scrollable-container {
+        max-height: 380px;
+        overflow-y: auto;
+        overflow-x: auto;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .table-scrollable-container th {
+        position: sticky;
+        top: 0;
+        background: #f9fafb;
+        z-index: 5;
+        box-shadow: inset 0 -1px 0 #e5e7eb;
     }
 
     .loads-table {
         width: 100%;
         border-collapse: collapse;
+        background: #ffffff;
     }
 
     .loads-table th {
-        padding: 10px 12px;
-        font-size: 13px;
+        padding: 12px 16px;
+        font-size: 12px;
         font-weight: 700;
-        color: #334155;
+        color: #4b5563;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #e5e7eb;
+        text-align: left;
     }
 
     .loads-table td {
-        padding: 10px 12px;
+        padding: 12px 16px;
         font-size: 13px;
+        border-bottom: 1px solid #f3f4f6;
         vertical-align: middle;
+    }
+
+    .loads-table tr:hover {
+        background: #f9fafb;
     }
 
     .schedule-mode-panel-title {
@@ -1242,14 +1349,14 @@
         @if (Model.CurrentSchedules != null && Model.CurrentSchedules.Any())
         {
             <!-- Search & Filters Toolbar -->
-            <div class="loads-filter-toolbar" style="margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #cbd5e1;">
-                <div style="grid-column: 1 / -1;">
-                    <input type="text" id="loadsSearchInput" placeholder="🔍 Search instructor, course code, offer code, room..." style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;" onkeyup="filterTeachingLoads()" />
+            <div class="loads-filter-toolbar">
+                <div style="grid-column: 1 / -1; margin-bottom: 4px;">
+                    <input type="text" id="loadsSearchInput" placeholder="Search instructor, course code, offer code, room..." onkeyup="filterTeachingLoads()" />
                 </div>
                 
                 <div>
                     <label style="font-size: 11px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Faculty Member</label>
-                    <select id="filterFaculty" onchange="filterTeachingLoads()" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #ffffff;">
+                    <select id="filterFaculty" onchange="filterTeachingLoads()">
                         <option value="">All Faculty</option>
                         @foreach (var name in Model.CurrentSchedules.Select(s => s.FacultyName).Distinct().OrderBy(n => n))
                         {
@@ -1260,7 +1367,7 @@
 
                 <div>
                     <label style="font-size: 11px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Day Filter</label>
-                    <select id="filterDay" onchange="filterTeachingLoads()" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #ffffff;">
+                    <select id="filterDay" onchange="filterTeachingLoads()">
                         <option value="">All Days</option>
                         <option value="M">Monday (M)</option>
                         <option value="T">Tuesday (T)</option>
@@ -1275,7 +1382,7 @@
 
                 <div>
                     <label style="font-size: 11px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Room</label>
-                    <select id="filterRoom" onchange="filterTeachingLoads()" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #ffffff;">
+                    <select id="filterRoom" onchange="filterTeachingLoads()">
                         <option value="">All Rooms</option>
                         @foreach (var room in Model.CurrentSchedules.Select(s => s.RoomName).Where(r => !string.IsNullOrEmpty(r)).Distinct().OrderBy(r => r))
                         {
@@ -1286,9 +1393,9 @@
 
                 <div>
                     <label style="font-size: 11px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Semester</label>
-                    <select id="filterSemester" onchange="filterTeachingLoads()" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #ffffff;">
+                    <select id="filterSemester" onchange="filterTeachingLoads()">
                         <option value="">All Semesters</option>
-                        @foreach (var sem in Model.CurrentSchedules.Select(s => s.Semester).Where(s => !string.IsNullOrEmpty(s)).Distinct().OrderBy(s => s))
+                        @foreach (var sem in Model.CurrentSchedules.Select(s => s.Semester).Where(s => !string.IsNullOrEmpty(s) && !s.Equals("1st sem", StringComparison.OrdinalIgnoreCase)).Distinct().OrderBy(s => s))
                         {
                             <option value="@sem">@sem</option>
                         }
@@ -1297,7 +1404,7 @@
 
                 <div>
                     <label style="font-size: 11px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Academic Year</label>
-                    <select id="filterYear" onchange="filterTeachingLoads()" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #ffffff;">
+                    <select id="filterYear" onchange="filterTeachingLoads()">
                         <option value="">All Years</option>
                         @foreach (var yr in Model.CurrentSchedules.Select(s => s.AcademicYear).Where(y => !string.IsNullOrEmpty(y)).Distinct().OrderBy(y => y))
                         {
@@ -1314,28 +1421,28 @@
                     var facultyName = group.Key;
                     var facultyLoads = group.ToList();
 
-                    <div class="faculty-accordion-group" data-faculty-name="@facultyName" style="margin-bottom: 10px;">
-                        <div class="faculty-accordion-header" onclick="toggleFacultyAccordion(this)" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; user-select: none; transition: background 0.15s ease;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span class="accordion-arrow" style="font-size: 12px; display: inline-block; transition: transform 0.2s ease;">▶</span>
-                                <strong style="color: #0f766e; font-size: 15px;">@facultyName</strong>
+                    <div class="faculty-accordion-group" data-faculty-name="@facultyName">
+                        <div class="faculty-accordion-header" onclick="toggleFacultyAccordion(this)">
+                            <div style="display: flex; align-items: center;">
+                                <span class="accordion-arrow">▶</span>
+                                <strong>@facultyName</strong>
                             </div>
-                            <span class="load-badge" data-count="@facultyLoads.Count" style="background: #e2e8f0; color: #475569; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 700;">
+                            <span class="load-badge" data-count="@facultyLoads.Count">
                                 @facultyLoads.Count load@(facultyLoads.Count > 1 ? "s" : "")
                             </span>
                         </div>
 
-                        <div class="faculty-accordion-body" style="display: none; margin-top: 4px; padding: 5px 0;">
-                            <div class="table-scrollable-container" style="max-height: 380px; overflow-y: auto; border: 1px solid #cbd5e1; border-radius: 6px; background: #ffffff;">
-                                <table class="loads-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <div class="faculty-accordion-body" style="display: none;">
+                            <div class="table-scrollable-container">
+                                <table class="loads-table">
                                     <thead>
-                                        <tr style="position: sticky; top: 0; background: #f8fafc; border-bottom: 2px solid #cbd5e1; z-index: 5;">
-                                            <th style="padding: 10px 12px; font-size: 13px; font-weight: 700; color: #334155; background: #f8fafc;">Day / Time</th>
-                                            <th style="padding: 10px 12px; font-size: 13px; font-weight: 700; color: #334155; background: #f8fafc;">Course</th>
-                                            <th style="padding: 10px 12px; font-size: 13px; font-weight: 700; color: #334155; width: 100px; background: #f8fafc;">Offer Code</th>
-                                            <th style="padding: 10px 12px; font-size: 13px; font-weight: 700; color: #334155; background: #f8fafc;">Room</th>
-                                            <th style="padding: 10px 12px; font-size: 13px; font-weight: 700; color: #334155; background: #f8fafc;">Sem / A.Y.</th>
-                                            <th style="padding: 10px 12px; font-size: 13px; font-weight: 700; color: #334155; text-align: center; width: 140px; background: #f8fafc;">Actions</th>
+                                        <tr>
+                                            <th>Day / Time</th>
+                                            <th>Course</th>
+                                            <th>Offer Code</th>
+                                            <th>Room</th>
+                                            <th>Semester / A.Y.</th>
+                                            <th style="text-align: center; width: 140px;">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -1348,28 +1455,27 @@
                                                 data-room="@load.RoomName" 
                                                 data-sem="@load.Semester" 
                                                 data-year="@load.AcademicYear" 
-                                                data-searchable="@load.CourseCode @load.OfferCode @load.RoomName @load.FacultyName" 
-                                                style="border-bottom: 1px solid #e2e8f0; background: #ffffff;">
-                                                <td style="padding: 10px 12px; font-size: 13px;">
-                                                    <div style="font-weight: 600; color: #07362d;">@scheduleParts.Days</div>
-                                                    <div style="font-size: 11px; color: #64748b;">@scheduleParts.Time</div>
+                                                data-searchable="@load.CourseCode @load.OfferCode @load.RoomName @load.FacultyName">
+                                                <td>
+                                                    <div class="class-days">@scheduleParts.Days</div>
+                                                    <div class="class-hours" style="margin-top: 2px;">@scheduleParts.Time</div>
                                                 </td>
-                                                <td style="padding: 10px 12px; font-size: 13px;">
-                                                    <div style="font-weight: 600; color: #0f766e;">@load.CourseCode</div>
-                                                    <span style="font-size: 10px; background: #e1f5ee; color: #0f6e56; padding: 2px 6px; border-radius: 4px; font-weight: 700; display: inline-block; margin-top: 2px;">Assigned</span>
+                                                <td>
+                                                    <div class="class-code">@load.CourseCode</div>
+                                                    <span style="background: #e1f5ee; color: #0f6e56; padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase; display: inline-block; margin-top: 4px; letter-spacing: 0.5px;">Assigned</span>
                                                 </td>
-                                                <td style="padding: 10px 12px; font-size: 13px; font-weight: 600; color: #475569;">
+                                                <td style="font-weight: 700; color: #374151; font-size: 13px;">
                                                     @(load.OfferCode ?? 0)
                                                 </td>
-                                                <td style="padding: 10px 12px; font-size: 13px; font-weight: 600; color: #07362d;">
-                                                    @load.RoomName
+                                                <td>
+                                                    <span class="class-room">@load.RoomName</span>
                                                 </td>
-                                                <td style="padding: 10px 12px; font-size: 12px; color: #475569;">
-                                                    <div>@load.Semester</div>
-                                                    <div style="font-size: 10px; color: #64748b;">A.Y. @load.AcademicYear</div>
+                                                <td class="class-title">
+                                                    <div style="font-weight: 600;">@load.Semester</div>
+                                                    <div style="font-size: 11px; color: #6b7280; margin-top: 2px;">A.Y. @load.AcademicYear</div>
                                                 </td>
-                                                <td style="padding: 10px 12px; text-align: center;">
-                                                    <div style="display: flex; gap: 6px; justify-content: center;">
+                                                <td>
+                                                    <div style="display: flex; gap: 8px; justify-content: center;">
                                                         <button type="button" 
                                                                 class="btn-edit" 
                                                                 onclick='openEditScheduleModal(
@@ -1400,7 +1506,7 @@
                 }
             </div>
 
-            <div id="noMatchingLoadsMessage" style="display: none; text-align: center; padding: 40px 20px; color: #6b7280; background: #f9fafb; border-radius: 8px; border: 1px dashed #cbd5e1; margin-top: 10px;">
+            <div id="noMatchingLoadsMessage" style="display: none; text-align: center; padding: 40px 20px; color: #6b7280; background: #f9fafb; border-radius: 12px; border: 1px dashed #d1d5db; margin-top: 10px;">
                 <p style="margin: 0; font-size: 14px; font-weight: 500;">No matching teaching loads found.</p>
             </div>
         }
@@ -1858,7 +1964,14 @@
                 const matchesRoom = !filterRoom || room === filterRoom;
 
                 // Match Semester
-                const matchesSemester = !filterSemester || sem === filterSemester;
+                let matchesSemester = true;
+                if (filterSemester) {
+                    let semNormalized = sem;
+                    if (semNormalized === "1st sem") {
+                        semNormalized = "1st Semester";
+                    }
+                    matchesSemester = semNormalized === filterSemester;
+                }
 
                 // Match Academic Year
                 const matchesYear = !filterYear || year === filterYear;
