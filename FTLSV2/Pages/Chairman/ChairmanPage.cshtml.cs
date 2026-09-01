@@ -761,22 +761,25 @@ namespace FTLSV2.Pages.Chairman
                 schedulesQuery = schedulesQuery.Where(s => false);
             }
 
-            CurrentSchedules = schedulesQuery.Select(s => new AssignedLoad
-            {
-                ScheduleId = s.ScheduleId,
-                FacultyId = s.FacultyId,
-                FacultyName = "Engr. " + s.Faculty.FirstName + " " + s.Faculty.LastName,
-                CourseCode = s.Subject.Code,
-                SubjectTitle = s.Subject.Title,
-                Schedule = s.TimeSlot,
-                RoomName = s.Room != null ? s.Room.Name : "No room",
-                OfferCode = s.OfferCode,
-                AcademicYear = s.AcademicYear,
-                Semester = s.Semester,
-                SubjectId = s.SubjectId,
-                RoomId = s.RoomId,
-                AssignedUnits = s.AssignedUnits
-            }).ToList();
+            CurrentSchedules = schedulesQuery
+                .OrderByDescending(s => s.AcademicYear)
+                .ThenByDescending(s => s.ScheduleId)
+                .Select(s => new AssignedLoad
+                {
+                    ScheduleId = s.ScheduleId,
+                    FacultyId = s.FacultyId,
+                    FacultyName = "Engr. " + s.Faculty.FirstName + " " + s.Faculty.LastName,
+                    CourseCode = s.Subject.Code,
+                    SubjectTitle = s.Subject.Title,
+                    Schedule = s.TimeSlot,
+                    RoomName = s.Room != null ? s.Room.Name : "No room",
+                    OfferCode = s.OfferCode,
+                    AcademicYear = s.AcademicYear,
+                    Semester = s.Semester,
+                    SubjectId = s.SubjectId,
+                    RoomId = s.RoomId,
+                    AssignedUnits = s.AssignedUnits
+                }).ToList();
         }
 
         public class AssignedLoad

@@ -1406,7 +1406,7 @@
                     <label style="font-size: 11px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Academic Year</label>
                     <select id="filterYear" onchange="filterTeachingLoads()">
                         <option value="">All Years</option>
-                        @foreach (var yr in Model.CurrentSchedules.Select(s => s.AcademicYear).Where(y => !string.IsNullOrEmpty(y)).Distinct().OrderBy(y => y))
+                        @foreach (var yr in Model.CurrentSchedules.Select(s => s.AcademicYear).Where(y => !string.IsNullOrEmpty(y)).Distinct().OrderByDescending(y => y))
                         {
                             <option value="@yr">@yr</option>
                         }
@@ -1419,7 +1419,7 @@
                 @foreach (var group in Model.CurrentSchedules.GroupBy(s => s.FacultyName).OrderBy(g => g.Key))
                 {
                     var facultyName = group.Key;
-                    var facultyLoads = group.ToList();
+                    var facultyLoads = group.OrderByDescending(l => l.AcademicYear).ThenByDescending(l => l.ScheduleId).ToList();
 
                     <div class="faculty-accordion-group" data-faculty-name="@facultyName">
                         <div class="faculty-accordion-header" onclick="toggleFacultyAccordion(this)">
