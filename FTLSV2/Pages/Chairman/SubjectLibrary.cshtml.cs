@@ -69,45 +69,47 @@ namespace FTLSV2.Pages.Admin
             {
                 try
                 {
-                    // Find if the subject already exists (by Code and not deleted)
-                    var subject = _db.Subjects.FirstOrDefault(s => s.Code == NewSubjectCode && !s.Is_delete);
+                    var cleanCode = NewSubjectCode.Trim();
 
-                    if (subject == null)
+                    // Enforce unique subject code rule
+                    var existingSubject = _db.Subjects.FirstOrDefault(s => s.Code.ToLower() == cleanCode.ToLower());
+                    if (existingSubject != null)
                     {
-                        subject = new Subject
+                        if (!existingSubject.Is_delete)
                         {
-                            Code = NewSubjectCode,
-                            Title = NewSubjectTitle,
-                            Units = NewSubjectUnits,
-                            DepartmentId = NewSubjectDepartmentId
-                        };
-                        _db.Subjects.Add(subject);
-                        _db.SaveChanges();
+                            TempData["ErrorMessage"] = $"Subject code '{cleanCode}' is already in use by '{existingSubject.Title}'. Subject codes must be unique.";
+                        }
+                        else
+                        {
+                            TempData["ErrorMessage"] = $"Subject code '{cleanCode}' belongs to a deleted subject. Please restore it or use a different code.";
+                        }
+                        return RedirectToPage();
                     }
 
-                    // Check if a mapping for the target curriculum year already exists for this subject
+                    var subject = new Subject
+                    {
+                        Code = cleanCode,
+                        Title = NewSubjectTitle.Trim(),
+                        Units = NewSubjectUnits,
+                        DepartmentId = NewSubjectDepartmentId
+                    };
+                    _db.Subjects.Add(subject);
+                    _db.SaveChanges();
+
+                    // Add curriculum mapping
                     var targetYear = NewSubjectCurriculumYear ?? "2023";
-                    var existingMapping = _db.Curriculums.FirstOrDefault(c => c.SubjectId == subject.SubjectId && c.CurriculumYear == targetYear);
-
-                    if (existingMapping == null)
+                    var curriculum = new Curriculum
                     {
-                        var curriculum = new Curriculum
-                        {
-                            SubjectId = subject.SubjectId,
-                            DepartmentId = NewSubjectDepartmentId.Value,
-                            YearLevel = NewSubjectYearLevel,
-                            Semester = NewSubjectSemester,
-                            CurriculumYear = targetYear
-                        };
-                        _db.Curriculums.Add(curriculum);
-                        _db.SaveChanges();
+                        SubjectId = subject.SubjectId,
+                        DepartmentId = NewSubjectDepartmentId.Value,
+                        YearLevel = NewSubjectYearLevel,
+                        Semester = NewSubjectSemester,
+                        CurriculumYear = targetYear
+                    };
+                    _db.Curriculums.Add(curriculum);
+                    _db.SaveChanges();
 
-                        TempData["SuccessMessage"] = "Subject successfully added to the curriculum!";
-                    }
-                    else
-                    {
-                        TempData["ErrorMessage"] = "This subject already exists in the selected curriculum year!";
-                    }
+                    TempData["SuccessMessage"] = $"Subject '{cleanCode}' successfully added to the curriculum!";
                 }
                 catch (Exception ex)
                 {
@@ -128,8 +130,30 @@ namespace FTLSV2.Pages.Admin
 
             if (subjectToEdit != null)
             {
-                subjectToEdit.Code = EditSubjectCode;
-                subjectToEdit.Title = EditSubjectTitle;
+                var cleanCode = (EditSubjectCode ?? string.Empty).Trim();
+                if (string.IsNullOrEmpty(cleanCode))
+                {
+                    TempData["ErrorMessage"] = "Subject code cannot be empty.";
+                    return RedirectToPage();
+                }
+
+                // Enforce unique subject code rule across other subjects
+                var duplicateSubject = _db.Subjects.FirstOrDefault(s => s.SubjectId != EditSubjectId && s.Code.ToLower() == cleanCode.ToLower());
+                if (duplicateSubject != null)
+                {
+                    if (!duplicateSubject.Is_delete)
+                    {
+                        TempData["ErrorMessage"] = $"Subject code '{cleanCode}' is already in use by '{duplicateSubject.Title}'. Subject codes must be unique.";
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = $"Subject code '{cleanCode}' matches a deleted subject. Subject codes must be unique.";
+                    }
+                    return RedirectToPage();
+                }
+
+                subjectToEdit.Code = cleanCode;
+                subjectToEdit.Title = (EditSubjectTitle ?? string.Empty).Trim();
                 subjectToEdit.Units = EditSubjectUnits;
                 subjectToEdit.DepartmentId = EditSubjectDepartmentId;
 

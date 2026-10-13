@@ -34,10 +34,16 @@ namespace FTLSV2.Pages.Chairman
         public IActionResult OnGet()
         {
             var activeIdString = HttpContext.Session.GetString("ActiveUser");
-            if (string.IsNullOrEmpty(activeIdString)) return RedirectToPage("/LoginPage");
+            if (string.IsNullOrEmpty(activeIdString) || !int.TryParse(activeIdString, out int activeId))
+            {
+                return RedirectToPage("/LoginPage");
+            }
 
-            int activeId = int.Parse(activeIdString);
             LoggedInUser = _context.Users.FirstOrDefault(u => u.FacultyId == activeId);
+            if (LoggedInUser == null)
+            {
+                return RedirectToPage("/LoginPage");
+            }
 
             return Page();
         }
@@ -45,29 +51,41 @@ namespace FTLSV2.Pages.Chairman
         public IActionResult OnPostChangePassword()
         {
             var activeIdString = HttpContext.Session.GetString("ActiveUser");
-            if (string.IsNullOrEmpty(activeIdString)) return RedirectToPage("/LoginPage");
+            if (string.IsNullOrEmpty(activeIdString) || !int.TryParse(activeIdString, out int activeId))
+            {
+                return RedirectToPage("/LoginPage");
+            }
 
-            int activeId = int.Parse(activeIdString);
             LoggedInUser = _context.Users.FirstOrDefault(u => u.FacultyId == activeId);
+            if (LoggedInUser == null)
+            {
+                return RedirectToPage("/LoginPage");
+            }
 
             // 1. Verify old password matches record
             if (LoggedInUser.Password != CurrentPassword)
             {
                 ErrorMessage = "Your current password is incorrect.";
+                NewPassword = string.Empty;
+                ConfirmNewPassword = string.Empty;
                 return Page();
             }
 
-            // 2. NEW: Validation rule checking character boundary conditions
+            // 2. Validation rule checking character boundary conditions
             if (string.IsNullOrEmpty(NewPassword) || NewPassword.Length < 8)
             {
                 ErrorMessage = "The new password must be at least 8 characters long.";
+                NewPassword = string.Empty;
+                ConfirmNewPassword = string.Empty;
                 return Page();
             }
 
-            // 3. NEW: Security logic matching verification parity state
+            // 3. Security logic matching verification parity state
             if (NewPassword != ConfirmNewPassword)
             {
                 ErrorMessage = "The new password confirmation does not match.";
+                NewPassword = string.Empty;
+                ConfirmNewPassword = string.Empty;
                 return Page();
             }
 
@@ -75,6 +93,9 @@ namespace FTLSV2.Pages.Chairman
             LoggedInUser.Password = NewPassword;
             _context.SaveChanges();
 
+            CurrentPassword = string.Empty;
+            NewPassword = string.Empty;
+            ConfirmNewPassword = string.Empty;
             SuccessMessage = "Password successfully updated!";
             return Page();
         }

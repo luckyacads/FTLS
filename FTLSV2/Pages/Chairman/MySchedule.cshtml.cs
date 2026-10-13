@@ -109,8 +109,43 @@ namespace FTLSV2.Pages.Chairman
                 .AsNoTracking()
                 .ToDictionary(s => s.SubjectId);
 
+            Func<string, bool> isMWF = timeSlot =>
+            {
+                if (string.IsNullOrWhiteSpace(timeSlot)) return false;
+                int firstDigit = -1;
+                for (int i = 0; i < timeSlot.Length; i++)
+                {
+                    if (char.IsDigit(timeSlot[i])) { firstDigit = i; break; }
+                }
+                string daysPart = firstDigit > 0 ? timeSlot.Substring(0, firstDigit) : timeSlot;
+                var tokens = daysPart.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(t => t.Trim()).ToList();
+                return tokens.Any(t => t == "M" || t == "W" || t == "F" || t == "S" ||
+                                       t.Equals("MWF", StringComparison.OrdinalIgnoreCase) ||
+                                       t.Equals("Mon", StringComparison.OrdinalIgnoreCase) ||
+                                       t.Equals("Wed", StringComparison.OrdinalIgnoreCase) ||
+                                       t.Equals("Fri", StringComparison.OrdinalIgnoreCase) ||
+                                       t.Equals("Sat", StringComparison.OrdinalIgnoreCase));
+            };
+
+            Func<string, bool> isTTH = timeSlot =>
+            {
+                if (string.IsNullOrWhiteSpace(timeSlot)) return false;
+                int firstDigit = -1;
+                for (int i = 0; i < timeSlot.Length; i++)
+                {
+                    if (char.IsDigit(timeSlot[i])) { firstDigit = i; break; }
+                }
+                string daysPart = firstDigit > 0 ? timeSlot.Substring(0, firstDigit) : timeSlot;
+                var tokens = daysPart.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(t => t.Trim()).ToList();
+                return tokens.Any(t => t == "T" || t == "Th" ||
+                                       t.Equals("TTH", StringComparison.OrdinalIgnoreCase) ||
+                                       t.Equals("TTh", StringComparison.OrdinalIgnoreCase) ||
+                                       t.Equals("Tue", StringComparison.OrdinalIgnoreCase) ||
+                                       t.Equals("Thu", StringComparison.OrdinalIgnoreCase));
+            };
+
             MWFSchedules = schedules
-                .Where(s => !string.IsNullOrEmpty(s.TimeSlot) && s.TimeSlot.StartsWith("MWF"))
+                .Where(s => isMWF(s.TimeSlot))
                 .Select(s => new ScheduleView(
                     s.TimeSlot,
                     subjects.ContainsKey(s.SubjectId) ? subjects[s.SubjectId].Code : "N/A",
@@ -123,7 +158,7 @@ namespace FTLSV2.Pages.Chairman
                 .ToList();
 
             TTHSchedules = schedules
-                .Where(s => !string.IsNullOrEmpty(s.TimeSlot) && (s.TimeSlot.StartsWith("TTh") || s.TimeSlot.StartsWith("TTH")))
+                .Where(s => isTTH(s.TimeSlot))
                 .Select(s => new ScheduleView(
                     s.TimeSlot,
                     subjects.ContainsKey(s.SubjectId) ? subjects[s.SubjectId].Code : "N/A",

@@ -97,7 +97,7 @@ namespace FTLSV2.Pages.Chairman
             return Page();
         }
 
-        public IActionResult OnGetAvailableRooms(string days, string startTime, string endTime, int? excludeScheduleId)
+        public IActionResult OnGetAvailableRooms(string days, string startTime, string endTime, string? academicYear, string? semester, int? excludeScheduleId)
         {
             if (string.IsNullOrEmpty(days) || string.IsNullOrEmpty(startTime) || string.IsNullOrEmpty(endTime))
             {
@@ -114,9 +114,21 @@ namespace FTLSV2.Pages.Chairman
                                .ToList();
 
             var allRooms = _context.Rooms.ToList();
-            var allSchedules = _context.Schedules.ToList();
+            var schedulesQuery = _context.Schedules.AsQueryable();
 
-            var occupiedRoomIds = allSchedules
+            if (!string.IsNullOrEmpty(academicYear))
+            {
+                schedulesQuery = schedulesQuery.Where(s => s.AcademicYear == academicYear);
+            }
+
+            if (!string.IsNullOrEmpty(semester))
+            {
+                schedulesQuery = schedulesQuery.Where(s => s.Semester == semester);
+            }
+
+            var activeSchedules = schedulesQuery.ToList();
+
+            var occupiedRoomIds = activeSchedules
                 .Where(s => s.RoomId.HasValue && (excludeScheduleId == null || s.ScheduleId != excludeScheduleId))
                 .Where(s => CheckOverlap(s.TimeSlot, daysList, start, end))
                 .Select(s => s.RoomId.Value)
@@ -134,35 +146,94 @@ namespace FTLSV2.Pages.Chairman
             return new JsonResult(availableRooms);
         }
 
-        private bool CheckOverlap(string timeSlot1, List<string> days2, TimeSpan start2, TimeSpan end2)
+        private static HashSet<string> ExtractDayTokens(string dayStr)
         {
-            if (string.IsNullOrWhiteSpace(timeSlot1)) return false;
+            var tokens = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (string.IsNullOrWhiteSpace(dayStr)) return tokens;
 
-            var parts = timeSlot1.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length < 6) return false;
-
-            int timeStartIndex = -1;
-            for (int i = 0; i < parts.Length; i++)
+            var rawTokens = dayStr.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var raw in rawTokens)
             {
-                if (char.IsDigit(parts[i][0]))
+                var trimmed = raw.Trim();
+                int i = 0;
+                while (i < trimmed.Length)
                 {
-                    timeStartIndex = i;
-                    break;
+                    if (i + 1 < trimmed.Length && trimmed.Substring(i, 2).Equals("Th", StringComparison.OrdinalIgnoreCase))
+                    {
+                        tokens.Add("Th");
+                        i += 2;
+                    }
+                    else if (trimmed.Substring(i).StartsWith("Mon", StringComparison.OrdinalIgnoreCase))
+                    {
+                        tokens.Add("M");
+                        i += 3;
+                    }
+                    else if (trimmed.Substring(i).StartsWith("Tue", StringComparison.OrdinalIgnoreCase))
+                    {
+                        tokens.Add("T");
+                        i += 3;
+                    }
+                    else if (trimmed.Substring(i).StartsWith("Wed", StringComparison.OrdinalIgnoreCase))
+                    {
+                        tokens.Add("W");
+                        i += 3;
+                    }
+                    else if (trimmed.Substring(i).StartsWith("Thu", StringComparison.OrdinalIgnoreCase))
+                    {
+                        tokens.Add("Th");
+                        i += 3;
+                    }
+                    else if (trimmed.Substring(i).StartsWith("Fri", StringComparison.OrdinalIgnoreCase))
+                    {
+                        tokens.Add("F");
+                        i += 3;
+                    }
+                    else if (trimmed.Substring(i).StartsWith("Sat", StringComparison.OrdinalIgnoreCase))
+                    {
+                        tokens.Add("S");
+                        i += 3;
+                    }
+                    else
+                    {
+                        char c = char.ToUpperInvariant(trimmed[i]);
+                        if (c == 'M' || c == 'T' || c == 'W' || c == 'F' || c == 'S')
+                        {
+                            tokens.Add(c.ToString());
+                        }
+                        i++;
+                    }
                 }
             }
-            if (timeStartIndex <= 0) return false;
+            return tokens;
+        }
 
-            var days1Part = string.Join(" ", parts.Take(timeStartIndex));
-            var days1 = days1Part.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                                 .Select(d => d.Trim())
-                                 .ToList();
+        private bool CheckOverlap(string timeSlot1, List<string> days2, TimeSpan start2, TimeSpan end2)
+        {
+            if (string.IsNullOrWhiteSpace(timeSlot1) || days2 == null || days2.Count == 0) return false;
 
-            bool daysOverlap = days1.Any(d1 => days2.Contains(d1));
+            var match = System.Text.RegularExpressions.Regex.Match(
+                timeSlot1.Trim(),
+                @"^(?<days>.+?)\s+(?<time>\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)\s*-\s*\d{1,2}:\d{2}\s*(?:AM|PM|am|pm))$",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase
+            );
+
+            if (!match.Success) return false;
+
+            var days1Tokens = ExtractDayTokens(match.Groups["days"].Value);
+            var days2Tokens = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var d in days2)
+            {
+                foreach (var token in ExtractDayTokens(d))
+                {
+                    days2Tokens.Add(token);
+                }
+            }
+
+            bool daysOverlap = days1Tokens.Overlaps(days2Tokens);
             if (!daysOverlap) return false;
 
-            var timePart = string.Join(" ", parts.Skip(timeStartIndex));
             var timeMatch = System.Text.RegularExpressions.Regex.Match(
-                timePart,
+                match.Groups["time"].Value,
                 @"(\d{1,2}:\d{2}\s*[aApP][mM])\s*-\s*(\d{1,2}:\d{2}\s*[aApP][mM])",
                 System.Text.RegularExpressions.RegexOptions.IgnoreCase
             );
@@ -279,9 +350,9 @@ namespace FTLSV2.Pages.Chairman
             var activeUserString = HttpContext.Session.GetString("ActiveUser");
             if (string.IsNullOrEmpty(activeUserString)) return RedirectToPage("/LoginPage");
 
-            if (SelectedFacultyId == 0 || SelectedDays == null || SelectedDays.Count == 0 || SelectedSubjectId == 0 || string.IsNullOrEmpty(SelectedSemester))
+            if (SelectedFacultyId == 0 || SelectedDays == null || SelectedDays.Count == 0 || SelectedSubjectId == 0 || string.IsNullOrEmpty(SelectedSemester) || string.IsNullOrEmpty(SelectedAcademicYear))
             {
-                TempData["ErrorMessage"] = "Please fill in all the schedule fields, including days and semester.";
+                TempData["ErrorMessage"] = "Please fill in all the schedule fields, including days, semester, and academic year.";
                 LoadPageData();
                 return Page();
             }
@@ -291,22 +362,18 @@ namespace FTLSV2.Pages.Chairman
 
             int currentTotalUnits = _context.Schedules
                 .Where(s => s.FacultyId == SelectedFacultyId
-                            && s.AcademicYear == SelectedAcademicYear)
+                            && s.AcademicYear == SelectedAcademicYear
+                            && s.Semester == SelectedSemester)
                 .Sum(s => s.AssignedUnits);
 
             var faculty = _context.Users.FirstOrDefault(u => u.FacultyId == SelectedFacultyId);
 
             // Automatically determine employment type & policy limit
-            bool isFullTime = (faculty?.MaxUnits ?? 18) >= 18;
-            int policyMaxUnits = isFullTime ? 30 : 17;
+            bool isFullTime = (faculty?.FacultyType?.Equals("Full-Time", StringComparison.OrdinalIgnoreCase) == true) || ((faculty?.MaxUnits ?? 18) >= 18);
+            var settings = _context.SystemSettings.FirstOrDefault();
+            int maxOverload = settings?.MaxOverload ?? 30;
+            int policyMaxUnits = isFullTime ? maxOverload : 17;
             string empType = isFullTime ? "Full-Time" : "Part-Time";
-
-            // Save policy update to DB if needed
-            if (faculty != null && faculty.MaxUnits != policyMaxUnits)
-            {
-                faculty.MaxUnits = policyMaxUnits;
-                _context.SaveChanges();
-            }
 
             int newTotalUnits = currentTotalUnits + officialSubjectUnits;
 
@@ -443,7 +510,7 @@ namespace FTLSV2.Pages.Chairman
         public IActionResult OnPostEditSchedule()
         {
             var schedule = _context.Schedules.FirstOrDefault(s => s.ScheduleId == EditScheduleId);
-            if (schedule == null) return Page();
+            if (schedule == null) return RedirectToPage();
 
             if (EditDays == null || EditDays.Count == 0)
             {
@@ -457,19 +524,16 @@ namespace FTLSV2.Pages.Chairman
             int currentTotalUnits = _context.Schedules
                 .Where(s => s.FacultyId == EditFacultyId
                             && s.AcademicYear == EditAcademicYear
+                            && s.Semester == EditSemester
                             && s.ScheduleId != EditScheduleId)
                 .Sum(s => s.AssignedUnits);
 
             var faculty = _context.Users.FirstOrDefault(u => u.FacultyId == EditFacultyId);
-            bool isFullTime = (faculty?.MaxUnits ?? 18) >= 18;
-            int policyMaxUnits = isFullTime ? 30 : 17;
+            bool isFullTime = (faculty?.FacultyType?.Equals("Full-Time", StringComparison.OrdinalIgnoreCase) == true) || ((faculty?.MaxUnits ?? 18) >= 18);
+            var settings = _context.SystemSettings.FirstOrDefault();
+            int maxOverload = settings?.MaxOverload ?? 30;
+            int policyMaxUnits = isFullTime ? maxOverload : 17;
             string empType = isFullTime ? "Full-Time" : "Part-Time";
-
-            if (faculty != null && faculty.MaxUnits != policyMaxUnits)
-            {
-                faculty.MaxUnits = policyMaxUnits;
-                _context.SaveChanges();
-            }
 
             int newTotalUnits = currentTotalUnits + officialSubjectUnits;
 
@@ -613,6 +677,7 @@ namespace FTLSV2.Pages.Chairman
             {
                 _context.Schedules.Remove(schedule);
                 _context.SaveChanges();
+                TempData["SuccessMessage"] = "Schedule successfully deleted!";
             }
             return RedirectToPage();
         }
@@ -655,30 +720,27 @@ namespace FTLSV2.Pages.Chairman
                         .ToList();
                 }
             }
-            ActiveSubjects = _context.Subjects.Where(s => !s.Is_delete).ToList();
+            
+            if (chairmanDeptId != null)
+            {
+                ActiveSubjects = _context.Subjects
+                    .Where(s => !s.Is_delete && (s.DepartmentId == chairmanDeptId || s.DepartmentId == null))
+                    .OrderBy(s => s.Code)
+                    .ToList();
+            }
+            else
+            {
+                ActiveSubjects = _context.Subjects.Where(s => !s.Is_delete).OrderBy(s => s.Code).ToList();
+            }
             AllRooms = _context.Rooms.ToList();
 
             // Calculate current Academic Year dynamically
             int currentYear = DateTime.Today.Year;
             int month = DateTime.Today.Month;
             string currentAY = (month >= 1 && month <= 5) ? $"{currentYear - 1}-{currentYear}" : $"{currentYear}-{currentYear + 1}";
-            SelectedAcademicYear = currentAY;
-
-            // Automatically update DB values for active faculty
-            bool changesMade = false;
-            foreach (var faculty in ActiveFaculty)
+            if (string.IsNullOrEmpty(SelectedAcademicYear))
             {
-                bool isFT = faculty.MaxUnits >= 18;
-                int targetMax = isFT ? 30 : 17;
-                if (faculty.MaxUnits != targetMax)
-                {
-                    faculty.MaxUnits = targetMax;
-                    changesMade = true;
-                }
-            }
-            if (changesMade)
-            {
-                _context.SaveChanges();
+                SelectedAcademicYear = currentAY;
             }
 
             var assignedUnitsByFaculty = _context.Schedules
@@ -696,8 +758,8 @@ namespace FTLSV2.Pages.Chairman
             {
                 assignedUnitsByFaculty.TryGetValue(f.FacultyId, out int totalUnits);
 
-                int facultyMaxUnits = f.MaxUnits;
-                bool isFullTime = facultyMaxUnits >= 18;
+                bool isFullTime = (f.FacultyType?.Equals("Full-Time", StringComparison.OrdinalIgnoreCase) == true) || (f.MaxUnits >= 18);
+                int facultyMaxUnits = isFullTime ? GlobalMaxLimit : 17;
                 string employmentType = isFullTime ? "Full-Time" : "Part-Time";
 
                 return new FacultyLoadProfileView

@@ -1455,7 +1455,7 @@
                                                 data-room="@load.RoomName" 
                                                 data-sem="@load.Semester" 
                                                 data-year="@load.AcademicYear" 
-                                                data-searchable="@load.CourseCode @load.OfferCode @load.RoomName @load.FacultyName">
+                                                data-searchable="@load.CourseCode @load.SubjectTitle @(load.OfferCode.HasValue ? load.OfferCode.Value.ToString() : "") @load.RoomName @load.FacultyName">
                                                 <td>
                                                     <div class="class-days">@scheduleParts.Days</div>
                                                     <div class="class-hours" style="margin-top: 2px;">@scheduleParts.Time</div>
@@ -1465,7 +1465,7 @@
                                                     <span style="background: #e1f5ee; color: #0f6e56; padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase; display: inline-block; margin-top: 4px; letter-spacing: 0.5px;">Assigned</span>
                                                 </td>
                                                 <td style="font-weight: 700; color: #374151; font-size: 13px;">
-                                                    @(load.OfferCode ?? 0)
+                                                    @(load.OfferCode.HasValue && load.OfferCode.Value > 0 ? load.OfferCode.Value.ToString() : "—")
                                                 </td>
                                                 <td>
                                                     <span class="class-room">@load.RoomName</span>
@@ -1903,6 +1903,25 @@
         return hours * 60 + minutes;
     }
 
+    function extractDayTokens(daysStr) {
+        if (!daysStr) return [];
+        const tokens = [];
+        let i = 0;
+        while (i < daysStr.length) {
+            if (daysStr.substring(i, i + 2).toLowerCase() === "th") {
+                tokens.push("Th");
+                i += 2;
+            } else {
+                const char = daysStr.charAt(i).toUpperCase();
+                if (["M", "T", "W", "F", "S"].includes(char)) {
+                    tokens.push(char);
+                }
+                i++;
+            }
+        }
+        return tokens;
+    }
+
     function toggleFacultyAccordion(header) {
         const body = header.nextElementSibling;
         const arrow = header.querySelector(".accordion-arrow");
@@ -1951,12 +1970,13 @@
                 // Match Day
                 let matchesDay = true;
                 if (filterDay) {
+                    const dayTokens = extractDayTokens(days);
                     if (filterDay === "MWF") {
-                        matchesDay = days.includes("M") || days.includes("W") || days.includes("F");
+                        matchesDay = dayTokens.some(d => ["M", "W", "F"].includes(d));
                     } else if (filterDay === "TTh") {
-                        matchesDay = days.includes("T") || days.includes("Th");
+                        matchesDay = dayTokens.some(d => ["T", "Th"].includes(d));
                     } else {
-                        matchesDay = days.includes(filterDay);
+                        matchesDay = dayTokens.includes(filterDay);
                     }
                 }
 
@@ -2161,6 +2181,11 @@
                     updateAvailableRoomsForFlexibleSchedule();
                 });
             });
+
+        const academicYearSelect = document.querySelector('[name="SelectedAcademicYear"]');
+        const semesterSelect = document.querySelector('[name="SelectedSemester"]');
+        academicYearSelect?.addEventListener("change", updateAvailableRoomsForFlexibleSchedule);
+        semesterSelect?.addEventListener("change", updateAvailableRoomsForFlexibleSchedule);
 
         if (form) {
             form.addEventListener("submit", function (event) {
@@ -2507,7 +2532,7 @@
                 !endInput ||
                 !startInput.value ||
                 !endInput.value ||
-                endInput.value <= startInput.value
+                toMinutes(endInput.value) <= toMinutes(startInput.value)
             ) {
                 resetNewAssignmentRooms(roomDropdown);
                 return;
@@ -2523,6 +2548,9 @@
         const previouslySelectedRoom =
             roomDropdown.value;
 
+        const academicYear = document.querySelector('[name="SelectedAcademicYear"]')?.value || "";
+        const semester = document.querySelector('[name="SelectedSemester"]')?.value || "";
+
         roomDropdown.innerHTML =
             '<option value="">Checking room availability...</option>';
 
@@ -2533,7 +2561,9 @@
                         `?handler=AvailableRooms` +
                         `&days=${encodeURIComponent(slot.day)}` +
                         `&startTime=${encodeURIComponent(slot.start)}` +
-                        `&endTime=${encodeURIComponent(slot.end)}`;
+                        `&endTime=${encodeURIComponent(slot.end)}` +
+                        `&academicYear=${encodeURIComponent(academicYear)}` +
+                        `&semester=${encodeURIComponent(semester)}`;
 
                     return fetch(url).then(function (response) {
                         if (!response.ok) {
@@ -2712,6 +2742,11 @@
                     updateAvailableRoomsForEditSchedule();
                 });
             });
+
+        const editYearSelect = document.getElementById("editAcademicYear");
+        const editSemSelect = document.getElementById("editSemester");
+        editYearSelect?.addEventListener("change", function() { updateAvailableRoomsForEditSchedule(); });
+        editSemSelect?.addEventListener("change", function() { updateAvailableRoomsForEditSchedule(); });
 
         if (form) {
             form.addEventListener("submit", function (event) {
@@ -3274,7 +3309,7 @@
             const end =
                 document.getElementById("editEndTime")?.value;
 
-            if (!start || !end || end <= start) {
+            if (!start || !end || toMinutes(end) <= toMinutes(start)) {
                 return;
             }
 
@@ -3306,7 +3341,7 @@
                     !endInput ||
                     !startInput.value ||
                     !endInput.value ||
-                    endInput.value <= startInput.value
+                    toMinutes(endInput.value) <= toMinutes(startInput.value)
                 ) {
                     return;
                 }
@@ -3325,6 +3360,9 @@
                 ? String(currentRoomId)
                 : roomDropdown.value;
 
+        const academicYear = document.getElementById("editAcademicYear")?.value || "";
+        const semester = document.getElementById("editSemester")?.value || "";
+
         roomDropdown.innerHTML =
             '<option value="">Checking room availability...</option>';
 
@@ -3337,6 +3375,8 @@
                             `&days=${encodeURIComponent(slot.day)}` +
                             `&startTime=${encodeURIComponent(slot.start)}` +
                             `&endTime=${encodeURIComponent(slot.end)}` +
+                            `&academicYear=${encodeURIComponent(academicYear)}` +
+                            `&semester=${encodeURIComponent(semester)}` +
                             `&excludeScheduleId=${encodeURIComponent(scheduleId)}`;
 
                         return fetch(url)
