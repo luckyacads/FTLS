@@ -415,14 +415,14 @@
     </div>
 </div>
 
-<div class="schedule-card-panel" style="margin-top: 30px;">
+<div class="schedule-card-panel" id="subjectHistorySection" style="margin-top: 30px;">
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f3f4f6; padding-bottom: 15px; margin-bottom: 20px;">
         <h3 style="color: #111827; margin: 0; font-size: 20px;">Subject History</h3>
 
-        <form method="get" style="display: flex; gap: 10px; align-items: center;">
+        <form method="get" action="#subjectHistorySection" style="display: flex; gap: 10px; align-items: center;">
             <div style="display: flex; align-items: center; gap: 8px;">
                 <label style="font-weight: 600; font-size: 13px; color: #4b5563;">Academic Year:</label>
-                <select asp-for="SelectedYear" onchange="this.form.submit()" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5db; min-width: 150px; font-size: 13px; color: #111827; background: #f9fafb;">
+                <select asp-for="SelectedYear" onchange="filterHistoryYear(this.form)" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5db; min-width: 150px; font-size: 13px; color: #111827; background: #f9fafb;">
                     <option value="All">All Years</option>
                     @foreach (var year in Model.AvailableYears)
                     {
@@ -487,6 +487,32 @@
 
 @section Scripts {
     <script>
+        function filterHistoryYear(form) {
+            sessionStorage.setItem('subjectHistoryScroll', window.scrollY);
+            form.action = '#subjectHistorySection';
+            form.submit();
+        }
+
+        window.addEventListener("beforeunload", function () {
+            sessionStorage.setItem("subjectHistoryScroll", window.scrollY);
+        });
+
+        window.addEventListener('DOMContentLoaded', function () {
+            const savedScroll = sessionStorage.getItem('subjectHistoryScroll');
+            if (savedScroll !== null) {
+                sessionStorage.removeItem('subjectHistoryScroll');
+                window.scrollTo(0, parseInt(savedScroll, 10));
+                requestAnimationFrame(function () {
+                    window.scrollTo(0, parseInt(savedScroll, 10));
+                });
+            } else if (window.location.hash === '#subjectHistorySection') {
+                const historyEl = document.getElementById('subjectHistorySection');
+                if (historyEl) {
+                    historyEl.scrollIntoView({ behavior: 'instant', block: 'start' });
+                }
+            }
+        });
+
         function toggleSemester(headerElement) {
             const content = headerElement.nextElementSibling;
             content.style.display = (content.style.display === 'none') ? 'block' : 'none';
