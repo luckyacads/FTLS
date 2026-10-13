@@ -396,7 +396,7 @@
                                             <div class="schedule-meta">
                                                 @if (!string.IsNullOrEmpty(schedule.RoomName) && schedule.RoomName != "TBA")
                                                 {
-                                                    <span class="schedule-meta-pill">📍 @schedule.RoomName</span>
+                                                    <span class="schedule-meta-pill"> @schedule.RoomName</span>
                                                 }
                                                 @if (schedule.OfferCode.HasValue && schedule.OfferCode.Value > 0)
                                                 {
