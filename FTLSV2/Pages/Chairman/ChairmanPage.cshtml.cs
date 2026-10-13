@@ -384,6 +384,24 @@ namespace FTLSV2.Pages.Chairman
                 return Page();
             }
 
+            // --- OFFER CODE UNIQUENESS VALIDATION ---
+            if (SelectedOfferCode.HasValue && SelectedOfferCode.Value > 0)
+            {
+                var existingOffer = _context.Schedules
+                    .Include(s => s.Subject)
+                    .Include(s => s.Faculty)
+                    .FirstOrDefault(s => s.OfferCode == SelectedOfferCode
+                                      && s.AcademicYear == SelectedAcademicYear
+                                      && s.Semester == SelectedSemester);
+
+                if (existingOffer != null)
+                {
+                    TempData["ErrorMessage"] = $"Offer code '{SelectedOfferCode}' is already in use by {existingOffer.Subject?.Code} ({existingOffer.Subject?.Title}) assigned to Engr. {existingOffer.Faculty?.FirstName} {existingOffer.Faculty?.LastName} for {SelectedSemester} A.Y. {SelectedAcademicYear}. Every scheduled class must have a unique offer code.";
+                    LoadPageData();
+                    return Page();
+                }
+            }
+
             int? selectedRoomId = SelectedRoomId > 0 ? SelectedRoomId : null;
 
             var newSchedulesToSave = new List<Schedule>();
@@ -511,6 +529,7 @@ namespace FTLSV2.Pages.Chairman
         {
             var schedule = _context.Schedules.FirstOrDefault(s => s.ScheduleId == EditScheduleId);
             if (schedule == null) return RedirectToPage();
+            int? oldOfferCode = schedule.OfferCode;
 
             if (EditDays == null || EditDays.Count == 0)
             {
@@ -541,6 +560,28 @@ namespace FTLSV2.Pages.Chairman
             {
                 TempData["ErrorMessage"] = $"Assignment exceeds maximum allowed limit ({policyMaxUnits} units) for {empType} faculty Engr. {faculty?.FirstName} {faculty?.LastName}. Current: {currentTotalUnits} units. Course: {officialSubjectUnits} units.";
                 return RedirectToPage();
+            }
+
+            // --- OFFER CODE UNIQUENESS VALIDATION ---
+            if (EditOfferCode.HasValue && EditOfferCode.Value > 0)
+            {
+                var existingOffer = _context.Schedules
+                    .Include(s => s.Subject)
+                    .Include(s => s.Faculty)
+                    .FirstOrDefault(s => s.OfferCode == EditOfferCode
+                                      && s.AcademicYear == EditAcademicYear
+                                      && s.Semester == EditSemester
+                                      && s.ScheduleId != EditScheduleId
+                                      && !(schedule.OfferCode.HasValue
+                                           && s.OfferCode == schedule.OfferCode
+                                           && s.SubjectId == schedule.SubjectId
+                                           && s.FacultyId == schedule.FacultyId));
+
+                if (existingOffer != null)
+                {
+                    TempData["ErrorMessage"] = $"Offer code '{EditOfferCode}' is already in use by {existingOffer.Subject?.Code} ({existingOffer.Subject?.Title}) assigned to Engr. {existingOffer.Faculty?.FirstName} {existingOffer.Faculty?.LastName} for {EditSemester} A.Y. {EditAcademicYear}. Every scheduled class must have a unique offer code.";
+                    return RedirectToPage();
+                }
             }
 
             int? editRoomId =
@@ -665,6 +706,23 @@ namespace FTLSV2.Pages.Chairman
                 _context.Schedules.Add(newSched);
             }
 
+            if (oldOfferCode.HasValue && EditOfferCode != oldOfferCode)
+            {
+                var siblings = _context.Schedules
+                    .Where(s => s.OfferCode == oldOfferCode
+                             && s.FacultyId == schedule.FacultyId
+                             && s.SubjectId == schedule.SubjectId
+                             && s.AcademicYear == schedule.AcademicYear
+                             && s.Semester == schedule.Semester
+                             && s.ScheduleId != EditScheduleId)
+                    .ToList();
+
+                foreach (var sib in siblings)
+                {
+                    sib.OfferCode = EditOfferCode;
+                }
+            }
+
             _context.SaveChanges();
             TempData["SuccessMessage"] = "Schedule successfully updated!";
             return RedirectToPage();
@@ -721,17 +779,10 @@ namespace FTLSV2.Pages.Chairman
                 }
             }
             
-            if (chairmanDeptId != null)
-            {
-                ActiveSubjects = _context.Subjects
-                    .Where(s => !s.Is_delete && (s.DepartmentId == chairmanDeptId || s.DepartmentId == null))
-                    .OrderBy(s => s.Code)
-                    .ToList();
-            }
-            else
-            {
-                ActiveSubjects = _context.Subjects.Where(s => !s.Is_delete).OrderBy(s => s.Code).ToList();
-            }
+            ActiveSubjects = _context.Subjects
+                .Where(s => !s.Is_delete)
+                .OrderBy(s => s.Code)
+                .ToList();
             AllRooms = _context.Rooms.ToList();
 
             // Calculate current Academic Year dynamically

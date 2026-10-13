@@ -201,12 +201,14 @@ namespace FTLSV2.Pages.Chairman
                             continue;
                         }
 
+                        var officialUnits = (subject?.Units ?? schedule.AssignedUnits).ToString();
+
                         var evt = CreateScheduleEvent(
                             dayKey,
                             subjectCode,
                             subjectTitle,
                             roomName,
-                            schedule.AssignedUnits.ToString(),
+                            officialUnits,
                             schedule.OfferCode,
                             timeRange.Value.Start,
                             timeRange.Value.End
