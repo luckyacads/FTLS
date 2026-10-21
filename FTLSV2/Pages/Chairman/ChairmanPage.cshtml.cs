@@ -357,7 +357,7 @@ namespace FTLSV2.Pages.Chairman
                 return Page();
             }
 
-            var targetSubject = _context.Subjects.FirstOrDefault(s => s.SubjectId == SelectedSubjectId);
+            var targetSubject = _context.Subjects.Include(s => s.Department).FirstOrDefault(s => s.SubjectId == SelectedSubjectId);
             int officialSubjectUnits = targetSubject?.Units ?? 0;
 
             int currentTotalUnits = _context.Schedules
@@ -366,7 +366,27 @@ namespace FTLSV2.Pages.Chairman
                             && s.Semester == SelectedSemester)
                 .Sum(s => s.AssignedUnits);
 
-            var faculty = _context.Users.FirstOrDefault(u => u.FacultyId == SelectedFacultyId);
+            var faculty = _context.Users.Include(u => u.Department).FirstOrDefault(u => u.FacultyId == SelectedFacultyId);
+
+            int? chairmanDeptId = null;
+            if (int.TryParse(activeUserString, out int activeFacultyId))
+            {
+                var chairman = _context.Users.Include(u => u.Department).FirstOrDefault(u => u.FacultyId == activeFacultyId && u.Role == "Chairman");
+                chairmanDeptId = chairman?.DepartmentId;
+            }
+
+            bool isChairmanCre = IsCreDepartment(chairmanDeptId);
+            bool isFacultyCre = faculty != null && (IsCreDepartment(faculty.Department) || IsCreDepartment(faculty.DepartmentId));
+
+            if (isChairmanCre || isFacultyCre)
+            {
+                if (!IsReedSubject(targetSubject))
+                {
+                    TempData["ErrorMessage"] = "Only REED subjects can be assigned to faculty under the Center for Religious Education (CRE).";
+                    LoadPageData();
+                    return Page();
+                }
+            }
 
             // Automatically determine employment type & policy limit
             bool isFullTime = (faculty?.FacultyType?.Equals("Full-Time", StringComparison.OrdinalIgnoreCase) == true) || ((faculty?.MaxUnits ?? 18) >= 18);
@@ -527,6 +547,7 @@ namespace FTLSV2.Pages.Chairman
 
         public IActionResult OnPostEditSchedule()
         {
+            var activeUserString = HttpContext.Session.GetString("ActiveUser");
             var schedule = _context.Schedules.FirstOrDefault(s => s.ScheduleId == EditScheduleId);
             if (schedule == null) return RedirectToPage();
             int? oldOfferCode = schedule.OfferCode;
@@ -537,7 +558,7 @@ namespace FTLSV2.Pages.Chairman
                 return RedirectToPage();
             }
 
-            var targetSubject = _context.Subjects.FirstOrDefault(s => s.SubjectId == EditSubjectId);
+            var targetSubject = _context.Subjects.Include(s => s.Department).FirstOrDefault(s => s.SubjectId == EditSubjectId);
             int officialSubjectUnits = targetSubject?.Units ?? 0;
 
             int currentTotalUnits = _context.Schedules
@@ -547,7 +568,27 @@ namespace FTLSV2.Pages.Chairman
                             && s.ScheduleId != EditScheduleId)
                 .Sum(s => s.AssignedUnits);
 
-            var faculty = _context.Users.FirstOrDefault(u => u.FacultyId == EditFacultyId);
+            var faculty = _context.Users.Include(u => u.Department).FirstOrDefault(u => u.FacultyId == EditFacultyId);
+
+            int? chairmanDeptId = null;
+            if (int.TryParse(activeUserString, out int activeFacultyId))
+            {
+                var chairman = _context.Users.Include(u => u.Department).FirstOrDefault(u => u.FacultyId == activeFacultyId && u.Role == "Chairman");
+                chairmanDeptId = chairman?.DepartmentId;
+            }
+
+            bool isChairmanCre = IsCreDepartment(chairmanDeptId);
+            bool isFacultyCre = faculty != null && (IsCreDepartment(faculty.Department) || IsCreDepartment(faculty.DepartmentId));
+
+            if (isChairmanCre || isFacultyCre)
+            {
+                if (!IsReedSubject(targetSubject))
+                {
+                    TempData["ErrorMessage"] = "Only REED subjects can be assigned to faculty under the Center for Religious Education (CRE).";
+                    LoadPageData();
+                    return Page();
+                }
+            }
             bool isFullTime = (faculty?.FacultyType?.Equals("Full-Time", StringComparison.OrdinalIgnoreCase) == true) || ((faculty?.MaxUnits ?? 18) >= 18);
             var settings = _context.SystemSettings.FirstOrDefault();
             int maxOverload = settings?.MaxOverload ?? 30;
@@ -740,6 +781,56 @@ namespace FTLSV2.Pages.Chairman
             return RedirectToPage();
         }
 
+        public bool IsCreDepartment(int? departmentId)
+        {
+            if (!departmentId.HasValue) return false;
+            if (departmentId.Value == 83) return true;
+
+            var dept = _context.Departments.FirstOrDefault(d => d.Id == departmentId.Value);
+            return IsCreDepartment(dept);
+        }
+
+        public bool IsCreDepartment(Department? dept)
+        {
+            if (dept == null) return false;
+            if (dept.Id == 83) return true;
+
+            if (!string.IsNullOrWhiteSpace(dept.Code))
+            {
+                var code = dept.Code.Trim().ToUpper();
+                if (code == "CRE" || code.StartsWith("CRE")) return true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(dept.Name))
+            {
+                var name = dept.Name.Trim().ToUpper();
+                if (name.Contains("RELIGIOUS EDUCATION") || name.Contains("CENTER FOR RELIGIOUS EDUCATION")) return true;
+                if (name == "CRE" || name.StartsWith("CRE ") || name.EndsWith(" CRE") || name.Contains(" CRE ")) return true;
+            }
+
+            return false;
+        }
+
+        public bool IsReedSubject(Subject? subject)
+        {
+            if (subject == null) return false;
+
+            // 1. Check if the subject belongs to CRE department
+            if (subject.DepartmentId.HasValue && IsCreDepartment(subject.DepartmentId.Value)) return true;
+            if (subject.Department != null && IsCreDepartment(subject.Department)) return true;
+
+            // 2. Check if the subject code starts with REED (e.g. "ReEd 1", "REED 2", "RE-ED 3", "REED101")
+            var code = (subject.Code ?? "").Trim().ToUpper();
+            var normalizedCode = code.Replace(" ", "").Replace("-", "").Replace("_", "");
+            if (normalizedCode.StartsWith("REED")) return true;
+
+            // 3. Fallback check for title containing "Religious Education" or "Catholic Theology"
+            var title = (subject.Title ?? "").Trim().ToUpper();
+            if (title.Contains("RELIGIOUS EDUCATION") || title.Contains("CATHOLIC THEOLOGY")) return true;
+
+            return false;
+        }
+
         private void LoadPageData()
         {
             var settings = _context.SystemSettings.FirstOrDefault();
@@ -756,6 +847,7 @@ namespace FTLSV2.Pages.Chairman
             else
             {
                 var chairman = _context.Users
+                    .Include(u => u.Department)
                     .FirstOrDefault(u =>
                         u.FacultyId == activeFacultyId &&
                         u.Role == "Chairman");
@@ -770,6 +862,7 @@ namespace FTLSV2.Pages.Chairman
                     int chairmanDepartmentId = chairman.DepartmentId.Value;
 
                     ActiveFaculty = _context.Users
+                        .Include(u => u.Department)
                         .Where(u =>
                             (u.Role == "Faculty" || u.Role == "Chairman") &&
                             u.DepartmentId == chairmanDepartmentId &&
@@ -779,10 +872,29 @@ namespace FTLSV2.Pages.Chairman
                 }
             }
             
-            ActiveSubjects = _context.Subjects
-                .Where(s => !s.Is_delete)
-                .OrderBy(s => s.Code)
-                .ToList();
+            bool isChairmanCre = IsCreDepartment(chairmanDeptId);
+            bool hasCreFaculty = ActiveFaculty.Any(f => IsCreDepartment(f.Department) || IsCreDepartment(f.DepartmentId));
+
+            var subjectsQuery = _context.Subjects
+                .Include(s => s.Department)
+                .Where(s => !s.Is_delete);
+
+            if (isChairmanCre || hasCreFaculty)
+            {
+                ActiveSubjects = subjectsQuery
+                    .ToList()
+                    .Where(s => IsReedSubject(s))
+                    .OrderBy(s => s.Code)
+                    .ToList();
+            }
+            else
+            {
+                ActiveSubjects = subjectsQuery
+                    .OrderBy(s => s.Code)
+                    .ToList();
+            }
+
+
             AllRooms = _context.Rooms.ToList();
 
             // Calculate current Academic Year dynamically

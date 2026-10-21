@@ -24,6 +24,9 @@ namespace FTLSV2.Data
                 // Correct department for GE AA / GE AA* to 90 (Communication, Languages, and Literature)
                 context.Database.ExecuteSqlRaw("UPDATE subject SET department_id = 90 WHERE subject_code IN ('GE AA', 'GE AA*');");
 
+                // Correct department for REED subjects to 83 (Center for Religious Education)
+                context.Database.ExecuteSqlRaw("UPDATE subject SET department_id = 83 WHERE subject_code ILIKE 'REED%' OR subject_code ILIKE 'RE ED%' OR subject_code ILIKE 'RE-ED%';");
+
                 // 2. Only seed if not already seeded.
                 var hasMappings = context.Curriculums.Any(c => c.DepartmentId == 2);
                 if (!hasMappings)
@@ -421,7 +424,7 @@ namespace FTLSV2.Data
                 return 88; // National Service Training Program
             if (upperCode.StartsWith("PE ") || upperCode.StartsWith("PATHFIT"))
                 return 87; // Physical Education
-            if (upperCode.StartsWith("REED"))
+            if (upperCode.StartsWith("REED") || upperCode.StartsWith("RE ED") || upperCode.StartsWith("RE-ED"))
                 return 83; // Center for Religious Education
             if (upperCode.StartsWith("GUIDANCE"))
                 return 89; // Student Development and Placement Center
