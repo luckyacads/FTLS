@@ -371,11 +371,19 @@ namespace FTLSV2.Pages.Chairman
             int? chairmanDeptId = null;
             if (int.TryParse(activeUserString, out int activeFacultyId))
             {
-                var chairman = _context.Users.Include(u => u.Department).FirstOrDefault(u => u.FacultyId == activeFacultyId && u.Role == "Chairman");
+                var chairman = _context.Users.Include(u => u.Department).FirstOrDefault(u => u.FacultyId == activeFacultyId);
                 chairmanDeptId = chairman?.DepartmentId;
             }
 
             bool isChairmanCre = IsCreDepartment(chairmanDeptId);
+            if (!isChairmanCre && chairmanDeptId.HasValue)
+            {
+                var dName = _context.Departments.Where(d => d.Id == chairmanDeptId.Value).Select(d => d.Name).FirstOrDefault();
+                if (!string.IsNullOrEmpty(dName) && (dName.IndexOf("Religious", StringComparison.OrdinalIgnoreCase) >= 0 || dName.IndexOf("CRE", StringComparison.OrdinalIgnoreCase) >= 0))
+                {
+                    isChairmanCre = true;
+                }
+            }
             bool isFacultyCre = faculty != null && (IsCreDepartment(faculty.Department) || IsCreDepartment(faculty.DepartmentId));
 
             if (isChairmanCre || isFacultyCre)
@@ -582,11 +590,19 @@ namespace FTLSV2.Pages.Chairman
             int? chairmanDeptId = null;
             if (int.TryParse(activeUserString, out int activeFacultyId))
             {
-                var chairman = _context.Users.Include(u => u.Department).FirstOrDefault(u => u.FacultyId == activeFacultyId && u.Role == "Chairman");
+                var chairman = _context.Users.Include(u => u.Department).FirstOrDefault(u => u.FacultyId == activeFacultyId);
                 chairmanDeptId = chairman?.DepartmentId;
             }
 
             bool isChairmanCre = IsCreDepartment(chairmanDeptId);
+            if (!isChairmanCre && chairmanDeptId.HasValue)
+            {
+                var dName = _context.Departments.Where(d => d.Id == chairmanDeptId.Value).Select(d => d.Name).FirstOrDefault();
+                if (!string.IsNullOrEmpty(dName) && (dName.IndexOf("Religious", StringComparison.OrdinalIgnoreCase) >= 0 || dName.IndexOf("CRE", StringComparison.OrdinalIgnoreCase) >= 0))
+                {
+                    isChairmanCre = true;
+                }
+            }
             bool isFacultyCre = faculty != null && (IsCreDepartment(faculty.Department) || IsCreDepartment(faculty.DepartmentId));
 
             if (isChairmanCre || isFacultyCre)
@@ -804,8 +820,27 @@ namespace FTLSV2.Pages.Chairman
             if (!departmentId.HasValue) return false;
             if (departmentId.Value == 83) return true;
 
-            var dept = _context.Departments.FirstOrDefault(d => d.Id == departmentId.Value);
-            return IsCreDepartment(dept);
+            try
+            {
+                var deptInfo = _context.Departments
+                    .Where(d => d.Id == departmentId.Value)
+                    .Select(d => new { d.Code, d.Name })
+                    .FirstOrDefault();
+
+                if (deptInfo == null) return false;
+
+                string code = (deptInfo.Code ?? "").Trim().ToUpper();
+                string name = (deptInfo.Name ?? "").Trim().ToUpper();
+
+                if (code == "CRE" || code.StartsWith("CRE")) return true;
+                if (name.Contains("RELIGIOUS") || name.Contains("THEOLOGY") || name.Contains("CRE")) return true;
+
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public bool IsCreDepartment(Department? dept)
@@ -822,8 +857,7 @@ namespace FTLSV2.Pages.Chairman
             if (!string.IsNullOrWhiteSpace(dept.Name))
             {
                 var name = dept.Name.Trim().ToUpper();
-                if (name.Contains("RELIGIOUS EDUCATION") || name.Contains("CENTER FOR RELIGIOUS EDUCATION")) return true;
-                if (name == "CRE" || name.StartsWith("CRE ") || name.EndsWith(" CRE") || name.Contains(" CRE ")) return true;
+                if (name.Contains("RELIGIOUS") || name.Contains("THEOLOGY") || name.Contains("CRE")) return true;
             }
 
             return false;
@@ -844,7 +878,7 @@ namespace FTLSV2.Pages.Chairman
 
             // 3. Fallback check for title containing "Religious Education" or "Catholic Theology"
             var title = (subject.Title ?? "").Trim().ToUpper();
-            if (title.Contains("RELIGIOUS EDUCATION") || title.Contains("CATHOLIC THEOLOGY")) return true;
+            if (title.Contains("RELIGIOUS") || title.Contains("THEOLOGY") || title.Contains("INITIUM FIDEI") || title.Contains("EXEGESIS") || title.Contains("CATHOLIC")) return true;
 
             return false;
         }
@@ -866,9 +900,7 @@ namespace FTLSV2.Pages.Chairman
             {
                 var chairman = _context.Users
                     .Include(u => u.Department)
-                    .FirstOrDefault(u =>
-                        u.FacultyId == activeFacultyId &&
-                        u.Role == "Chairman");
+                    .FirstOrDefault(u => u.FacultyId == activeFacultyId);
 
                 if (chairman == null || chairman.DepartmentId == null)
                 {
@@ -882,7 +914,6 @@ namespace FTLSV2.Pages.Chairman
                     ActiveFaculty = _context.Users
                         .Include(u => u.Department)
                         .Where(u =>
-                            (u.Role == "Faculty" || u.Role == "Chairman") &&
                             u.DepartmentId == chairmanDepartmentId &&
                             !u.Is_delete &&
                             (u.Status == "Active" || string.IsNullOrEmpty(u.Status)))
@@ -891,6 +922,23 @@ namespace FTLSV2.Pages.Chairman
             }
             
             bool isChairmanCre = IsCreDepartment(chairmanDeptId);
+
+            if (!isChairmanCre && chairmanDeptId.HasValue)
+            {
+                var dName = _context.Departments
+                    .Where(d => d.Id == chairmanDeptId.Value)
+                    .Select(d => d.Name)
+                    .FirstOrDefault();
+
+                if (!string.IsNullOrEmpty(dName) &&
+                    (dName.IndexOf("Religious", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                     dName.IndexOf("CRE", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                     dName.IndexOf("Theology", StringComparison.OrdinalIgnoreCase) >= 0))
+                {
+                    isChairmanCre = true;
+                }
+            }
+
             bool hasCreFaculty = ActiveFaculty.Any(f => IsCreDepartment(f.Department) || IsCreDepartment(f.DepartmentId));
 
             var subjectsQuery = _context.Subjects
