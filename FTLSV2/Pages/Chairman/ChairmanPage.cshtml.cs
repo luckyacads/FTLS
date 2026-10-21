@@ -387,6 +387,15 @@ namespace FTLSV2.Pages.Chairman
                     return Page();
                 }
             }
+            else
+            {
+                if (IsReedSubject(targetSubject))
+                {
+                    TempData["ErrorMessage"] = "REED subjects can only be assigned by the Center for Religious Education (CRE).";
+                    LoadPageData();
+                    return Page();
+                }
+            }
 
             // Automatically determine employment type & policy limit
             bool isFullTime = (faculty?.FacultyType?.Equals("Full-Time", StringComparison.OrdinalIgnoreCase) == true) || ((faculty?.MaxUnits ?? 18) >= 18);
@@ -585,6 +594,15 @@ namespace FTLSV2.Pages.Chairman
                 if (!IsReedSubject(targetSubject))
                 {
                     TempData["ErrorMessage"] = "Only REED subjects can be assigned to faculty under the Center for Religious Education (CRE).";
+                    LoadPageData();
+                    return Page();
+                }
+            }
+            else
+            {
+                if (IsReedSubject(targetSubject))
+                {
+                    TempData["ErrorMessage"] = "REED subjects can only be assigned by the Center for Religious Education (CRE).";
                     LoadPageData();
                     return Page();
                 }
@@ -890,6 +908,8 @@ namespace FTLSV2.Pages.Chairman
             else
             {
                 ActiveSubjects = subjectsQuery
+                    .ToList()
+                    .Where(s => !IsReedSubject(s))
                     .OrderBy(s => s.Code)
                     .ToList();
             }
